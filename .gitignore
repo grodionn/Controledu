@@ -73,8 +73,13 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .venv/
+.venv*/
 venv/
+venv*/
 env/
+env*/
+ENV/
+ENV*/
 
 # Local ML config (can contain machine-specific paths/secrets)
 ml/config.yaml
@@ -122,6 +127,7 @@ coverage.xml
 # ------------------------------
 # Misc project-specific temp files
 # ------------------------------
+dataset/
 dataset/labels/.~lock.*
 
 # Local deployment helpers (machine-specific credentials/hosts)

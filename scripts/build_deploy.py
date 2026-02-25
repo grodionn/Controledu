@@ -36,7 +36,8 @@ def run_build(repo_root: Path, log_file) -> None:
 
 
 def load_manifest(manifest_path: Path) -> dict:
-    with manifest_path.open("r", encoding="utf-8") as fh:
+    # PowerShell may write UTF-8 files with BOM on Windows.
+    with manifest_path.open("r", encoding="utf-8-sig") as fh:
         return json.load(fh)
 
 
