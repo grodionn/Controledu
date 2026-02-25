@@ -270,8 +270,13 @@ public partial class Form1 : Form
         Controls.Add(root);
         root.BringToFront();
 
-        Resize += (_, _) => UpdateMaximizeGlyph();
+        Resize += (_, _) =>
+        {
+            UpdateMaximizeGlyph();
+            UpdateResizeFramePadding();
+        };
         UpdateMaximizeGlyph();
+        UpdateResizeFramePadding();
     }
 
     private Panel BuildChromeBar()
@@ -397,6 +402,17 @@ public partial class Form1 : Form
         _maximizeButton.Text = WindowState == FormWindowState.Maximized
             ? GlyphRestore
             : GlyphMaximize;
+    }
+
+    private void UpdateResizeFramePadding()
+    {
+        var padding = WindowState == FormWindowState.Normal ? ResizeBorder : 0;
+        if (Padding.All == padding)
+        {
+            return;
+        }
+
+        Padding = new Padding(padding);
     }
 
     private void EnableDrag(Control control)

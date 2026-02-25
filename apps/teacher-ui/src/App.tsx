@@ -1968,7 +1968,7 @@ function App() {
 
   return (
     <div className="box-border h-full min-h-0 min-w-0 overflow-hidden px-2 py-2 sm:px-3 sm:py-3 lg:px-5 lg:py-4">
-      <div className="mx-auto flex h-full max-w-[1880px] min-h-0 min-w-0 flex-col gap-3 overflow-x-hidden overflow-y-auto">
+      <div className="mx-auto flex h-full max-w-[1880px] min-h-0 min-w-0 flex-col gap-3 overflow-hidden">
         <header className="px-1 py-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-0.5">
@@ -2039,10 +2039,12 @@ function App() {
         </header>
 
         {activeView === "monitoring" ? (
-        <div className="mt-1 grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_290px] 2xl:grid-cols-[minmax(0,1fr)_308px]">
-          <Card className="overflow-visible">
-            <CardContent className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="flex flex-col gap-3">
+        <div className="mt-1 grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_330px] 2xl:grid-cols-[minmax(0,1fr)_348px]">
+          <Card className="min-h-0 overflow-hidden">
+            <CardContent className="grid h-full min-h-0 gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
+              <ScrollArea.Root className="min-h-0 overflow-hidden">
+                <ScrollArea.Viewport className="h-full pr-2">
+                  <div className="flex flex-col gap-3">
                 <section className="flex flex-col rounded-xl border border-border bg-background/75 p-3">
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-medium">{t("focusedView")}</p>
@@ -2222,7 +2224,12 @@ function App() {
                   <p className="mt-2 text-xs text-muted-foreground">{uploadStatus || t("noActiveTransfers")}</p>
                 </section>
 
-              </div>
+                  </div>
+                </ScrollArea.Viewport>
+                <ScrollArea.Scrollbar className="w-2" orientation="vertical">
+                  <ScrollArea.Thumb className="rounded bg-muted-foreground/30" />
+                </ScrollArea.Scrollbar>
+              </ScrollArea.Root>
 
               <aside className="sticky top-3 flex min-h-0 self-start flex-col rounded-xl border border-border bg-background/75 p-3 max-h-[calc(100vh-7.5rem)]">
                 <div className="mb-2 space-y-2">
@@ -2348,12 +2355,15 @@ function App() {
             </CardContent>
           </Card>
 
-          <Card className="flex min-h-0 flex-col overflow-visible">
+          <Card className="flex min-h-0 flex-col overflow-hidden">
             <CardHeader className="pb-2">
               <CardTitle>{t("controlPanel")}</CardTitle>
               <CardDescription>{t("logsHint")}</CardDescription>
             </CardHeader>
-            <CardContent className="flex min-h-0 flex-1 flex-col gap-3 pb-3">
+            <CardContent className="min-h-0 flex-1 pb-3">
+              <ScrollArea.Root className="h-full overflow-hidden">
+                <ScrollArea.Viewport className="h-full pr-2">
+                  <div className="flex min-h-full flex-col gap-3">
               <div className="grid grid-cols-1 gap-2">
                 <div className="flex items-center justify-between rounded-md border border-border/80 bg-muted/25 px-2.5 py-1.5">
                   <p className="text-[11px] text-muted-foreground">{t("knownDevices")}</p>
@@ -2421,6 +2431,12 @@ function App() {
                   </p>
                 </div>
               </div>
+                  </div>
+                </ScrollArea.Viewport>
+                <ScrollArea.Scrollbar className="w-2" orientation="vertical">
+                  <ScrollArea.Thumb className="rounded bg-muted-foreground/30" />
+                </ScrollArea.Scrollbar>
+              </ScrollArea.Root>
             </CardContent>
           </Card>
         </div>

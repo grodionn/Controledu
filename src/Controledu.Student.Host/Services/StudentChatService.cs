@@ -41,6 +41,11 @@ public interface IStudentChatService
     /// Updates overlay chat preferences.
     /// </summary>
     Task<StudentChatPreferencesResponse> UpdatePreferencesAsync(StudentChatPreferencesUpdateRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Clears local chat timeline and pending outgoing queue while preserving chat UI preferences.
+    /// </summary>
+    Task ClearThreadAsync(CancellationToken cancellationToken = default);
 }
 
 internal sealed class StudentChatService(
@@ -237,6 +242,20 @@ internal sealed class StudentChatService(
             var prefs = new LocalChatPreferences(fontScalePercent);
             await settingsStore.SetAsync(DetectionSettingKeys.ChatPreferencesJson, JsonSerializer.Serialize(prefs, JsonOptions), cancellationToken);
             return new StudentChatPreferencesResponse(fontScalePercent);
+        }
+        finally
+        {
+            _sync.Release();
+        }
+    }
+
+    public async Task ClearThreadAsync(CancellationToken cancellationToken = default)
+    {
+        await _sync.WaitAsync(cancellationToken);
+        try
+        {
+            await settingsStore.SetAsync(DetectionSettingKeys.ChatHistoryJson, "[]", cancellationToken);
+            await settingsStore.SetAsync(DetectionSettingKeys.ChatOutgoingQueueJson, "[]", cancellationToken);
         }
         finally
         {

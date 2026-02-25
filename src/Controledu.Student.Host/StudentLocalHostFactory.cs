@@ -94,6 +94,8 @@ public static class StudentLocalHostFactory
         using var scope = app.Services.CreateScope();
         var initializer = scope.ServiceProvider.GetRequiredService<IStorageInitializer>();
         initializer.EnsureCreatedAsync().GetAwaiter().GetResult();
+        var studentChatService = scope.ServiceProvider.GetRequiredService<IStudentChatService>();
+        studentChatService.ClearThreadAsync().GetAwaiter().GetResult();
 
         var pairingService = scope.ServiceProvider.GetRequiredService<IStudentPairingService>();
         var autoStartManager = scope.ServiceProvider.GetRequiredService<IAgentAutoStartManager>();
@@ -104,6 +106,20 @@ public static class StudentLocalHostFactory
         {
             _ = agentProcessManager.StartAsync();
         }
+
+        app.Lifetime.ApplicationStopping.Register(() =>
+        {
+            try
+            {
+                using var stopScope = app.Services.CreateScope();
+                var chatService = stopScope.ServiceProvider.GetRequiredService<IStudentChatService>();
+                chatService.ClearThreadAsync().GetAwaiter().GetResult();
+            }
+            catch
+            {
+                // Ignore shutdown cleanup failures.
+            }
+        });
 
         return app;
     }

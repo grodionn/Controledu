@@ -343,7 +343,7 @@ export function AccessibilityAssignmentCard({
   const canSubmit = Boolean(selectedStudent?.isOnline) && !isPending;
 
   return (
-    <div className="rounded-lg border border-border bg-background/70 p-3">
+    <div className="min-w-0 rounded-lg border border-border bg-background/70 p-3 overflow-x-hidden">
       <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-xs uppercase tracking-[0.11em] text-muted-foreground">{t(lang, "title")}</p>
@@ -364,13 +364,13 @@ export function AccessibilityAssignmentCard({
         ) : null}
         <div>
           <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{t(lang, "presets")}</p>
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-1 gap-1.5">
             {presetOrder.map((preset) => (
               <Button
                 key={preset}
                 size="sm"
                 variant={draft.activePreset === preset ? "default" : "outline"}
-                className="h-8 justify-start px-2 text-[11px]"
+                className="h-auto min-h-8 justify-start px-2 py-1 text-left text-[11px] leading-tight whitespace-normal"
                 onClick={() => applyPreset(preset)}
                 disabled={isPending}
               >
@@ -382,9 +382,9 @@ export function AccessibilityAssignmentCard({
 
         <div className="rounded-md border border-border/80 bg-muted/20 px-2.5 py-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-[11px] text-muted-foreground">
+            <div className="min-w-0 text-[11px] text-muted-foreground">
               <span className="font-medium">{showAdvanced ? "Advanced settings are visible" : "Advanced settings are hidden"}</span>
-              <span className="ml-1">
+              <span className="ml-1 break-words">
                 ({t(lang, "scale")}: {draft.ui.scalePercent}% | {t(lang, "contrast")}: {t(lang, draft.ui.contrastMode === "standard" ? "contrastStandard" : draft.ui.contrastMode === "aa" ? "contrastAa" : "contrastAaa")})
               </span>
             </div>
@@ -392,7 +392,7 @@ export function AccessibilityAssignmentCard({
               type="button"
               size="sm"
               variant="outline"
-              className="h-7 px-2 text-[11px]"
+              className="h-7 shrink-0 px-2 text-[11px]"
               onClick={() => setShowAdvanced((current) => !current)}
               disabled={isPending}
             >
@@ -403,7 +403,7 @@ export function AccessibilityAssignmentCard({
 
         {showAdvanced ? (
           <>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               <label className="space-y-1">
                 <span className="text-[11px] text-muted-foreground">{t(lang, "scale")}</span>
                 <div className="rounded border border-border bg-background/60 px-2 py-1.5">
@@ -445,7 +445,7 @@ export function AccessibilityAssignmentCard({
                 disabled={isPending}
                 onChange={(checked) => patchDraft({ allowTeacherOverride: checked })}
               />
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-1 gap-1.5">
                 <SwitchRow
                   compact
                   label={t(lang, "invert")}
@@ -479,7 +479,7 @@ export function AccessibilityAssignmentCard({
 
             <div>
               <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{t(lang, "lesson")}</p>
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-1 gap-1.5">
                 <SwitchRow compact label={t(lang, "visualAlerts")} checked={draft.features.visualAlertsEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ visualAlertsEnabled: checked })} />
                 <SwitchRow compact label={t(lang, "largeButtons")} checked={draft.features.largeActionButtonsEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ largeActionButtonsEnabled: checked })} />
                 <SwitchRow compact label={t(lang, "simpleNav")} checked={draft.features.simplifiedNavigationEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ simplifiedNavigationEnabled: checked })} />
@@ -533,7 +533,7 @@ function SwitchRow({ label, checked, disabled, compact = false, onChange }: Swit
         compact ? "px-2 py-1.5 text-[11px]" : "px-2.5 py-2 text-xs",
       )}
     >
-      <span className={cn("leading-tight", checked && "text-foreground")}>{label}</span>
+      <span className={cn("min-w-0 break-words leading-tight", checked && "text-foreground")}>{label}</span>
       <input
         type="checkbox"
         className="h-3.5 w-3.5 accent-primary"
