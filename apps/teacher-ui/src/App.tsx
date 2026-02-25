@@ -1,0 +1,2153 @@
+﻿import { useEffect, useMemo, useRef, useState, type SVGProps } from "react";
+import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { useMutation } from "@tanstack/react-query";
+import * as ScrollArea from "@radix-ui/react-scroll-area";
+import {
+  AccessibilityProfileUpdateDto,
+  AlertItem,
+  AuditItem,
+  DetectionPolicy,
+  PairPinResponse,
+  RemoteControlInputCommand,
+  RemoteControlSessionStartResult,
+  RemoteControlSessionStatus,
+  ScreenFrame,
+  StudentChatHistoryResponse,
+  StudentInfo,
+  StudentSignalEvent,
+  TeacherStudentChatMessage,
+  UploadInitResponse,
+} from "./lib/types";
+import { interpolate, teacherDictionary, UiLanguage } from "./i18n";
+import { cn, sha256Hex, toDataUrl } from "./lib/utils";
+import { AccessibilityAssignmentCard } from "./components/accessibility-assignment-card";
+import { TeacherTtsCard, type TeacherTtsDraft } from "./components/teacher-tts-card";
+import { FocusedChatCard } from "./components/focused-chat-card";
+import { ThemeToggle } from "./components/theme-toggle";
+import { Badge } from "./components/ui/badge";
+import { Button } from "./components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
+import { Input } from "./components/ui/input";
+
+const CHUNK_SIZE = 256 * 1024;
+const THEME_KEY = "controledu.teacher.theme";
+const LANG_KEY = "controledu.teacher.lang";
+const AI_WARNINGS_KEY = "controledu.teacher.ai-warnings-enabled";
+const DESKTOP_NOTIFICATIONS_KEY = "controledu.teacher.desktop-notifications-enabled";
+const SOUND_NOTIFICATIONS_KEY = "controledu.teacher.sound-notifications-enabled";
+const NOTIFICATION_VOLUME_KEY = "controledu.teacher.notification-volume";
+const THUMBNAIL_FRAME_INTERVAL_MS = 200;
+
+type Theme = "light" | "dark";
+
+type FrameState = {
+  url: string;
+  sequence: number;
+  capturedAtUtc: string;
+  width: number;
+  height: number;
+};
+
+type ProgressPayload = {
+  clientId: string;
+  error?: string | null;
+  completed: boolean;
+  completedChunks: number;
+  totalChunks: number;
+};
+
+type UiToast = {
+  id: string;
+  kind: "handRaise" | "aiDetected";
+  studentName: string;
+  detectionClass?: string;
+  confidence?: number;
+  createdAtMs: number;
+};
+
+type RemoteControlUiSession = {
+  sessionId: string;
+  state: string;
+  message?: string | null;
+  updatedAtMs: number;
+};
+
+async function readResponseText(response: Response): Promise<string> {
+  try {
+    return await response.text();
+  } catch {
+    return "";
+  }
+}
+
+async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
+  const response = await fetch(input, init);
+  const bodyText = await readResponseText(response);
+
+  if (!response.ok) {
+    throw new Error(bodyText || `Request failed (${response.status}).`);
+  }
+
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    throw new Error("Endpoint returned non-JSON response.");
+  }
+
+  return JSON.parse(bodyText) as T;
+}
+
+type IconProps = SVGProps<SVGSVGElement>;
+
+function IconMonitor(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="3" y="4" width="18" height="12" rx="2" />
+      <path d="M8 20h8" />
+      <path d="M12 16v4" />
+    </svg>
+  );
+}
+
+function IconUpload(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M12 16V6" />
+      <path d="m8.5 9.5 3.5-3.5 3.5 3.5" />
+      <path d="M4 16.5v1A2.5 2.5 0 0 0 6.5 20h11a2.5 2.5 0 0 0 2.5-2.5v-1" />
+    </svg>
+  );
+}
+
+function IconGrid(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="3" y="3" width="8" height="8" rx="1.5" />
+      <rect x="13" y="3" width="8" height="8" rx="1.5" />
+      <rect x="3" y="13" width="8" height="8" rx="1.5" />
+      <rect x="13" y="13" width="8" height="8" rx="1.5" />
+    </svg>
+  );
+}
+
+function IconList(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M9 6h11" />
+      <path d="M9 12h11" />
+      <path d="M9 18h11" />
+      <circle cx="4.5" cy="6" r="1" fill="currentColor" stroke="none" />
+      <circle cx="4.5" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="4.5" cy="18" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function IconExpand(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M8 3H3v5" />
+      <path d="M16 3h5v5" />
+      <path d="M8 21H3v-5" />
+      <path d="M16 21h5v-5" />
+      <path d="M3 8l5-5" />
+      <path d="M21 8l-5-5" />
+      <path d="M3 16l5 5" />
+      <path d="M21 16l-5 5" />
+    </svg>
+  );
+}
+
+function IconClose(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
+function App() {
+  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark"));
+  const [lang, setLang] = useState<UiLanguage>(() => {
+    const value = localStorage.getItem(LANG_KEY);
+    return value === "ru" || value === "kz" ? value : "en";
+  });
+  const [students, setStudents] = useState<Record<string, StudentInfo>>({});
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [selectedTargets, setSelectedTargets] = useState<Set<string>>(new Set());
+  const [frames, setFrames] = useState<Record<string, FrameState>>({});
+  const [events, setEvents] = useState<string[]>([]);
+  const [pin, setPin] = useState<PairPinResponse | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<string>("");
+  const [accessibilityAssignStatus, setAccessibilityAssignStatus] = useState<{ tone: "neutral" | "success" | "error"; text: string } | null>(null);
+  const [teacherTtsStatus, setTeacherTtsStatus] = useState<{ tone: "neutral" | "success" | "error"; text: string } | null>(null);
+  const [teacherChatStatus, setTeacherChatStatus] = useState<{ tone: "neutral" | "success" | "error"; text: string } | null>(null);
+  const [chatByStudent, setChatByStudent] = useState<Record<string, TeacherStudentChatMessage[]>>({});
+  const [chatHistoryLoadingFor, setChatHistoryLoadingFor] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [onlyOnline, setOnlyOnline] = useState(true);
+  const [connectionState, setConnectionState] = useState<"connected" | "disconnected">("disconnected");
+  const [activeView, setActiveView] = useState<"monitoring" | "detection" | "settings">("monitoring");
+  const [aiAlerts, setAiAlerts] = useState<AlertItem[]>([]);
+  const [detectionPolicy, setDetectionPolicy] = useState<DetectionPolicy | null>(null);
+  const [aiFilterStudent, setAiFilterStudent] = useState("all");
+  const [aiFilterClass, setAiFilterClass] = useState("all");
+  const [aiFilterTime, setAiFilterTime] = useState<"all" | "15m" | "1h" | "24h">("all");
+  const [aiWarningsEnabled, setAiWarningsEnabled] = useState(() => localStorage.getItem(AI_WARNINGS_KEY) !== "0");
+  const [desktopNotificationsEnabled, setDesktopNotificationsEnabled] = useState(() => localStorage.getItem(DESKTOP_NOTIFICATIONS_KEY) !== "0");
+  const [soundNotificationsEnabled, setSoundNotificationsEnabled] = useState(() => localStorage.getItem(SOUND_NOTIFICATIONS_KEY) !== "0");
+  const [notificationVolume, setNotificationVolume] = useState(() => {
+    const stored = Number(localStorage.getItem(NOTIFICATION_VOLUME_KEY) ?? "72");
+    if (Number.isNaN(stored)) {
+      return 72;
+    }
+
+    return Math.min(100, Math.max(0, Math.round(stored)));
+  });
+  const [handRaisedUntil, setHandRaisedUntil] = useState<Record<string, number>>({});
+  const [uiClock, setUiClock] = useState(() => Date.now());
+  const [isLogsOpen, setIsLogsOpen] = useState(false);
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+  const [isThumbnailsExpanded, setIsThumbnailsExpanded] = useState(false);
+  const [isRemoteViewOpen, setIsRemoteViewOpen] = useState(false);
+  const [remoteControlSessions, setRemoteControlSessions] = useState<Record<string, RemoteControlUiSession>>({});
+  const [remoteControlRequestPending, setRemoteControlRequestPending] = useState(false);
+  const [toasts, setToasts] = useState<UiToast[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const selectedStudentIdRef = useRef<string | null>(null);
+  const frameUpdateGateRef = useRef<Record<string, number>>({});
+  const handSignalLogRef = useRef<Record<string, number>>({});
+  const toastDedupRef = useRef<Record<string, number>>({});
+  const toastTimersRef = useRef<number[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const teacherHubRef = useRef<HubConnection | null>(null);
+  const remoteViewportRef = useRef<HTMLDivElement | null>(null);
+  const remoteLastPointerSendAtRef = useRef(0);
+  const remotePressedKeysRef = useRef<Set<string>>(new Set());
+  const aiWarningsEnabledRef = useRef(aiWarningsEnabled);
+  const desktopNotificationsEnabledRef = useRef(desktopNotificationsEnabled);
+  const soundNotificationsEnabledRef = useRef(soundNotificationsEnabled);
+  const notificationVolumeRef = useRef(notificationVolume);
+
+  const t = (key: string) => teacherDictionary[lang][key] ?? key;
+
+  const appendEvent = (line: string) => {
+    setEvents((current) => [line, ...current].slice(0, 400));
+  };
+
+  const appendChatMessage = (message: TeacherStudentChatMessage) => {
+    setChatByStudent((current) => {
+      const key = message.clientId;
+      const existing = current[key] ?? [];
+      if (existing.some((item) => item.messageId === message.messageId)) {
+        return current;
+      }
+
+      const next = [...existing, message]
+        .sort((a, b) => new Date(a.timestampUtc).getTime() - new Date(b.timestampUtc).getTime())
+        .slice(-300);
+      return { ...current, [key]: next };
+    });
+  };
+
+  const localizeDetectionClass = (value: string): string => {
+    switch (value) {
+      case "ChatGpt":
+        return t("detectionClassChatGpt");
+      case "Claude":
+        return t("detectionClassClaude");
+      case "Gemini":
+        return t("detectionClassGemini");
+      case "Copilot":
+        return t("detectionClassCopilot");
+      case "Perplexity":
+        return t("detectionClassPerplexity");
+      case "DeepSeek":
+        return t("detectionClassDeepSeek");
+      case "Poe":
+        return t("detectionClassPoe");
+      case "Grok":
+        return t("detectionClassGrok");
+      case "Qwen":
+        return t("detectionClassQwen");
+      case "Mistral":
+        return t("detectionClassMistral");
+      case "MetaAi":
+        return t("detectionClassMetaAi");
+      case "UnknownAi":
+        return t("detectionClassUnknownAi");
+      case "None":
+        return t("detectionClassNone");
+      default:
+        return value;
+    }
+  };
+
+  const localizeStageSource = (value: string): string => {
+    switch (value) {
+      case "MetadataRule":
+        return t("stageMetadataRule");
+      case "OnnxBinary":
+        return t("stageOnnxBinary");
+      case "OnnxMulticlass":
+        return t("stageOnnxMulticlass");
+      case "Fused":
+        return t("stageFused");
+      default:
+        return t("stageUnknown");
+    }
+  };
+
+  const pushToast = (
+    toast: Omit<UiToast, "id" | "createdAtMs">,
+    dedupeKey: string,
+    dedupeMs = 8000,
+  ): boolean => {
+    const nowMs = Date.now();
+    const lastShownMs = toastDedupRef.current[dedupeKey] ?? 0;
+    if (nowMs - lastShownMs < dedupeMs) {
+      return false;
+    }
+
+    toastDedupRef.current[dedupeKey] = nowMs;
+    const toastId = `${nowMs}-${Math.random().toString(36).slice(2, 8)}`;
+
+    setToasts((current) => [...current.slice(-2), { ...toast, id: toastId, createdAtMs: nowMs }]);
+    const timerId = window.setTimeout(() => {
+      setToasts((current) => current.filter((item) => item.id !== toastId));
+      toastTimersRef.current = toastTimersRef.current.filter((id) => id !== timerId);
+    }, 4500);
+    toastTimersRef.current.push(timerId);
+    return true;
+  };
+
+  const playNotificationSound = () => {
+    if (!soundNotificationsEnabledRef.current) {
+      return;
+    }
+
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
+    audio.volume = Math.min(1, Math.max(0, notificationVolumeRef.current / 100));
+    void audio.play().catch(() => undefined);
+  };
+
+  const sendDesktopNotification = async (title: string, message: string, kind: "ai" | "signal") => {
+    if (!desktopNotificationsEnabledRef.current) {
+      return;
+    }
+
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        new Notification(title, { body: message });
+      } catch {
+        // Ignore browser notification failures.
+      }
+    }
+
+    try {
+      await fetch("/api/desktop/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, message, kind }),
+      });
+    } catch {
+      // Ignore host notification bridge failures.
+    }
+  };
+
+  const describeError = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem(LANG_KEY, lang);
+  }, [lang]);
+
+  useEffect(() => {
+    aiWarningsEnabledRef.current = aiWarningsEnabled;
+    localStorage.setItem(AI_WARNINGS_KEY, aiWarningsEnabled ? "1" : "0");
+  }, [aiWarningsEnabled]);
+
+  useEffect(() => {
+    desktopNotificationsEnabledRef.current = desktopNotificationsEnabled;
+    localStorage.setItem(DESKTOP_NOTIFICATIONS_KEY, desktopNotificationsEnabled ? "1" : "0");
+  }, [desktopNotificationsEnabled]);
+
+  useEffect(() => {
+    soundNotificationsEnabledRef.current = soundNotificationsEnabled;
+    localStorage.setItem(SOUND_NOTIFICATIONS_KEY, soundNotificationsEnabled ? "1" : "0");
+  }, [soundNotificationsEnabled]);
+
+  useEffect(() => {
+    notificationVolumeRef.current = notificationVolume;
+    localStorage.setItem(NOTIFICATION_VOLUME_KEY, String(notificationVolume));
+  }, [notificationVolume]);
+
+  useEffect(() => {
+    const audio = new Audio("/notification.mp3");
+    audio.preload = "auto";
+    audio.volume = Math.min(1, Math.max(0, notificationVolume / 100));
+    audioRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    selectedStudentIdRef.current = selectedStudentId;
+  }, [selectedStudentId]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setUiClock(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      toastTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
+      toastTimersRef.current = [];
+    };
+  }, []);
+
+  useEffect(() => {
+    let connection: HubConnection | null = null;
+    let cancelled = false;
+
+    const setup = async () => {
+      connection = new HubConnectionBuilder()
+        .withUrl("/hubs/teacher")
+        .withAutomaticReconnect([0, 1000, 3000, 7000, 15000])
+        .configureLogging(LogLevel.Warning)
+        .build();
+      teacherHubRef.current = connection;
+
+      connection.onreconnected(() => setConnectionState("connected"));
+      connection.onclose(() => setConnectionState("disconnected"));
+
+      connection.on("StudentListChanged", (list: StudentInfo[]) => {
+        const next = Object.fromEntries(list.map((item) => [item.clientId, item]));
+        setStudents(next);
+        setSelectedTargets((current) => new Set([...current].filter((clientId) => Boolean(next[clientId]))));
+        setSelectedStudentId((current) => {
+          if (current && next[current]) {
+            return current;
+          }
+
+          if (list.length === 0) {
+            return null;
+          }
+
+          const firstOnline = list.find((x) => x.isOnline) ?? list[0];
+          return firstOnline.clientId;
+        });
+      });
+
+      connection.on("StudentUpserted", (student: StudentInfo) => {
+        setStudents((current) => ({ ...current, [student.clientId]: student }));
+      });
+
+      connection.on("StudentDisconnected", (clientId: string) => {
+        setStudents((current) => {
+          const existing = current[clientId];
+          if (!existing) {
+            return current;
+          }
+
+          return { ...current, [clientId]: { ...existing, isOnline: false } };
+        });
+      });
+
+      connection.on("FrameReceived", (frame: ScreenFrame) => {
+        const nowMs = Date.now();
+        const isFocused = selectedStudentIdRef.current === frame.clientId;
+        if (!isFocused) {
+          const lastUpdate = frameUpdateGateRef.current[frame.clientId] ?? 0;
+          if (nowMs - lastUpdate < THUMBNAIL_FRAME_INTERVAL_MS) {
+            return;
+          }
+
+          frameUpdateGateRef.current[frame.clientId] = nowMs;
+        }
+
+        setFrames((current) => {
+          const previous = current[frame.clientId];
+          if (previous && previous.sequence >= frame.sequence) {
+            return current;
+          }
+
+          return {
+            ...current,
+            [frame.clientId]: {
+              url: toDataUrl(frame.payload),
+              sequence: frame.sequence,
+              capturedAtUtc: frame.capturedAtUtc,
+              width: frame.width,
+              height: frame.height,
+            },
+          };
+        });
+      });
+
+      connection.on("AlertReceived", (alert: AlertItem) => {
+        setAiAlerts((current) => [alert, ...current].slice(0, 1000));
+        appendEvent(`[${new Date(alert.timestampUtc).toLocaleTimeString()}] ALERT ${alert.studentId}: ${alert.detectionClass} ${alert.confidence.toFixed(2)} - ${alert.reason}`);
+        if (!aiWarningsEnabledRef.current) {
+          return;
+        }
+
+        const shown = pushToast(
+          {
+            kind: "aiDetected",
+            studentName: alert.studentDisplayName || alert.studentId,
+            detectionClass: alert.detectionClass,
+            confidence: alert.confidence,
+          },
+          `ai:${alert.studentId}:${alert.detectionClass}`,
+          10000,
+        );
+
+        if (shown) {
+          const title = t("toastAlertTitle");
+          const message = interpolate(t("toastAiDetected"), {
+            name: alert.studentDisplayName || alert.studentId,
+            className: localizeDetectionClass(alert.detectionClass),
+            confidence: alert.confidence.toFixed(2),
+          });
+          playNotificationSound();
+          void sendDesktopNotification(title, message, "ai");
+        }
+      });
+
+      connection.on("StudentSignalReceived", (signal: StudentSignalEvent) => {
+        if (signal.signalType !== "HandRaise") {
+          return;
+        }
+
+        const nowMs = Date.now();
+        setHandRaisedUntil((current) => ({
+          ...current,
+          [signal.studentId]: nowMs + 45_000,
+        }));
+
+        const lastLoggedAt = handSignalLogRef.current[signal.studentId] ?? 0;
+        if (nowMs - lastLoggedAt >= 10_000) {
+          appendEvent(`[${new Date(signal.timestampUtc).toLocaleTimeString()}] ${signal.studentDisplayName}: Hand raise`);
+          handSignalLogRef.current[signal.studentId] = nowMs;
+        }
+
+        const shown = pushToast(
+          {
+            kind: "handRaise",
+            studentName: signal.studentDisplayName || signal.studentId,
+          },
+          `hand:${signal.studentId}`,
+          10000,
+        );
+
+        if (shown) {
+          const title = t("toastSignalTitle");
+          const message = interpolate(t("toastHandRaise"), { name: signal.studentDisplayName || signal.studentId });
+          playNotificationSound();
+          void sendDesktopNotification(title, message, "signal");
+        }
+      });
+
+      connection.on("ChatMessageReceived", (message: TeacherStudentChatMessage) => {
+        appendChatMessage(message);
+        const author = message.senderDisplayName || (String(message.senderRole).toLowerCase() === "teacher" ? "Teacher" : message.clientId);
+        appendEvent(`[${new Date(message.timestampUtc).toLocaleTimeString()}] CHAT ${message.clientId} ${author}: ${message.text.slice(0, 80)}`);
+      });
+
+      connection.on("DetectionPolicyUpdated", (policy: DetectionPolicy) => {
+        setDetectionPolicy(policy);
+      });
+
+      connection.on("FileProgressUpdated", (progress: ProgressPayload) => {
+        if (progress.clientId === "server") {
+          setUploadStatus(progress.error ?? "Dispatch created");
+          return;
+        }
+
+        const message = progress.completed
+          ? `Delivery completed for ${progress.clientId}`
+          : `Delivery ${progress.clientId}: ${progress.completedChunks}/${progress.totalChunks}`;
+        appendEvent(message);
+      });
+
+      connection.on("RemoteControlStatusUpdated", (status: RemoteControlSessionStatus) => {
+        setRemoteControlSessions((current) => ({
+          ...current,
+          [status.studentId]: {
+            sessionId: status.sessionId,
+            state: status.state,
+            message: status.message,
+            updatedAtMs: new Date(status.timestampUtc).getTime(),
+          },
+        }));
+        setRemoteControlRequestPending(false);
+        appendEvent(
+          `[${new Date(status.timestampUtc).toLocaleTimeString()}] REMOTE ${status.studentId}: ${status.state}${status.message ? ` - ${status.message}` : ""}`,
+        );
+      });
+
+      await connection.start();
+      setConnectionState("connected");
+
+      try {
+        const audit = await fetchJson<AuditItem[]>("/api/audit/latest?take=120");
+        const detectionEvents = await fetchJson<AlertItem[]>("/api/detection/events?take=200");
+        const policy = await fetchJson<DetectionPolicy>("/api/detection/settings");
+        if (!cancelled) {
+          setAiAlerts(detectionEvents);
+          setDetectionPolicy(policy);
+          setEvents((current) => [
+            ...audit.map((x) => `[${new Date(x.timestampUtc).toLocaleTimeString()}] ${x.action} (${x.actor}) ${x.details}`),
+            ...current,
+          ].slice(0, 400));
+        }
+      } catch (error) {
+        appendEvent(`Audit preload failed: ${describeError(error)}`);
+      }
+    };
+
+    setup().catch((error) => {
+      setConnectionState("disconnected");
+      appendEvent(`Connection failed: ${describeError(error)}`);
+    });
+
+    return () => {
+      cancelled = true;
+      teacherHubRef.current = null;
+      if (connection) {
+        connection.stop().catch(() => undefined);
+      }
+    };
+  }, []);
+
+  const sortedStudents = useMemo(() => {
+    const values = Object.values(students);
+    return values
+      .filter((student) => (!onlyOnline || student.isOnline))
+      .filter((student) => {
+        if (!search.trim()) {
+          return true;
+        }
+
+        const target = `${student.hostName} ${student.userName} ${student.localIpAddress ?? ""}`.toLowerCase();
+        return target.includes(search.trim().toLowerCase());
+      })
+      .sort((a, b) => {
+        if (a.isOnline !== b.isOnline) {
+          return a.isOnline ? -1 : 1;
+        }
+
+        return a.hostName.localeCompare(b.hostName);
+      });
+  }, [students, onlyOnline, search]);
+
+  const selectedStudent = selectedStudentId ? students[selectedStudentId] : undefined;
+  const selectedFrame = selectedStudentId ? frames[selectedStudentId] : undefined;
+
+  const onlineStudents = useMemo(
+    () => Object.values(students).filter((student) => student.isOnline),
+    [students],
+  );
+
+  useEffect(() => {
+    if (!selectedStudentId) {
+      setTeacherChatStatus(null);
+      setChatHistoryLoadingFor(null);
+      return;
+    }
+
+    let cancelled = false;
+    setChatHistoryLoadingFor(selectedStudentId);
+
+    fetchJson<StudentChatHistoryResponse>(`/api/students/${encodeURIComponent(selectedStudentId)}/chat?take=120`)
+      .then((response) => {
+        if (cancelled) {
+          return;
+        }
+
+        setChatByStudent((current) => ({
+          ...current,
+          [selectedStudentId]: [...(response.messages ?? [])].sort(
+            (a, b) => new Date(a.timestampUtc).getTime() - new Date(b.timestampUtc).getTime(),
+          ),
+        }));
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setTeacherChatStatus({ tone: "error", text: `Chat history error: ${describeError(error)}` });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setChatHistoryLoadingFor((current) => (current === selectedStudentId ? null : current));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedStudentId]);
+
+  const filteredAiAlerts = useMemo(() => {
+    const now = Date.now();
+    return aiAlerts.filter((alert) => {
+      if (aiFilterStudent !== "all" && alert.studentId !== aiFilterStudent) {
+        return false;
+      }
+
+      if (aiFilterClass !== "all" && alert.detectionClass !== aiFilterClass) {
+        return false;
+      }
+
+      if (aiFilterTime !== "all") {
+        const ageMs = now - new Date(alert.timestampUtc).getTime();
+        const limitMs =
+          aiFilterTime === "15m"
+            ? 15 * 60 * 1000
+            : aiFilterTime === "1h"
+              ? 60 * 60 * 1000
+              : 24 * 60 * 60 * 1000;
+        if (ageMs > limitMs) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [aiAlerts, aiFilterStudent, aiFilterClass, aiFilterTime]);
+
+  const generatePin = useMutation({
+    mutationFn: async (): Promise<PairPinResponse> => fetchJson<PairPinResponse>("/api/pairing/pin", { method: "POST" }),
+    onSuccess: (value) => {
+      setPin(value);
+      appendEvent(`New pairing PIN generated until ${new Date(value.expiresAtUtc).toLocaleTimeString()}`);
+    },
+    onError: (error) => appendEvent(`PIN error: ${describeError(error)}`),
+  });
+
+  const sendFile = useMutation({
+    mutationFn: async (targets: string[]) => {
+      if (!file) {
+        throw new Error("Choose a file first.");
+      }
+
+      if (targets.length === 0) {
+        throw new Error("No target devices selected.");
+      }
+
+      setUploadStatus("Preparing upload...");
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const fileHash = await sha256Hex(bytes);
+
+      const init = await fetchJson<UploadInitResponse>("/api/files/upload/init", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileSize: file.size,
+          sha256: fileHash,
+          chunkSize: CHUNK_SIZE,
+          uploadedBy: "teacher-ui",
+        }),
+      });
+
+      for (let index = 0; index < init.totalChunks; index++) {
+        const chunk = bytes.slice(index * CHUNK_SIZE, Math.min((index + 1) * CHUNK_SIZE, bytes.length));
+        const chunkHash = await sha256Hex(chunk);
+
+        const uploadChunk = await fetch(`/api/files/upload/${init.transferId}/chunk/${index}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/octet-stream",
+            "X-Chunk-Sha256": chunkHash,
+          },
+          body: chunk,
+        });
+
+        if (!uploadChunk.ok) {
+          throw new Error(`Chunk ${index + 1} upload failed`);
+        }
+
+        setUploadStatus(`Uploaded ${index + 1}/${init.totalChunks} chunks`);
+      }
+
+      const dispatchResponse = await fetch(`/api/files/${init.transferId}/dispatch`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transferId: init.transferId, targetClientIds: targets }),
+      });
+
+      if (!dispatchResponse.ok) {
+        throw new Error(await dispatchResponse.text());
+      }
+
+      setUploadStatus(`Dispatch created for ${targets.length} device(s)`);
+    },
+    onError: (error) => {
+      const message = describeError(error);
+      setUploadStatus(message);
+      appendEvent(`File transfer error: ${message}`);
+    },
+  });
+
+  const removeStudent = useMutation({
+    mutationFn: async (clientId: string) => {
+      const response = await fetch(`/api/students/${encodeURIComponent(clientId)}`, { method: "DELETE" });
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(body || "Failed to remove device.");
+      }
+    },
+    onSuccess: (_, clientId) => {
+      appendEvent(`Device removed: ${clientId}`);
+      setSelectedTargets((current) => {
+        const next = new Set(current);
+        next.delete(clientId);
+        return next;
+      });
+      setSelectedStudentId((current) => (current === clientId ? null : current));
+    },
+    onError: (error) => appendEvent(`Remove device error: ${describeError(error)}`),
+  });
+
+  const assignAccessibilityProfile = useMutation({
+    mutationFn: async ({ clientId, profile }: { clientId: string; profile: AccessibilityProfileUpdateDto }) => {
+      return fetchJson<{ ok: boolean; message?: string }>(`/api/students/${encodeURIComponent(clientId)}/accessibility-profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teacherDisplayName: "Teacher Console",
+          profile,
+        }),
+      });
+    },
+    onSuccess: (_, vars) => {
+      const message = `Accessibility profile sent to ${vars.clientId} (${vars.profile.activePreset})`;
+      setAccessibilityAssignStatus({ tone: "success", text: message });
+      appendEvent(message);
+    },
+    onError: (error) => {
+      const message = `Accessibility profile error: ${describeError(error)}`;
+      setAccessibilityAssignStatus({ tone: "error", text: message });
+      appendEvent(message);
+    },
+  });
+
+  const sendTeacherTts = useMutation({
+    mutationFn: async ({ clientId, draft }: { clientId: string; draft: TeacherTtsDraft }) => {
+      return fetchJson<{ ok: boolean; message?: string }>(`/api/students/${encodeURIComponent(clientId)}/tts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teacherDisplayName: "Teacher Console",
+          messageText: draft.messageText,
+          languageCode: draft.languageCode,
+          voiceName: draft.voiceName,
+          speakingRate: draft.speakingRate,
+          pitch: draft.pitch,
+        }),
+      });
+    },
+    onSuccess: (_, vars) => {
+      const message = `Teacher TTS sent to ${vars.clientId}`;
+      setTeacherTtsStatus({ tone: "success", text: message });
+      appendEvent(`${message}: ${vars.draft.messageText.slice(0, 60)}`);
+    },
+    onError: (error) => {
+      const message = `Teacher TTS error: ${describeError(error)}`;
+      setTeacherTtsStatus({ tone: "error", text: message });
+      appendEvent(message);
+    },
+  });
+
+  const sendTeacherChat = useMutation({
+    mutationFn: async ({ clientId, text }: { clientId: string; text: string }) => {
+      return fetchJson<{ ok: boolean; message?: string; chat?: TeacherStudentChatMessage }>(`/api/students/${encodeURIComponent(clientId)}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teacherDisplayName: "Teacher Console",
+          text,
+        }),
+      });
+    },
+    onSuccess: (result, vars) => {
+      if (result.chat) {
+        appendChatMessage(result.chat);
+      }
+
+      const message = `Teacher chat sent to ${vars.clientId}`;
+      setTeacherChatStatus({ tone: "success", text: message });
+      appendEvent(`${message}: ${vars.text.slice(0, 80)}`);
+    },
+    onError: (error) => {
+      const message = `Teacher chat error: ${describeError(error)}`;
+      setTeacherChatStatus({ tone: "error", text: message });
+      appendEvent(message);
+    },
+  });
+
+  const toggleTarget = (clientId: string) => {
+    setSelectedTargets((current) => {
+      const next = new Set(current);
+      if (next.has(clientId)) {
+        next.delete(clientId);
+      } else {
+        next.add(clientId);
+      }
+      return next;
+    });
+  };
+
+  const sendToAll = () => {
+    const targets = onlineStudents.map((student) => student.clientId);
+    sendFile.mutate(targets);
+  };
+
+  const sendToSelected = () => {
+    const targets = [...selectedTargets];
+    if (targets.length === 0 && selectedStudentId) {
+      sendFile.mutate([selectedStudentId]);
+      return;
+    }
+
+    sendFile.mutate(targets);
+  };
+
+  const openFileDialog = () => fileInputRef.current?.click();
+
+  const selectedTargetCount = selectedTargets.size || (selectedStudentId ? 1 : 0);
+  const canOpenRemoteView = Boolean(selectedStudent);
+  const selectedChatMessages = selectedStudentId ? (chatByStudent[selectedStudentId] ?? []) : [];
+  const selectedRemoteControlSession = selectedStudentId ? remoteControlSessions[selectedStudentId] : undefined;
+  const isRemoteControlApproved = selectedRemoteControlSession?.state === "Approved";
+  const isRemoteControlPending =
+    remoteControlRequestPending || selectedRemoteControlSession?.state === "PendingApproval";
+
+  const requestRemoteControlSession = async () => {
+    if (!selectedStudentId || !teacherHubRef.current) {
+      return;
+    }
+
+    setRemoteControlRequestPending(true);
+    try {
+      const result = await teacherHubRef.current.invoke<RemoteControlSessionStartResult>(
+        "RequestRemoteControlSession",
+        selectedStudentId,
+      );
+      if (!result.accepted || !result.sessionId) {
+        appendEvent(`Remote control request rejected: ${result.message}`);
+        setRemoteControlRequestPending(false);
+        return;
+      }
+
+      setRemoteControlSessions((current) => ({
+        ...current,
+        [selectedStudentId]: {
+          sessionId: result.sessionId!,
+          state: "PendingApproval",
+          message: result.message,
+          updatedAtMs: Date.now(),
+        },
+      }));
+      appendEvent(`Remote control requested for ${selectedStudentId}`);
+    } catch (error) {
+      setRemoteControlRequestPending(false);
+      appendEvent(`Remote control request failed: ${describeError(error)}`);
+    }
+  };
+
+  const stopRemoteControlSession = async () => {
+    if (!selectedStudentId || !teacherHubRef.current) {
+      return;
+    }
+
+    try {
+      await teacherHubRef.current.invoke("StopRemoteControlSession", selectedStudentId);
+      appendEvent(`Remote control stop requested for ${selectedStudentId}`);
+    } catch (error) {
+      appendEvent(`Remote control stop failed: ${describeError(error)}`);
+    }
+  };
+
+  const getRemotePoint = (clientX: number, clientY: number) => {
+    const viewport = remoteViewportRef.current;
+    if (!viewport || !selectedFrame || selectedFrame.width <= 0 || selectedFrame.height <= 0) {
+      return null;
+    }
+
+    const rect = viewport.getBoundingClientRect();
+    if (rect.width <= 2 || rect.height <= 2) {
+      return null;
+    }
+
+    const frameAspect = selectedFrame.width / selectedFrame.height;
+    const boxAspect = rect.width / rect.height;
+
+    let renderWidth = rect.width;
+    let renderHeight = rect.height;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    if (boxAspect > frameAspect) {
+      renderHeight = rect.height;
+      renderWidth = renderHeight * frameAspect;
+      offsetX = (rect.width - renderWidth) / 2;
+    } else {
+      renderWidth = rect.width;
+      renderHeight = renderWidth / frameAspect;
+      offsetY = (rect.height - renderHeight) / 2;
+    }
+
+    const x = (clientX - (rect.left + offsetX)) / Math.max(1, renderWidth);
+    const y = (clientY - (rect.top + offsetY)) / Math.max(1, renderHeight);
+    if (x < 0 || y < 0 || x > 1 || y > 1) {
+      return null;
+    }
+
+    return { x, y };
+  };
+
+  const sendRemoteControlInput = async (command: Omit<RemoteControlInputCommand, "clientId" | "sessionId">) => {
+    if (!teacherHubRef.current || !selectedStudentId || !selectedRemoteControlSession || !isRemoteControlApproved) {
+      return;
+    }
+
+    const payload: RemoteControlInputCommand = {
+      clientId: selectedStudentId,
+      sessionId: selectedRemoteControlSession.sessionId,
+      ...command,
+    };
+
+    try {
+      await teacherHubRef.current.invoke("SendRemoteControlInput", payload);
+    } catch (error) {
+      appendEvent(`Remote input send failed: ${describeError(error)}`);
+    }
+  };
+
+  const mapRemoteMouseButton = (button: number): "Left" | "Right" | "Middle" =>
+    button === 2 ? "Right" : button === 1 ? "Middle" : "Left";
+
+  const requestBrowserNotificationPermission = async () => {
+    if (!("Notification" in window)) {
+      appendEvent("Browser notifications are not available.");
+      return;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      appendEvent(`Browser notification permission: ${permission}`);
+    } catch (error) {
+      appendEvent(`Notification permission request failed: ${describeError(error)}`);
+    }
+  };
+
+  useEffect(() => {
+    if (!isRemoteViewOpen) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      if (isRemoteControlApproved) {
+        if (event.ctrlKey && event.shiftKey) {
+          event.preventDefault();
+          setIsRemoteViewOpen(false);
+        }
+
+        return;
+      }
+
+      setIsRemoteViewOpen(false);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isRemoteViewOpen, isRemoteControlApproved]);
+
+  useEffect(() => {
+    if (!isRemoteViewOpen || !isRemoteControlApproved) {
+      remotePressedKeysRef.current.clear();
+      return;
+    }
+
+    const shouldIgnoreKey = (event: KeyboardEvent) =>
+      event.isComposing || event.key === "Process" || event.key === "Dead";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (shouldIgnoreKey(event)) {
+        return;
+      }
+
+      if (event.ctrlKey && event.shiftKey && event.key === "Escape") {
+        event.preventDefault();
+        return;
+      }
+
+      event.preventDefault();
+      remoteViewportRef.current?.focus();
+      remotePressedKeysRef.current.add(event.key);
+
+      void sendRemoteControlInput({
+        kind: "KeyDown",
+        key: event.key,
+        ctrl: event.ctrlKey,
+        alt: event.altKey,
+        shift: event.shiftKey,
+      });
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (shouldIgnoreKey(event)) {
+        return;
+      }
+
+      event.preventDefault();
+      remotePressedKeysRef.current.delete(event.key);
+
+      void sendRemoteControlInput({
+        kind: "KeyUp",
+        key: event.key,
+        ctrl: event.ctrlKey,
+        alt: event.altKey,
+        shift: event.shiftKey,
+      });
+    };
+
+    window.addEventListener("keydown", handleKeyDown, true);
+    window.addEventListener("keyup", handleKeyUp, true);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+      window.removeEventListener("keyup", handleKeyUp, true);
+      remotePressedKeysRef.current.clear();
+    };
+  }, [isRemoteViewOpen, isRemoteControlApproved, selectedStudentId, selectedRemoteControlSession?.sessionId]);
+
+  useEffect(() => {
+    if (!isRemoteViewOpen || !isRemoteControlApproved) {
+      return;
+    }
+
+    remoteViewportRef.current?.focus();
+  }, [isRemoteViewOpen, isRemoteControlApproved, selectedStudentId, selectedRemoteControlSession?.sessionId]);
+
+  return (
+    <div className="h-screen min-w-0 overflow-hidden px-2 py-2 sm:px-3 sm:py-3 lg:px-5 lg:py-4">
+      <div className="mx-auto flex h-full max-w-[1880px] min-w-0 flex-col gap-3">
+        <header className="px-1 py-1">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-0.5">
+              <h1 className="text-xl font-semibold tracking-tight lg:text-2xl">{t("appTitle")}</h1>
+              <p className="text-xs text-muted-foreground">{t("headerHint")}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="hidden items-center gap-1 rounded-md border border-border bg-card/50 p-0.5 md:flex">
+                <Button
+                  variant={activeView === "monitoring" ? "default" : "ghost"}
+                  size="sm"
+                  className="h-7 px-2 text-[11px]"
+                  onClick={() => setActiveView("monitoring")}
+                >
+                  {t("monitoringTitle")}
+                </Button>
+                <Button
+                  variant={activeView === "detection" ? "default" : "ghost"}
+                  size="sm"
+                  className="h-7 px-2 text-[11px]"
+                  onClick={() => setActiveView("detection")}
+                >
+                  {t("aiDetectionTab")}
+                </Button>
+                <Button
+                  variant={activeView === "settings" ? "default" : "ghost"}
+                  size="sm"
+                  className="h-7 px-2 text-[11px]"
+                  onClick={() => setActiveView("settings")}
+                >
+                  {t("settingsTab")}
+                </Button>
+              </div>
+              <Badge variant={connectionState === "connected" ? "success" : "warning"} className="px-2 py-0.5 text-[10px]">
+                {connectionState === "connected" ? t("connected") : t("disconnected")}
+              </Badge>
+              <div className="hidden items-center gap-1 rounded-md bg-card/40 p-0.5 sm:flex">
+                {(["ru", "en", "kz"] as UiLanguage[]).map((code) => (
+                  <Button
+                    key={code}
+                    variant={lang === code ? "default" : "ghost"}
+                    size="sm"
+                    className="h-6 px-1.5 text-[10px] uppercase"
+                    onClick={() => setLang(code)}
+                  >
+                    {code}
+                  </Button>
+                ))}
+              </div>
+              <ThemeToggle theme={theme} onToggle={() => setTheme((current) => (current === "dark" ? "light" : "dark"))} />
+            </div>
+          </div>
+        </header>
+
+        {activeView === "monitoring" ? (
+        <div className="mt-1 grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_290px] 2xl:grid-cols-[minmax(0,1fr)_308px]">
+          <Card className="min-h-0 overflow-hidden">
+            <CardContent className="grid h-full min-h-0 gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="flex min-h-0 flex-col gap-3">
+                <section className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-background/75 p-3">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-medium">{t("focusedView")}</p>
+                    {selectedStudent ? (
+                      <div className="flex items-center gap-2">
+                        <Badge variant={selectedStudent.isOnline ? "success" : "outline"}>{selectedStudent.hostName}</Badge>
+                        <span className="text-xs text-muted-foreground">{selectedStudent.localIpAddress ?? t("statusNoIp")}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                  <p className="mb-2 text-xs text-muted-foreground">{t("focusedHint")}</p>
+                  <div className="min-h-[360px] flex-1 overflow-hidden rounded-lg border border-border bg-muted/35 xl:min-h-[420px]">
+                    {selectedFrame ? (
+                      <img src={selectedFrame.url} alt={t("streamImageAlt")} className="h-full w-full object-contain" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                        {t("selectStudentStream")}
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                <section className="rounded-xl border border-border bg-background/75 p-3">
+                  <div className="relative overflow-hidden rounded-lg border border-border/80 bg-card/55 p-3">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(93,141,255,0.12),transparent_58%)]" />
+                    <div className="relative">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{t("controlPanel")}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">{t("controlHint")}</p>
+                        </div>
+                        {selectedStudent ? (
+                          <Badge variant={selectedStudent.isOnline ? "success" : "outline"}>{selectedStudent.hostName}</Badge>
+                        ) : (
+                          <Badge variant="outline">{t("selectStudentStream")}</Badge>
+                        )}
+                      </div>
+
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={!canOpenRemoteView}
+                          onClick={() => setIsRemoteViewOpen(true)}
+                          className={cn(
+                            "h-auto min-h-[58px] justify-start gap-3 rounded-lg px-3 py-2 text-left",
+                            "border-primary/25 bg-primary/5 hover:border-primary/40 hover:bg-primary/10",
+                            "disabled:border-border/80 disabled:bg-background/50",
+                          )}
+                        >
+                          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-primary">
+                            <IconMonitor className="h-4 w-4" />
+                          </span>
+                          <span className="flex min-w-0 flex-col items-start leading-tight">
+                            <span className="truncate text-sm font-semibold">{t("manageComputer")}</span>
+                            <span className="truncate text-[11px] font-normal text-muted-foreground">
+                              {t("manageComputerHint")}
+                            </span>
+                          </span>
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsSendModalOpen(true)}
+                          className="h-auto min-h-[58px] justify-start gap-3 rounded-lg border-border/80 bg-background/60 px-3 py-2 text-left hover:bg-accent/35"
+                        >
+                          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border/80 bg-muted/35 text-foreground">
+                            <IconUpload className="h-4 w-4" />
+                          </span>
+                          <span className="flex min-w-0 flex-col items-start leading-tight">
+                            <span className="truncate text-sm font-semibold">{t("sendFilesToStudents")}</span>
+                            <span className="truncate text-[11px] font-normal text-muted-foreground">
+                              {interpolate(t("selectedTargetsCount"), { count: String(selectedTargetCount) })}
+                            </span>
+                          </span>
+                        </Button>
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsThumbnailsExpanded(true)}
+                          className="h-8 rounded-full border border-border/80 bg-background/50 px-3 text-xs"
+                        >
+                          <IconGrid className="mr-1.5 h-3.5 w-3.5" />
+                          {t("expandThumbnails")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsLogsOpen(true)}
+                          className="h-8 rounded-full border border-border/80 bg-background/50 px-3 text-xs"
+                        >
+                          <IconList className="mr-1.5 h-3.5 w-3.5" />
+                          {t("alertsAudit")}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">{uploadStatus || t("noActiveTransfers")}</p>
+                </section>
+
+                <FocusedChatCard
+                  selectedStudent={selectedStudent}
+                  messages={selectedChatMessages}
+                  isLoadingHistory={chatHistoryLoadingFor === selectedStudentId}
+                  isSending={sendTeacherChat.isPending}
+                  statusText={teacherChatStatus?.text}
+                  statusTone={teacherChatStatus?.tone}
+                  onSend={(text) => {
+                    if (!selectedStudentId) {
+                      setTeacherChatStatus({ tone: "error", text: "Select a device first." });
+                      return;
+                    }
+
+                    setTeacherChatStatus({ tone: "neutral", text: `Sending chat to ${selectedStudentId}...` });
+                    sendTeacherChat.mutate({ clientId: selectedStudentId, text });
+                  }}
+                />
+              </div>
+
+              <aside className="flex min-h-0 flex-col rounded-xl border border-border bg-background/75 p-3">
+                <div className="mb-2 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium">{t("students")}</p>
+                      <Badge variant="secondary">{sortedStudents.length}</Badge>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => setIsThumbnailsExpanded(true)}>
+                      {t("expandThumbnails")}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t("studentsHint")}</p>
+                  <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t("searchPlaceholder")} />
+                  <div className="flex gap-2">
+                    <Button size="sm" variant={onlyOnline ? "default" : "outline"} onClick={() => setOnlyOnline(true)}>
+                      {t("online")}
+                    </Button>
+                    <Button size="sm" variant={!onlyOnline ? "default" : "outline"} onClick={() => setOnlyOnline(false)}>
+                      {t("all")}
+                    </Button>
+                  </div>
+                </div>
+
+                <ScrollArea.Root className="min-h-0 flex-1 overflow-hidden">
+                  <ScrollArea.Viewport className="h-full pr-2">
+                    <div className="grid grid-cols-1 gap-2">
+                      {sortedStudents.map((student) => {
+                        const frame = frames[student.clientId];
+                        const isFocused = selectedStudentId === student.clientId;
+                        const isTarget = selectedTargets.has(student.clientId);
+
+                        return (
+                          <button
+                            key={student.clientId}
+                            type="button"
+                            onClick={() => setSelectedStudentId(student.clientId)}
+                            className={cn(
+                              "rounded-md border p-2 text-left transition hover:bg-accent/60",
+                              isFocused ? "border-primary bg-primary/10" : "border-border",
+                            )}
+                          >
+                            <div className="mb-1.5 h-20 overflow-hidden rounded border border-border bg-muted/40">
+                              {frame ? (
+                                <img src={frame.url} alt={student.hostName} className="h-full w-full object-cover" />
+                              ) : (
+                                <div className="flex h-full items-center justify-center text-xs text-muted-foreground">{t("noFrame")}</div>
+                              )}
+                            </div>
+                            <div className="mb-1 flex items-center justify-between gap-1">
+                              <div className="flex min-w-0 items-center gap-1">
+                                <p className="truncate text-xs font-medium">{student.hostName}</p>
+                                {(handRaisedUntil[student.clientId] ?? 0) > uiClock ? (
+                                  <Badge variant="warning" className="h-4 px-1 text-[9px]">
+                                    {t("handRaised")}
+                                  </Badge>
+                                ) : null}
+                              </div>
+                              <button
+                                type="button"
+                                className="inline-flex h-6 w-6 items-center justify-center rounded border border-destructive/40 text-xs text-destructive transition hover:bg-destructive/10"
+                                title={t("remove")}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  if (!confirm(interpolate(t("removeConfirm"), { name: student.hostName }))) {
+                                    return;
+                                  }
+
+                                  removeStudent.mutate(student.clientId);
+                                }}
+                                disabled={removeStudent.isPending}
+                              >
+                                ×
+                              </button>
+                            </div>
+                            <p className="truncate text-[11px] text-muted-foreground">{student.userName}</p>
+                            <p className="truncate text-[11px] text-muted-foreground">
+                              {frame ? new Date(frame.capturedAtUtc).toLocaleTimeString() : t("noUpdates")}
+                            </p>
+                            <p className="truncate text-[11px] text-muted-foreground">
+                              {t("studentAlertsCount")}: {student.alertCount ?? 0}
+                            </p>
+                            {student.lastDetectionAtUtc ? (
+                              <p className="truncate text-[11px] text-muted-foreground">
+                                {t("studentLastDetection")}: {new Date(student.lastDetectionAtUtc).toLocaleTimeString()}{" "}
+                                {student.lastDetectionClass ? `(${localizeDetectionClass(student.lastDetectionClass)})` : ""}
+                              </p>
+                            ) : null}
+                            <div className="mt-1.5 flex items-center justify-between gap-1">
+                              <Badge variant={student.isOnline ? "success" : "outline"} className="text-[10px]">
+                                {student.isOnline ? t("online") : t("offline")}
+                              </Badge>
+                              <label className="inline-flex items-center gap-1 rounded border border-border px-1.5 py-0.5 text-[11px] text-muted-foreground">
+                                <input
+                                  type="checkbox"
+                                  checked={isTarget}
+                                  onChange={(event) => {
+                                    event.stopPropagation();
+                                    toggleTarget(student.clientId);
+                                  }}
+                                />
+                                {t("target")}
+                              </label>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {sortedStudents.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">{t("noMatches")}</p> : null}
+                  </ScrollArea.Viewport>
+                  <ScrollArea.Scrollbar className="w-2" orientation="vertical">
+                    <ScrollArea.Thumb className="rounded bg-muted-foreground/30" />
+                  </ScrollArea.Scrollbar>
+                </ScrollArea.Root>
+              </aside>
+            </CardContent>
+          </Card>
+
+          <Card className="min-h-0 overflow-hidden">
+            <CardHeader className="pb-2">
+              <CardTitle>{t("controlPanel")}</CardTitle>
+              <CardDescription>{t("logsHint")}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex h-full min-h-0 flex-col gap-3 pb-3">
+              <div className="grid grid-cols-1 gap-2">
+                <div className="flex items-center justify-between rounded-md border border-border/80 bg-muted/25 px-2.5 py-1.5">
+                  <p className="text-[11px] text-muted-foreground">{t("knownDevices")}</p>
+                  <p className="text-base font-semibold leading-none">{Object.keys(students).length}</p>
+                </div>
+                <div className="flex items-center justify-between rounded-md border border-border/80 bg-muted/25 px-2.5 py-1.5">
+                  <p className="text-[11px] text-muted-foreground">{t("studentsOnline")}</p>
+                  <p className="text-base font-semibold leading-none">{onlineStudents.length}</p>
+                </div>
+                <div className="flex items-center justify-between rounded-md border border-border/80 bg-muted/25 px-2.5 py-1.5">
+                  <p className="text-[11px] text-muted-foreground">{t("selectedTargets")}</p>
+                  <p className="text-base font-semibold leading-none">{selectedTargetCount}</p>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-border bg-background/70 p-3">
+                <p className="mb-2 text-xs uppercase tracking-[0.11em] text-muted-foreground">{t("pairingPin")}</p>
+                <p className="mb-2 text-xs text-muted-foreground">{t("pairingHint")}</p>
+                <div className="space-y-2">
+                  <Button className="w-full" size="sm" onClick={() => generatePin.mutate()} disabled={generatePin.isPending}>
+                    {t("generatePin")}
+                  </Button>
+                  <div className="rounded-md border border-border bg-muted/40 px-2 py-2 text-center text-xs">
+                    <p className="font-semibold tracking-[0.18em]">{pin?.pinCode ?? "------"}</p>
+                    <p className="mt-1 text-muted-foreground">
+                      {pin ? `${t("expiresWord")} ${new Date(pin.expiresAtUtc).toLocaleTimeString()}` : " "}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <AccessibilityAssignmentCard
+                lang={lang}
+                selectedStudent={selectedStudent}
+                isPending={assignAccessibilityProfile.isPending}
+                statusText={accessibilityAssignStatus?.text}
+                statusTone={accessibilityAssignStatus?.tone}
+                onAssign={(profile) => {
+                  if (!selectedStudentId) {
+                    setAccessibilityAssignStatus({ tone: "error", text: "Select a device first." });
+                    return;
+                  }
+
+                  setAccessibilityAssignStatus({ tone: "neutral", text: `Dispatching ${profile.activePreset} profile...` });
+                  assignAccessibilityProfile.mutate({ clientId: selectedStudentId, profile });
+                }}
+              />
+
+              <TeacherTtsCard
+                lang={lang}
+                selectedStudent={selectedStudent}
+                isPending={sendTeacherTts.isPending}
+                statusText={teacherTtsStatus?.text}
+                statusTone={teacherTtsStatus?.tone}
+                onSend={(draft) => {
+                  if (!selectedStudentId) {
+                    setTeacherTtsStatus({ tone: "error", text: "Select a device first." });
+                    return;
+                  }
+
+                  setTeacherTtsStatus({ tone: "neutral", text: `Dispatching TTS to ${selectedStudentId}...` });
+                  sendTeacherTts.mutate({ clientId: selectedStudentId, draft });
+                }}
+              />
+
+              <div className="mt-auto space-y-2">
+                <Button
+                  className="h-auto w-auto self-start p-0 text-xs font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                  variant="ghost"
+                  onClick={() => setIsLogsOpen(true)}
+                >
+                  {t("alertsAudit")}
+                </Button>
+                <p className="line-clamp-3 text-xs text-muted-foreground">
+                  {events.length === 0 ? t("noEvents") : `${t("lastEventPrefix")}: ${events[0]}`}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        ) : activeView === "detection" ? (
+          <Card className="mt-1 min-h-0 flex-1 overflow-hidden">
+            <CardHeader className="pb-2">
+              <CardTitle>{t("detectionTitle")}</CardTitle>
+              <CardDescription>{t("detectionDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid min-h-0 h-full gap-3 lg:grid-cols-[340px_minmax(0,1fr)]">
+              <div className="min-h-0 space-y-3 overflow-y-auto pr-1">
+                <div className="rounded-lg border border-border bg-background/70 p-3 space-y-2">
+                  <p className="text-xs uppercase tracking-[0.11em] text-muted-foreground">{t("detectionFilters")}</p>
+                  <select
+                    className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                    value={aiFilterStudent}
+                    onChange={(event) => setAiFilterStudent(event.target.value)}
+                  >
+                    <option value="all">{t("detectionAllDevices")}</option>
+                    {Object.values(students).map((student) => (
+                      <option key={student.clientId} value={student.clientId}>{student.hostName}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                    value={aiFilterClass}
+                    onChange={(event) => setAiFilterClass(event.target.value)}
+                  >
+                    <option value="all">{t("detectionAllClasses")}</option>
+                    {["ChatGpt", "Claude", "Gemini", "Copilot", "Perplexity", "DeepSeek", "Poe", "Grok", "Qwen", "Mistral", "MetaAi", "UnknownAi"].map((value) => (
+                      <option key={value} value={value}>{localizeDetectionClass(value)}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                    value={aiFilterTime}
+                    onChange={(event) => setAiFilterTime(event.target.value as "all" | "15m" | "1h" | "24h")}
+                  >
+                    <option value="all">{t("detectionAnyTime")}</option>
+                    <option value="15m">{t("detectionLast15m")}</option>
+                    <option value="1h">{t("detectionLast1h")}</option>
+                    <option value="24h">{t("detectionLast24h")}</option>
+                  </select>
+                </div>
+
+                <div className="rounded-lg border border-border bg-background/70 p-3 space-y-2">
+                  <p className="text-xs uppercase tracking-[0.11em] text-muted-foreground">{t("detectionPolicy")}</p>
+                  <p className="text-xs text-muted-foreground">{t("detectionProductionLocked")}</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="rounded-md border border-border/80 bg-muted/25 px-2 py-1.5">
+                      <p className="text-muted-foreground">{t("detectionMetadataThreshold")}</p>
+                      <p className="font-semibold">{(detectionPolicy?.metadataThreshold ?? 0.64).toFixed(2)}</p>
+                    </div>
+                    <div className="rounded-md border border-border/80 bg-muted/25 px-2 py-1.5">
+                      <p className="text-muted-foreground">{t("detectionMlThreshold")}</p>
+                      <p className="font-semibold">{(detectionPolicy?.mlThreshold ?? 0.72).toFixed(2)}</p>
+                    </div>
+                    <div className="rounded-md border border-border/80 bg-muted/25 px-2 py-1.5">
+                      <p className="text-muted-foreground">{t("detectionCooldownSeconds")}</p>
+                      <p className="font-semibold">{detectionPolicy?.cooldownSeconds ?? 10}s</p>
+                    </div>
+                    <div className="rounded-md border border-border/80 bg-muted/25 px-2 py-1.5">
+                      <p className="text-muted-foreground">{t("detectionEnable")}</p>
+                      <p className="font-semibold">{(detectionPolicy?.enabled ?? true) ? t("enabled") : t("disabled")}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="min-h-0 rounded-lg border border-border bg-background/70 p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-sm font-medium">{t("detectionLiveAlerts")}</p>
+                  <Badge variant="secondary">{filteredAiAlerts.length}</Badge>
+                </div>
+                <ScrollArea.Root className="h-full overflow-hidden">
+                  <ScrollArea.Viewport className="h-full pr-2">
+                    <div className="space-y-2">
+                      {filteredAiAlerts.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">{t("detectionNoEvents")}</p>
+                      ) : null}
+                      {filteredAiAlerts.map((alert) => (
+                        <div key={alert.eventId} className="rounded-md border border-border bg-card/70 p-2 text-xs">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-semibold">{students[alert.studentId]?.hostName ?? alert.studentDisplayName}</span>
+                            <Badge variant="warning">{localizeDetectionClass(alert.detectionClass)}</Badge>
+                          </div>
+                          <p className="mt-1 text-muted-foreground">
+                            {new Date(alert.timestampUtc).toLocaleString()} | {t("detectionConfidence")}: {alert.confidence.toFixed(2)} | {t("detectionSource")}: {localizeStageSource(alert.stageSource)}
+                          </p>
+                          <p className="mt-1">{alert.reason}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea.Viewport>
+                  <ScrollArea.Scrollbar className="w-2" orientation="vertical">
+                    <ScrollArea.Thumb className="rounded bg-muted-foreground/30" />
+                  </ScrollArea.Scrollbar>
+                </ScrollArea.Root>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="mt-1 min-h-0 flex-1 overflow-hidden">
+            <CardHeader className="pb-2">
+              <CardTitle>{t("settingsTitle")}</CardTitle>
+              <CardDescription>{t("settingsDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="min-h-0 h-full">
+              <div className="rounded-lg border border-border bg-background/70 p-3 space-y-3">
+                <label className="flex items-start gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={aiWarningsEnabled}
+                    onChange={(event) => setAiWarningsEnabled(event.target.checked)}
+                  />
+                  <span>
+                    <span className="font-medium">{t("settingsAiWarningsEnabled")}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{t("settingsAiWarningsHint")}</span>
+                  </span>
+                </label>
+
+                <label className="flex items-start gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={desktopNotificationsEnabled}
+                    onChange={(event) => setDesktopNotificationsEnabled(event.target.checked)}
+                  />
+                  <span>
+                    <span className="font-medium">{t("settingsDesktopNotifications")}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{t("settingsDesktopNotificationsHint")}</span>
+                  </span>
+                </label>
+
+                {desktopNotificationsEnabled && "Notification" in window && Notification.permission !== "granted" ? (
+                  <Button size="sm" variant="secondary" onClick={requestBrowserNotificationPermission}>
+                    {t("settingsRequestPermission")}
+                  </Button>
+                ) : null}
+
+                <label className="flex items-start gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={soundNotificationsEnabled}
+                    onChange={(event) => setSoundNotificationsEnabled(event.target.checked)}
+                  />
+                  <span>
+                    <span className="font-medium">{t("settingsSoundEnabled")}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{t("settingsSoundEnabledHint")}</span>
+                  </span>
+                </label>
+
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{t("settingsVolume")}</span>
+                    <span className="rounded border border-border/70 bg-muted/25 px-1.5 py-0.5 text-xs font-semibold">{notificationVolume}%</span>
+                  </div>
+                  <input
+                    className="w-full accent-primary"
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={notificationVolume}
+                    onChange={(event) => setNotificationVolume(Math.min(100, Math.max(0, Number(event.target.value))))}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {toasts.length > 0 ? (
+        <div className="pointer-events-none fixed left-1/2 top-4 z-[70] flex w-[min(92vw,560px)] -translate-x-1/2 flex-col gap-2">
+          {toasts.map((toast) => {
+            const isHandRaise = toast.kind === "handRaise";
+            const title = isHandRaise ? t("toastSignalTitle") : t("toastAlertTitle");
+            const message = isHandRaise
+              ? interpolate(t("toastHandRaise"), { name: toast.studentName })
+              : interpolate(t("toastAiDetected"), {
+                  name: toast.studentName,
+                  className: localizeDetectionClass(toast.detectionClass ?? "UnknownAi"),
+                  confidence: (toast.confidence ?? 0).toFixed(2),
+                });
+
+            return (
+              <div
+                key={toast.id}
+                className={cn(
+                  "pointer-events-auto rounded-lg border px-3 py-2 shadow-lg backdrop-blur",
+                  isHandRaise
+                    ? "border-amber-500/50 bg-amber-500/12 text-foreground"
+                    : "border-rose-500/45 bg-rose-500/12 text-foreground",
+                )}
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] opacity-90">{title}</p>
+                <p className="mt-0.5 text-sm">{message}</p>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {isRemoteViewOpen ? (
+        <div className="fixed inset-0 z-[60] flex flex-col bg-background/95 backdrop-blur-sm">
+          <div className="border-b border-border/80 bg-card/70 px-3 py-2 sm:px-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-semibold">{t("remoteViewTitle")}</p>
+                  {selectedStudent ? (
+                    <Badge variant={selectedStudent.isOnline ? "success" : "outline"}>{selectedStudent.hostName}</Badge>
+                  ) : null}
+                </div>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">{t("remoteViewDesc")}</p>
+              </div>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setIsRemoteViewOpen(false)}>
+                <IconClose className="h-3.5 w-3.5" />
+                {t("close")}
+              </Button>
+            </div>
+          </div>
+
+          <div className="min-h-0 flex-1 p-3 sm:p-4">
+            <div className="flex h-full min-h-0 flex-col gap-3">
+              <div className="rounded-lg border border-border/80 bg-card/55 px-3 py-2 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-primary">
+                      {t("manageComputer")}
+                    </span>
+                    <span>{t("remoteViewPrepHint")}</span>
+                    {selectedRemoteControlSession ? (
+                      <span
+                        className={cn(
+                          "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em]",
+                          selectedRemoteControlSession.state === "Approved"
+                            ? "border-emerald-500/35 bg-emerald-500/10 text-emerald-400"
+                            : selectedRemoteControlSession.state === "PendingApproval"
+                              ? "border-amber-500/35 bg-amber-500/10 text-amber-400"
+                              : selectedRemoteControlSession.state === "Rejected" || selectedRemoteControlSession.state === "Error"
+                                ? "border-rose-500/35 bg-rose-500/10 text-rose-400"
+                                : "border-border/80 bg-background/50 text-muted-foreground",
+                        )}
+                      >
+                        {selectedRemoteControlSession.state}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant={isRemoteControlApproved ? "secondary" : "default"}
+                      disabled={!selectedStudent || !selectedStudent.isOnline || isRemoteControlPending}
+                      onClick={() => void requestRemoteControlSession()}
+                      className="gap-1.5"
+                    >
+                      <IconMonitor className="h-3.5 w-3.5" />
+                      {isRemoteControlPending ? t("remoteControlWaiting") : t("remoteControlRequest")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!selectedRemoteControlSession || (selectedRemoteControlSession.state !== "Approved" && selectedRemoteControlSession.state !== "PendingApproval")}
+                      onClick={() => void stopRemoteControlSession()}
+                    >
+                      {t("remoteControlStop")}
+                    </Button>
+                  </div>
+                </div>
+                {selectedRemoteControlSession?.message ? (
+                  <p className="mt-1 text-[11px] text-muted-foreground">{selectedRemoteControlSession.message}</p>
+                ) : null}
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-muted/25">
+                {selectedFrame ? (
+                  <div
+                    ref={remoteViewportRef}
+                    tabIndex={0}
+                    className={cn(
+                      "relative h-full w-full bg-black/80 outline-none",
+                      isRemoteControlApproved ? "cursor-crosshair" : "cursor-default",
+                    )}
+                    onContextMenu={(event) => event.preventDefault()}
+                    onPointerMove={(event) => {
+                      if (!isRemoteControlApproved) {
+                        return;
+                      }
+
+                      const now = performance.now();
+                      if (now - remoteLastPointerSendAtRef.current < 24) {
+                        return;
+                      }
+
+                      const point = getRemotePoint(event.clientX, event.clientY);
+                      if (!point) {
+                        return;
+                      }
+
+                      remoteLastPointerSendAtRef.current = now;
+                      void sendRemoteControlInput({
+                        kind: "MouseMove",
+                        x: point.x,
+                        y: point.y,
+                      });
+                    }}
+                    onPointerDown={(event) => {
+                      if (!isRemoteControlApproved) {
+                        return;
+                      }
+
+                      try {
+                        event.currentTarget.setPointerCapture(event.pointerId);
+                      } catch {
+                        // Some browsers may reject pointer capture in edge cases.
+                      }
+
+                      remoteViewportRef.current?.focus();
+                      const point = getRemotePoint(event.clientX, event.clientY);
+                      if (!point) {
+                        return;
+                      }
+
+                      event.preventDefault();
+                      void sendRemoteControlInput({
+                        kind: "MouseDown",
+                        x: point.x,
+                        y: point.y,
+                        button: mapRemoteMouseButton(event.button),
+                      });
+                    }}
+                    onPointerUp={(event) => {
+                      if (!isRemoteControlApproved) {
+                        return;
+                      }
+
+                      try {
+                        event.currentTarget.releasePointerCapture(event.pointerId);
+                      } catch {
+                        // Ignore when capture was not active.
+                      }
+
+                      const point = getRemotePoint(event.clientX, event.clientY);
+                      if (!point) {
+                        return;
+                      }
+
+                      event.preventDefault();
+                      void sendRemoteControlInput({
+                        kind: "MouseUp",
+                        x: point.x,
+                        y: point.y,
+                        button: mapRemoteMouseButton(event.button),
+                      });
+                    }}
+                    onWheel={(event) => {
+                      if (!isRemoteControlApproved) {
+                        return;
+                      }
+
+                      const point = getRemotePoint(event.clientX, event.clientY);
+                      if (!point) {
+                        return;
+                      }
+
+                      event.preventDefault();
+                      void sendRemoteControlInput({
+                        kind: "MouseWheel",
+                        x: point.x,
+                        y: point.y,
+                        wheelDelta: Math.round(-event.deltaY),
+                      });
+                    }}
+                  >
+                    <img src={selectedFrame.url} alt={t("streamImageAlt")} className="h-full w-full object-contain" />
+                    {isRemoteControlApproved ? (
+                      <div className="pointer-events-none absolute right-3 top-3 rounded-full border border-emerald-400/30 bg-emerald-400/12 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-emerald-300">
+                        {t("remoteControlActiveHint")}
+                      </div>
+                    ) : null}
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-white/90">
+                        {selectedStudent ? <span>{selectedStudent.hostName}</span> : null}
+                        <span className="opacity-70">•</span>
+                        <span>{new Date(selectedFrame.capturedAtUtc).toLocaleTimeString()}</span>
+                        {selectedStudent?.localIpAddress ? (
+                          <>
+                            <span className="opacity-70">•</span>
+                            <span>{selectedStudent.localIpAddress}</span>
+                          </>
+                        ) : null}
+                      </div>
+                      <div className="mt-1 text-[11px] text-white/70">
+                        {isRemoteControlApproved ? t("remoteControlInputHint") : t("remoteControlRequestHint")}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex h-full items-center justify-center p-6">
+                    <div className="max-w-md rounded-xl border border-border/80 bg-background/70 p-5 text-center">
+                      <div className="mx-auto mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-muted/40 text-muted-foreground">
+                        <IconExpand className="h-5 w-5" />
+                      </div>
+                      <p className="text-sm font-medium">{selectedStudent ? t("remoteViewNoFrame") : t("selectStudentStream")}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{t("remoteViewPrepHint")}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {isThumbnailsExpanded ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/60"
+            aria-label="Close device thumbnails"
+            onClick={() => setIsThumbnailsExpanded(false)}
+          />
+          <Card className="relative z-10 flex h-[min(90vh,860px)] w-full max-w-7xl flex-col overflow-hidden">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle>{t("thumbnailsModalTitle")}</CardTitle>
+                <Button variant="outline" size="sm" onClick={() => setIsThumbnailsExpanded(false)}>
+                  {t("close")}
+                </Button>
+              </div>
+              <CardDescription>{t("thumbnailsModalDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="min-h-0 flex-1 pb-4">
+              <ScrollArea.Root className="h-full overflow-hidden">
+                <ScrollArea.Viewport className="h-full pr-2">
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                    {sortedStudents.map((student) => {
+                      const frame = frames[student.clientId];
+                      const isFocused = selectedStudentId === student.clientId;
+                      const isTarget = selectedTargets.has(student.clientId);
+                      const isHandRaised = (handRaisedUntil[student.clientId] ?? 0) > uiClock;
+
+                      return (
+                        <div
+                          key={`expanded-${student.clientId}`}
+                          className={cn(
+                            "rounded-md border p-2 transition hover:bg-accent/60 cursor-pointer",
+                            isFocused ? "border-primary bg-primary/10" : "border-border",
+                          )}
+                          onClick={() => setSelectedStudentId(student.clientId)}
+                        >
+                          <div className="mb-2 h-28 overflow-hidden rounded border border-border bg-muted/40">
+                            {frame ? (
+                              <img src={frame.url} alt={student.hostName} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">{t("noFrame")}</div>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="truncate text-xs font-medium">{student.hostName}</p>
+                            <Badge variant={student.isOnline ? "success" : "outline"} className="text-[10px]">
+                              {student.isOnline ? t("online") : t("offline")}
+                            </Badge>
+                          </div>
+                          <p className="truncate text-[11px] text-muted-foreground">{student.userName}</p>
+                          <p className="truncate text-[11px] text-muted-foreground">
+                            {frame ? new Date(frame.capturedAtUtc).toLocaleTimeString() : t("noUpdates")}
+                          </p>
+                          <div className="mt-1 flex items-center justify-between gap-2">
+                            <span className="truncate text-[11px] text-muted-foreground">
+                              {t("studentAlertsCount")}: {student.alertCount ?? 0}
+                            </span>
+                            {isHandRaised ? (
+                              <Badge variant="warning" className="h-4 px-1 text-[9px]">
+                                {t("handRaised")}
+                              </Badge>
+                            ) : null}
+                          </div>
+                          <div className="mt-1.5 flex items-center justify-between gap-2">
+                            <span className="truncate text-[11px] text-muted-foreground">
+                              {student.lastDetectionAtUtc
+                                ? `${t("studentLastDetection")}: ${new Date(student.lastDetectionAtUtc).toLocaleTimeString()}`
+                                : t("noUpdates")}
+                            </span>
+                            <label
+                              className="inline-flex items-center gap-1 rounded border border-border px-1.5 py-0.5 text-[11px] text-muted-foreground"
+                              onClick={(event) => event.stopPropagation()}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isTarget}
+                                onChange={() => toggleTarget(student.clientId)}
+                              />
+                              {t("target")}
+                            </label>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {sortedStudents.length === 0 ? (
+                    <p className="mt-2 text-sm text-muted-foreground">{t("noMatches")}</p>
+                  ) : null}
+                </ScrollArea.Viewport>
+                <ScrollArea.Scrollbar className="w-2" orientation="vertical">
+                  <ScrollArea.Thumb className="rounded bg-muted-foreground/30" />
+                </ScrollArea.Scrollbar>
+              </ScrollArea.Root>
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
+
+      {isLogsOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/55"
+            aria-label="Close logs"
+            onClick={() => setIsLogsOpen(false)}
+          />
+          <Card className="relative z-10 flex h-[min(88vh,760px)] w-full max-w-5xl flex-col overflow-hidden">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle>{t("alertsAudit")}</CardTitle>
+                <Button variant="outline" size="sm" onClick={() => setIsLogsOpen(false)}>
+                  {t("close")}
+                </Button>
+              </div>
+              <CardDescription>{t("alertsAuditDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="min-h-0 flex-1 pb-4">
+              <ScrollArea.Root className="h-full overflow-hidden">
+                <ScrollArea.Viewport className="h-full pr-2">
+                  <div className="space-y-2">
+                    {events.length === 0 ? <p className="text-sm text-muted-foreground">{t("noEvents")}</p> : null}
+                    {events.map((line, index) => (
+                      <div
+                        key={`${line}-${index}`}
+                        className="rounded-md border border-border bg-background/80 px-3 py-2 text-xs leading-relaxed"
+                      >
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea.Viewport>
+                <ScrollArea.Scrollbar className="w-2" orientation="vertical">
+                  <ScrollArea.Thumb className="rounded bg-muted-foreground/30" />
+                </ScrollArea.Scrollbar>
+              </ScrollArea.Root>
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
+
+      {isSendModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/55"
+            aria-label="Close send files dialog"
+            onClick={() => setIsSendModalOpen(false)}
+          />
+          <Card className="relative z-10 w-full max-w-xl">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle>{t("sendFilesModalTitle")}</CardTitle>
+                <Button variant="outline" size="sm" onClick={() => setIsSendModalOpen(false)}>
+                  {t("close")}
+                </Button>
+              </div>
+              <CardDescription>{t("sendFilesModalDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+              />
+
+              <div className="rounded-lg border border-border bg-background/70 p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="outline" onClick={openFileDialog}>
+                    {t("chooseFile")}
+                  </Button>
+                  {file ? (
+                    <Button variant="ghost" size="sm" onClick={() => setFile(null)}>
+                      {t("clearFile")}
+                    </Button>
+                  ) : null}
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">{file ? file.name : t("fileNotSelected")}</p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <Button onClick={sendToAll} disabled={!file || sendFile.isPending}>
+                  {t("sendToAll")}
+                </Button>
+                <Button variant="secondary" onClick={sendToSelected} disabled={!file || sendFile.isPending}>
+                  {t("sendToSelected")}
+                </Button>
+              </div>
+
+              <p className="text-xs text-muted-foreground">{uploadStatus || t("noActiveTransfers")}</p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export default App;

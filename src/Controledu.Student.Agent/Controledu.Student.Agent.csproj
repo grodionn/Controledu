@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <UserSecretsId>dotnet-Controledu.Student.Agent-0e65efcc-9f37-424e-92f9-c360fc3de207</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\ml\artifacts\ai-ui-binary.onnx" Link="models\ai-ui-binary.onnx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\ml\artifacts\ai-ui-multiclass.onnx" Link="models\ai-ui-multiclass.onnx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\ml\artifacts\labels.txt" Link="models\labels.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.4" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.11" />
+    <PackageReference Include="System.Windows.Extensions" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Controledu.Common\Controledu.Common.csproj" />
+    <ProjectReference Include="..\Controledu.Detection.Abstractions\Controledu.Detection.Abstractions.csproj" />
+    <ProjectReference Include="..\Controledu.Detection.Core\Controledu.Detection.Core.csproj" />
+    <ProjectReference Include="..\Controledu.Detection.Onnx\Controledu.Detection.Onnx.csproj" />
+    <ProjectReference Include="..\Controledu.Discovery\Controledu.Discovery.csproj" />
+    <ProjectReference Include="..\Controledu.Transport\Controledu.Transport.csproj" />
+    <ProjectReference Include="..\Controledu.Storage\Controledu.Storage.csproj" />
+  </ItemGroup>
+</Project>

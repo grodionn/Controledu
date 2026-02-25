@@ -1,0 +1,12 @@
+torch>=2.3.0
+torchvision>=0.18.0
+pandas>=2.2.0
+numpy>=1.26.0
+Pillow>=10.3.0
+PyYAML>=6.0.1
+scikit-learn>=1.5.0
+tqdm>=4.66.0
+onnx>=1.16.0
+onnxruntime>=1.18.0
+selenium>=4.22.0
+easyocr>=1.7.1

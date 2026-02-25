@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishTrimmed>false</PublishTrimmed>
+    <AssemblyTitle>Controledu Updater</AssemblyTitle>
+    <Product>Controledu Updater</Product>
+    <Description>Controledu silent installer launcher</Description>
+    <Company>Controledu</Company>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Controledu.Common\Controledu.Common.csproj" />
+  </ItemGroup>
+</Project>

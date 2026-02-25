@@ -1,0 +1,70 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 5% 96%;
+    --foreground: 220 6% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 6% 15%;
+    --primary: 220 4% 24%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 4% 92%;
+    --secondary-foreground: 220 6% 18%;
+    --muted: 220 5% 93%;
+    --muted-foreground: 220 4% 38%;
+    --accent: 220 4% 91%;
+    --accent-foreground: 220 6% 18%;
+    --destructive: 0 65% 44%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 4% 84%;
+    --input: 220 4% 84%;
+    --ring: 220 4% 35%;
+    --gradient-start: 220 3% 95%;
+    --gradient-end: 220 3% 90%;
+  }
+
+  .dark {
+    --background: 220 4% 9%;
+    --foreground: 210 4% 90%;
+    --card: 220 4% 11%;
+    --card-foreground: 210 4% 90%;
+    --primary: 220 4% 74%;
+    --primary-foreground: 220 4% 9%;
+    --secondary: 220 4% 16%;
+    --secondary-foreground: 210 4% 89%;
+    --muted: 220 4% 15%;
+    --muted-foreground: 220 3% 66%;
+    --accent: 220 4% 18%;
+    --accent-foreground: 210 4% 92%;
+    --destructive: 0 62% 54%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 3% 23%;
+    --input: 220 3% 23%;
+    --ring: 220 3% 63%;
+    --gradient-start: 220 3% 14%;
+    --gradient-end: 220 3% 8%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    margin: 0;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 12% 5%, hsl(var(--gradient-start) / 0.82), transparent 44%),
+      radial-gradient(circle at 88% 95%, hsl(var(--gradient-end) / 0.76), transparent 42%),
+      linear-gradient(155deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    background-attachment: fixed;
+  }
+}

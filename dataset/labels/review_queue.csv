@@ -1,0 +1,600 @@
+image_path,current_label,suggested_label,reason,metadata_path,confidence
+raw/e7c27e0705464be2828172e15c4b133b/2026-02-21T14-01-26Z-fef01823.jpg,ai_ui,gemini_ui,keyword: gemini/bard,raw/e7c27e0705464be2828172e15c4b133b/2026-02-21T14-01-26Z-fef01823.json,0.800
+raw/e7c27e0705464be2828172e15c4b133b/2026-02-21T14-02-07Z-071640b8.jpg,ai_ui,chatgpt_ui,keyword: chatgpt/openai,raw/e7c27e0705464be2828172e15c4b133b/2026-02-21T14-02-07Z-071640b8.json,0.800
+raw/e7c27e0705464be2828172e15c4b133b/2026-02-21T14-03-02Z-c5b84d95.jpg,deepseek_ui,ai_ui,detector marked ai_ui,raw/e7c27e0705464be2828172e15c4b133b/2026-02-21T14-03-02Z-c5b84d95.json,0.780
+raw/e7c27e0705464be2828172e15c4b133b/2026-02-21T14-12-35Z-2fcd395d.jpg,deepseek_ui,ai_ui,detector marked ai_ui,raw/e7c27e0705464be2828172e15c4b133b/2026-02-21T14-12-35Z-2fcd395d.json,0.780
+raw/e7c27e0705464be2828172e15c4b133b/2026-02-21T14-18-18Z-311503fe.jpg,chatgpt_ui,ai_ui,detector marked ai_ui,raw/e7c27e0705464be2828172e15c4b133b/2026-02-21T14-18-18Z-311503fe.json,0.780
+raw/synthetic-browser-v3/2026-02-21T04-11-50Z-00000-qwen_ui-956269f0.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-11-50Z-00000-qwen_ui-956269f0.json,0.808
+raw/synthetic-browser-v3/2026-02-21T04-11-56Z-00001-ai_ui-a56c0941.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-11-56Z-00001-ai_ui-a56c0941.json,0.849
+raw/synthetic-browser-v3/2026-02-21T04-12-00Z-00002-perplexity_ui-8dfa6a56.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-12-00Z-00002-perplexity_ui-8dfa6a56.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-12-00Z-00006-chatgpt_ui-8da8eee4.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-12-00Z-00006-chatgpt_ui-8da8eee4.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-12-02Z-00003-gemini_ui-89456f27.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-12-02Z-00003-gemini_ui-89456f27.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-12-10Z-00005-meta_ai_ui-d1bdb8c0.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-12-10Z-00005-meta_ai_ui-d1bdb8c0.json,0.784
+raw/synthetic-browser-v3/2026-02-21T04-12-12Z-00011-mistral_ui-076979d6.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-12-12Z-00011-mistral_ui-076979d6.json,0.915
+raw/synthetic-browser-v3/2026-02-21T04-12-14Z-00004-ai_ui-e4347d51.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-12-14Z-00004-ai_ui-e4347d51.json,0.854
+raw/synthetic-browser-v3/2026-02-21T04-12-15Z-00009-chatgpt_ui-e8dd5e5a.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-12-15Z-00009-chatgpt_ui-e8dd5e5a.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-12-16Z-00013-qwen_ui-8f158449.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-12-16Z-00013-qwen_ui-8f158449.json,0.939
+raw/synthetic-browser-v3/2026-02-21T04-12-18Z-00010-copilot_ui-06998731.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-12-18Z-00010-copilot_ui-06998731.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-12-23Z-00007-mistral_ui-785299f4.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-12-23Z-00007-mistral_ui-785299f4.json,0.833
+raw/synthetic-browser-v3/2026-02-21T04-12-33Z-00014-qwen_ui-144823f7.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-12-33Z-00014-qwen_ui-144823f7.json,0.807
+raw/synthetic-browser-v3/2026-02-21T04-12-36Z-00015-copilot_ui-59fefbbc.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-12-36Z-00015-copilot_ui-59fefbbc.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-12-38Z-00012-perplexity_ui-38b8f24e.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-12-38Z-00012-perplexity_ui-38b8f24e.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-12-39Z-00008-qwen_ui-f4427e0b.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-12-39Z-00008-qwen_ui-f4427e0b.json,0.952
+raw/synthetic-browser-v3/2026-02-21T04-12-51Z-00021-qwen_ui-c11bd1c4.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-12-51Z-00021-qwen_ui-c11bd1c4.json,0.913
+raw/synthetic-browser-v3/2026-02-21T04-12-56Z-00022-qwen_ui-d90dd19b.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-12-56Z-00022-qwen_ui-d90dd19b.json,0.781
+raw/synthetic-browser-v3/2026-02-21T04-12-57Z-00034-poe_ui-b69f5eab.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-12-57Z-00034-poe_ui-b69f5eab.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-02Z-00018-deepseek_ui-49ac9087.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-13-02Z-00018-deepseek_ui-49ac9087.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-05Z-00019-deepseek_ui-1e43fbd2.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-13-05Z-00019-deepseek_ui-1e43fbd2.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-07Z-00026-perplexity_ui-3fead90a.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-13-07Z-00026-perplexity_ui-3fead90a.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-07Z-00039-claude_ui-c673f2e0.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-13-07Z-00039-claude_ui-c673f2e0.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-12Z-00027-mistral_ui-379d58f9.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-13-12Z-00027-mistral_ui-379d58f9.json,0.791
+raw/synthetic-browser-v3/2026-02-21T04-13-12Z-00042-perplexity_ui-01d77831.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-13-12Z-00042-perplexity_ui-01d77831.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-14Z-00017-claude_ui-e1e89e7e.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-13-14Z-00017-claude_ui-e1e89e7e.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-15Z-00028-gemini_ui-f3f8dea4.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-13-15Z-00028-gemini_ui-f3f8dea4.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-18Z-00045-poe_ui-c55be95d.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-13-18Z-00045-poe_ui-c55be95d.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-21Z-00046-claude_ui-03c501fe.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-13-21Z-00046-claude_ui-03c501fe.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-24Z-00032-poe_ui-d73e7bb9.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-13-24Z-00032-poe_ui-d73e7bb9.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-25Z-00016-meta_ai_ui-21084dd9.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-13-25Z-00016-meta_ai_ui-21084dd9.json,0.960
+raw/synthetic-browser-v3/2026-02-21T04-13-27Z-00033-grok_ui-81bd55d5.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-13-27Z-00033-grok_ui-81bd55d5.json,0.932
+raw/synthetic-browser-v3/2026-02-21T04-13-28Z-00025-copilot_ui-ac0f6801.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-13-28Z-00025-copilot_ui-ac0f6801.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-30Z-00020-qwen_ui-27b608dc.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-13-30Z-00020-qwen_ui-27b608dc.json,0.966
+raw/synthetic-browser-v3/2026-02-21T04-13-30Z-00051-qwen_ui-739cafa5.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-13-30Z-00051-qwen_ui-739cafa5.json,0.953
+raw/synthetic-browser-v3/2026-02-21T04-13-39Z-00036-deepseek_ui-eb9f33cb.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-13-39Z-00036-deepseek_ui-eb9f33cb.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-39Z-00055-poe_ui-a92f85fe.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-13-39Z-00055-poe_ui-a92f85fe.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-40Z-00056-deepseek_ui-3ec77a8f.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-13-40Z-00056-deepseek_ui-3ec77a8f.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-43Z-00038-poe_ui-4b4f3b2e.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-13-43Z-00038-poe_ui-4b4f3b2e.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-50Z-00024-perplexity_ui-6e3255a8.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-13-50Z-00024-perplexity_ui-6e3255a8.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-13-50Z-00030-mistral_ui-260cb547.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-13-50Z-00030-mistral_ui-260cb547.json,0.902
+raw/synthetic-browser-v3/2026-02-21T04-13-54Z-00041-mistral_ui-2a6524af.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-13-54Z-00041-mistral_ui-2a6524af.json,0.873
+raw/synthetic-browser-v3/2026-02-21T04-14-00Z-00043-perplexity_ui-ee01b9e0.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-14-00Z-00043-perplexity_ui-ee01b9e0.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-14-02Z-00044-copilot_ui-9cf3137e.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-14-02Z-00044-copilot_ui-9cf3137e.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-14-07Z-00023-deepseek_ui-af70de70.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-14-07Z-00023-deepseek_ui-af70de70.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-14-08Z-00035-poe_ui-d60bf603.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-14-08Z-00035-poe_ui-d60bf603.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-14-12Z-00047-perplexity_ui-5dfb1922.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-14-12Z-00047-perplexity_ui-5dfb1922.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-14-13Z-00029-mistral_ui-94ad6252.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-14-13Z-00029-mistral_ui-94ad6252.json,0.789
+raw/synthetic-browser-v3/2026-02-21T04-14-29Z-00040-copilot_ui-6da58dad.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-14-29Z-00040-copilot_ui-6da58dad.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-14-33Z-00081-mistral_ui-f394c60d.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-14-33Z-00081-mistral_ui-f394c60d.json,0.810
+raw/synthetic-browser-v3/2026-02-21T04-14-34Z-00083-poe_ui-4eee5680.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-14-34Z-00083-poe_ui-4eee5680.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-14-41Z-00085-poe_ui-ed305556.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-14-41Z-00085-poe_ui-ed305556.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-14-42Z-00086-chatgpt_ui-df8200b8.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-14-42Z-00086-chatgpt_ui-df8200b8.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-14-53Z-00037-poe_ui-ef705d01.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-14-53Z-00037-poe_ui-ef705d01.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-14-54Z-00031-poe_ui-9c8379ae.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-14-54Z-00031-poe_ui-9c8379ae.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-14-55Z-00062-meta_ai_ui-4905eb93.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-14-55Z-00062-meta_ai_ui-4905eb93.json,0.945
+raw/synthetic-browser-v3/2026-02-21T04-15-01Z-00064-grok_ui-80ddb386.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-15-01Z-00064-grok_ui-80ddb386.json,0.935
+raw/synthetic-browser-v3/2026-02-21T04-15-06Z-00098-poe_ui-ca208c07.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-15-06Z-00098-poe_ui-ca208c07.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-15-11Z-00100-gemini_ui-1f683d6f.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-15-11Z-00100-gemini_ui-1f683d6f.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-15-15Z-00069-mistral_ui-6a1c701b.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-15-15Z-00069-mistral_ui-6a1c701b.json,0.847
+raw/synthetic-browser-v3/2026-02-21T04-15-18Z-00052-copilot_ui-eb9e54e0.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-15-18Z-00052-copilot_ui-eb9e54e0.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-15-29Z-00109-claude_ui-024559a5.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-15-29Z-00109-claude_ui-024559a5.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-15-30Z-00073-copilot_ui-fe678797.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-15-30Z-00073-copilot_ui-fe678797.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-15-40Z-00116-qwen_ui-5e99c568.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-15-40Z-00116-qwen_ui-5e99c568.json,0.915
+raw/synthetic-browser-v3/2026-02-21T04-15-41Z-00058-chatgpt_ui-b336d143.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-15-41Z-00058-chatgpt_ui-b336d143.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-15-49Z-00060-gemini_ui-c76aec88.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-15-49Z-00060-gemini_ui-c76aec88.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-15-50Z-00048-poe_ui-9bc0fa93.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-15-50Z-00048-poe_ui-9bc0fa93.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-15-54Z-00049-deepseek_ui-86351a54.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-15-54Z-00049-deepseek_ui-86351a54.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-16-12Z-00088-perplexity_ui-dbc21e42.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-16-12Z-00088-perplexity_ui-dbc21e42.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-16-16Z-00067-chatgpt_ui-87f3c9a4.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-16-16Z-00067-chatgpt_ui-87f3c9a4.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-16-16Z-00134-deepseek_ui-e92af09b.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-16-16Z-00134-deepseek_ui-e92af09b.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-16-19Z-00090-copilot_ui-bc44a417.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-16-19Z-00090-copilot_ui-bc44a417.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-16-31Z-00070-deepseek_ui-e07ee721.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-16-31Z-00070-deepseek_ui-e07ee721.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-16-33Z-00141-deepseek_ui-b3f45487.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-16-33Z-00141-deepseek_ui-b3f45487.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-16-35Z-00095-meta_ai_ui-49793220.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-16-35Z-00095-meta_ai_ui-49793220.json,0.820
+raw/synthetic-browser-v3/2026-02-21T04-16-36Z-00057-grok_ui-adb1be7a.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-16-36Z-00057-grok_ui-adb1be7a.json,0.910
+raw/synthetic-browser-v3/2026-02-21T04-16-40Z-00097-qwen_ui-a77af8cb.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-16-40Z-00097-qwen_ui-a77af8cb.json,0.979
+raw/synthetic-browser-v3/2026-02-21T04-16-49Z-00149-meta_ai_ui-f4debda7.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-16-49Z-00149-meta_ai_ui-f4debda7.json,0.883
+raw/synthetic-browser-v3/2026-02-21T04-16-50Z-00050-mistral_ui-39bfc9b6.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-16-50Z-00050-mistral_ui-39bfc9b6.json,0.957
+raw/synthetic-browser-v3/2026-02-21T04-16-53Z-00076-poe_ui-2ec36411.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-16-53Z-00076-poe_ui-2ec36411.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-16-54Z-00153-mistral_ui-f0657d73.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-16-54Z-00153-mistral_ui-f0657d73.json,0.913
+raw/synthetic-browser-v3/2026-02-21T04-16-58Z-00103-grok_ui-c9257285.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-16-58Z-00103-grok_ui-c9257285.json,0.900
+raw/synthetic-browser-v3/2026-02-21T04-17-05Z-00063-qwen_ui-6a1d9731.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-17-05Z-00063-qwen_ui-6a1d9731.json,0.862
+raw/synthetic-browser-v3/2026-02-21T04-17-05Z-00079-mistral_ui-25bc99ae.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-17-05Z-00079-mistral_ui-25bc99ae.json,0.893
+raw/synthetic-browser-v3/2026-02-21T04-17-08Z-00053-ai_ui-ad9e5c1e.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-17-08Z-00053-ai_ui-ad9e5c1e.json,0.878
+raw/synthetic-browser-v3/2026-02-21T04-17-11Z-00160-deepseek_ui-63abd48f.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-17-11Z-00160-deepseek_ui-63abd48f.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-17-13Z-00065-grok_ui-850cddfd.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-17-13Z-00065-grok_ui-850cddfd.json,0.928
+raw/synthetic-browser-v3/2026-02-21T04-17-14Z-00054-copilot_ui-8a6342ca.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-17-14Z-00054-copilot_ui-8a6342ca.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-17-14Z-00108-poe_ui-65d77163.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-17-14Z-00108-poe_ui-65d77163.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-17-20Z-00066-qwen_ui-da55f825.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-17-20Z-00066-qwen_ui-da55f825.json,0.861
+raw/synthetic-browser-v3/2026-02-21T04-17-21Z-00110-poe_ui-a632c350.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-17-21Z-00110-poe_ui-a632c350.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-17-27Z-00169-gemini_ui-e4ad77b0.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-17-27Z-00169-gemini_ui-e4ad77b0.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-17-33Z-00171-perplexity_ui-973f7fd5.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-17-33Z-00171-perplexity_ui-973f7fd5.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-17-41Z-00117-copilot_ui-70898400.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-17-41Z-00117-copilot_ui-70898400.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-17-43Z-00059-poe_ui-2c6710bd.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-17-43Z-00059-poe_ui-2c6710bd.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-17-44Z-00178-meta_ai_ui-6576796d.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-17-44Z-00178-meta_ai_ui-6576796d.json,0.871
+raw/synthetic-browser-v3/2026-02-21T04-17-49Z-00179-poe_ui-b7017485.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-17-49Z-00179-poe_ui-b7017485.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-17-50Z-00072-poe_ui-4d7ae829.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-17-50Z-00072-poe_ui-4d7ae829.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-17-52Z-00091-qwen_ui-0151ccb0.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-17-52Z-00091-qwen_ui-0151ccb0.json,0.848
+raw/synthetic-browser-v3/2026-02-21T04-17-52Z-00182-meta_ai_ui-42004a56.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-17-52Z-00182-meta_ai_ui-42004a56.json,0.794
+raw/synthetic-browser-v3/2026-02-21T04-17-55Z-00061-copilot_ui-e17f348d.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-17-55Z-00061-copilot_ui-e17f348d.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-17-55Z-00183-mistral_ui-ff8abfc0.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-17-55Z-00183-mistral_ui-ff8abfc0.json,0.907
+raw/synthetic-browser-v3/2026-02-21T04-17-56Z-00122-grok_ui-4b7d3b08.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-17-56Z-00122-grok_ui-4b7d3b08.json,0.792
+raw/synthetic-browser-v3/2026-02-21T04-17-57Z-00092-chatgpt_ui-edd9636e.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-17-57Z-00092-chatgpt_ui-edd9636e.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-18-03Z-00075-grok_ui-1ef11a27.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-18-03Z-00075-grok_ui-1ef11a27.json,0.824
+raw/synthetic-browser-v3/2026-02-21T04-18-14Z-00192-qwen_ui-60cd8424.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-18-14Z-00192-qwen_ui-60cd8424.json,0.884
+raw/synthetic-browser-v3/2026-02-21T04-18-20Z-00078-chatgpt_ui-84aeffbe.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-18-20Z-00078-chatgpt_ui-84aeffbe.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-18-24Z-00198-chatgpt_ui-9d70773e.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-18-24Z-00198-chatgpt_ui-9d70773e.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-18-29Z-00199-deepseek_ui-b92d933d.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-18-29Z-00199-deepseek_ui-b92d933d.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-18-38Z-00068-mistral_ui-171a8b65.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-18-38Z-00068-mistral_ui-171a8b65.json,0.787
+raw/synthetic-browser-v3/2026-02-21T04-18-38Z-00136-poe_ui-b8180f1c.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-18-38Z-00136-poe_ui-b8180f1c.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-18-41Z-00206-claude_ui-dbb2bf95.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-18-41Z-00206-claude_ui-dbb2bf95.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-18-44Z-00208-perplexity_ui-40fea948.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-18-44Z-00208-perplexity_ui-40fea948.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-18-48Z-00210-perplexity_ui-72176085.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-18-48Z-00210-perplexity_ui-72176085.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-18-54Z-00142-mistral_ui-30e5ce91.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-18-54Z-00142-mistral_ui-30e5ce91.json,0.767
+raw/synthetic-browser-v3/2026-02-21T04-18-55Z-00071-poe_ui-332ac35a.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-18-55Z-00071-poe_ui-332ac35a.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-18-56Z-00213-meta_ai_ui-03617d89.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-18-56Z-00213-meta_ai_ui-03617d89.json,0.962
+raw/synthetic-browser-v3/2026-02-21T04-19-02Z-00144-qwen_ui-68094564.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-02Z-00144-qwen_ui-68094564.json,0.769
+raw/synthetic-browser-v3/2026-02-21T04-19-02Z-00216-gemini_ui-fe5fb9a2.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-19-02Z-00216-gemini_ui-fe5fb9a2.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-19-06Z-00087-meta_ai_ui-cef66a14.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-06Z-00087-meta_ai_ui-cef66a14.json,0.817
+raw/synthetic-browser-v3/2026-02-21T04-19-07Z-00219-meta_ai_ui-e6d4f65e.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-07Z-00219-meta_ai_ui-e6d4f65e.json,0.897
+raw/synthetic-browser-v3/2026-02-21T04-19-14Z-00074-grok_ui-581ab26c.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-14Z-00074-grok_ui-581ab26c.json,0.958
+raw/synthetic-browser-v3/2026-02-21T04-19-15Z-00111-ai_ui-b33aa6b9.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-15Z-00111-ai_ui-b33aa6b9.json,0.919
+raw/synthetic-browser-v3/2026-02-21T04-19-15Z-00148-ai_ui-f5a98c9a.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-15Z-00148-ai_ui-f5a98c9a.json,0.968
+raw/synthetic-browser-v3/2026-02-21T04-19-16Z-00112-grok_ui-13089f8b.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-16Z-00112-grok_ui-13089f8b.json,0.872
+raw/synthetic-browser-v3/2026-02-21T04-19-21Z-00225-grok_ui-dbcbded5.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-21Z-00225-grok_ui-dbcbded5.json,0.936
+raw/synthetic-browser-v3/2026-02-21T04-19-22Z-00227-grok_ui-7ee6990b.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-22Z-00227-grok_ui-7ee6990b.json,0.958
+raw/synthetic-browser-v3/2026-02-21T04-19-24Z-00152-mistral_ui-c3d08178.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-24Z-00152-mistral_ui-c3d08178.json,0.787
+raw/synthetic-browser-v3/2026-02-21T04-19-25Z-00114-copilot_ui-0958b354.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-19-25Z-00114-copilot_ui-0958b354.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-19-32Z-00077-ai_ui-b11cc20e.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-32Z-00077-ai_ui-b11cc20e.json,0.894
+raw/synthetic-browser-v3/2026-02-21T04-19-33Z-00154-mistral_ui-8c2d23a9.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-33Z-00154-mistral_ui-8c2d23a9.json,0.855
+raw/synthetic-browser-v3/2026-02-21T04-19-36Z-00156-meta_ai_ui-ba89c34b.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-36Z-00156-meta_ai_ui-ba89c34b.json,0.940
+raw/synthetic-browser-v3/2026-02-21T04-19-38Z-00094-grok_ui-7ef74fdb.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-38Z-00094-grok_ui-7ef74fdb.json,0.801
+raw/synthetic-browser-v3/2026-02-21T04-19-46Z-00119-copilot_ui-c275da34.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-19-46Z-00119-copilot_ui-c275da34.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-19-49Z-00080-perplexity_ui-26087b53.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-19-49Z-00080-perplexity_ui-26087b53.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-19-51Z-00096-poe_ui-d45b4e9b.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-19-51Z-00096-poe_ui-d45b4e9b.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-19-53Z-00161-meta_ai_ui-e5c22467.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-19-53Z-00161-meta_ai_ui-e5c22467.json,0.771
+raw/synthetic-browser-v3/2026-02-21T04-19-55Z-00162-poe_ui-e3fa6893.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-19-55Z-00162-poe_ui-e3fa6893.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-00Z-00246-gemini_ui-3f173407.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-20-00Z-00246-gemini_ui-3f173407.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-03Z-00082-qwen_ui-46834cc5.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-20-03Z-00082-qwen_ui-46834cc5.json,0.978
+raw/synthetic-browser-v3/2026-02-21T04-20-04Z-00124-deepseek_ui-130da476.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-20-04Z-00124-deepseek_ui-130da476.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-05Z-00099-copilot_ui-db642c52.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-20-05Z-00099-copilot_ui-db642c52.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-12Z-00084-chatgpt_ui-b8314c26.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-20-12Z-00084-chatgpt_ui-b8314c26.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-13Z-00168-qwen_ui-d61a4a69.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-20-13Z-00168-qwen_ui-d61a4a69.json,0.804
+raw/synthetic-browser-v3/2026-02-21T04-20-17Z-00253-meta_ai_ui-0633c388.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-20-17Z-00253-meta_ai_ui-0633c388.json,0.903
+raw/synthetic-browser-v3/2026-02-21T04-20-18Z-00170-meta_ai_ui-b8bf6903.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-20-18Z-00170-meta_ai_ui-b8bf6903.json,0.790
+raw/synthetic-browser-v3/2026-02-21T04-20-20Z-00256-copilot_ui-2271e3be.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-20-20Z-00256-copilot_ui-2271e3be.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-21Z-00102-copilot_ui-ab117736.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-20-21Z-00102-copilot_ui-ab117736.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-22Z-00257-qwen_ui-96b16459.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-20-22Z-00257-qwen_ui-96b16459.json,0.882
+raw/synthetic-browser-v3/2026-02-21T04-20-24Z-00129-qwen_ui-90cc7a42.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-20-24Z-00129-qwen_ui-90cc7a42.json,0.874
+raw/synthetic-browser-v3/2026-02-21T04-20-27Z-00172-gemini_ui-2ccb87cb.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-20-27Z-00172-gemini_ui-2ccb87cb.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-28Z-00130-meta_ai_ui-7e9716ad.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-20-28Z-00130-meta_ai_ui-7e9716ad.json,0.814
+raw/synthetic-browser-v3/2026-02-21T04-20-37Z-00263-meta_ai_ui-85e17c3c.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-20-37Z-00263-meta_ai_ui-85e17c3c.json,0.809
+raw/synthetic-browser-v3/2026-02-21T04-20-39Z-00106-chatgpt_ui-072915c7.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-20-39Z-00106-chatgpt_ui-072915c7.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-40Z-00177-chatgpt_ui-dfe704a4.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-20-40Z-00177-chatgpt_ui-dfe704a4.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-41Z-00133-copilot_ui-e9ea9d49.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-20-41Z-00133-copilot_ui-e9ea9d49.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-43Z-00089-poe_ui-b01c337e.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-20-43Z-00089-poe_ui-b01c337e.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-44Z-00107-deepseek_ui-d5185b72.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-20-44Z-00107-deepseek_ui-d5185b72.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-48Z-00135-perplexity_ui-e8c451fc.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-20-48Z-00135-perplexity_ui-e8c451fc.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-52Z-00181-chatgpt_ui-dd50f7e7.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-20-52Z-00181-chatgpt_ui-dd50f7e7.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-56Z-00137-perplexity_ui-91b72a5c.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-20-56Z-00137-perplexity_ui-91b72a5c.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-20-57Z-00274-mistral_ui-d4edcca1.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-20-57Z-00274-mistral_ui-d4edcca1.json,0.763
+raw/synthetic-browser-v3/2026-02-21T04-21-03Z-00185-deepseek_ui-417e5edc.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-21-03Z-00185-deepseek_ui-417e5edc.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-21-06Z-00093-copilot_ui-f7ad3965.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-21-06Z-00093-copilot_ui-f7ad3965.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-21-09Z-00279-ai_ui-27f5e4d5.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-21-09Z-00279-ai_ui-27f5e4d5.json,0.887
+raw/synthetic-browser-v3/2026-02-21T04-21-13Z-00113-perplexity_ui-35e0edd6.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-21-13Z-00113-perplexity_ui-35e0edd6.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-21-13Z-00282-copilot_ui-3e9a66d6.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-21-13Z-00282-copilot_ui-3e9a66d6.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-21-18Z-00190-chatgpt_ui-a1592b44.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-21-18Z-00190-chatgpt_ui-a1592b44.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-21-26Z-00289-copilot_ui-754cb07d.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-21-26Z-00289-copilot_ui-754cb07d.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-21-28Z-00193-poe_ui-6b8d8642.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-21-28Z-00193-poe_ui-6b8d8642.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-21-35Z-00195-perplexity_ui-755d2764.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-21-35Z-00195-perplexity_ui-755d2764.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-21-41Z-00118-grok_ui-2a53dbd6.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-21-41Z-00118-grok_ui-2a53dbd6.json,0.905
+raw/synthetic-browser-v3/2026-02-21T04-21-42Z-00297-poe_ui-8b04b338.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-21-42Z-00297-poe_ui-8b04b338.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-21-53Z-00201-copilot_ui-eb3f4202.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-21-53Z-00201-copilot_ui-eb3f4202.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-21-54Z-00101-meta_ai_ui-62b61594.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-21-54Z-00101-meta_ai_ui-62b61594.json,0.807
+raw/synthetic-browser-v3/2026-02-21T04-21-54Z-00121-meta_ai_ui-a2ec377a.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-21-54Z-00121-meta_ai_ui-a2ec377a.json,0.790
+raw/synthetic-browser-v3/2026-02-21T04-21-54Z-00151-perplexity_ui-56516ab6.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-21-54Z-00151-perplexity_ui-56516ab6.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-21-56Z-00202-perplexity_ui-8e416029.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-21-56Z-00202-perplexity_ui-8e416029.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-21-57Z-00304-claude_ui-8610fd12.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-21-57Z-00304-claude_ui-8610fd12.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-22-02Z-00204-qwen_ui-dc210944.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-22-02Z-00204-qwen_ui-dc210944.json,0.862
+raw/synthetic-browser-v3/2026-02-21T04-22-04Z-00123-perplexity_ui-c16b44e1.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-22-04Z-00123-perplexity_ui-c16b44e1.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-22-10Z-00155-grok_ui-a4ed91b8.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-22-10Z-00155-grok_ui-a4ed91b8.json,0.804
+raw/synthetic-browser-v3/2026-02-21T04-22-13Z-00104-qwen_ui-add74b0f.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-22-13Z-00104-qwen_ui-add74b0f.json,0.846
+raw/synthetic-browser-v3/2026-02-21T04-22-13Z-00125-poe_ui-4b37617d.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-22-13Z-00125-poe_ui-4b37617d.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-22-18Z-00209-mistral_ui-9086af36.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-22-18Z-00209-mistral_ui-9086af36.json,0.767
+raw/synthetic-browser-v3/2026-02-21T04-22-20Z-00105-deepseek_ui-d858f464.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-22-20Z-00105-deepseek_ui-d858f464.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-22-21Z-00126-copilot_ui-f6d811ef.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-22-21Z-00126-copilot_ui-f6d811ef.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-22-25Z-00317-meta_ai_ui-b4d026a4.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-22-25Z-00317-meta_ai_ui-b4d026a4.json,0.972
+raw/synthetic-browser-v3/2026-02-21T04-22-27Z-00159-claude_ui-4c2ea4dc.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-22-27Z-00159-claude_ui-4c2ea4dc.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-22-30Z-00128-ai_ui-f02a2956.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-22-30Z-00128-ai_ui-f02a2956.json,0.776
+raw/synthetic-browser-v3/2026-02-21T04-22-31Z-00320-chatgpt_ui-aae35cae.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-22-31Z-00320-chatgpt_ui-aae35cae.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-22-34Z-00215-meta_ai_ui-979f5b27.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-22-34Z-00215-meta_ai_ui-979f5b27.json,0.870
+raw/synthetic-browser-v3/2026-02-21T04-22-42Z-00218-mistral_ui-8baf1516.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-22-42Z-00218-mistral_ui-8baf1516.json,0.884
+raw/synthetic-browser-v3/2026-02-21T04-22-44Z-00131-copilot_ui-bb88cfe7.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-22-44Z-00131-copilot_ui-bb88cfe7.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-22-47Z-00328-grok_ui-bfd6277e.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-22-47Z-00328-grok_ui-bfd6277e.json,0.883
+raw/synthetic-browser-v3/2026-02-21T04-22-48Z-00132-mistral_ui-10c238ba.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-22-48Z-00132-mistral_ui-10c238ba.json,0.840
+raw/synthetic-browser-v3/2026-02-21T04-22-55Z-00333-poe_ui-aec00264.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-22-55Z-00333-poe_ui-aec00264.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-22-58Z-00223-copilot_ui-06ecbbf3.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-22-58Z-00223-copilot_ui-06ecbbf3.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-23-02Z-00224-qwen_ui-04ef61f0.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-23-02Z-00224-qwen_ui-04ef61f0.json,0.839
+raw/synthetic-browser-v3/2026-02-21T04-23-09Z-00339-poe_ui-54b26492.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-23-09Z-00339-poe_ui-54b26492.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-23-11Z-00340-grok_ui-71c776cb.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-23-11Z-00340-grok_ui-71c776cb.json,0.838
+raw/synthetic-browser-v3/2026-02-21T04-23-19Z-00345-meta_ai_ui-4075d54f.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-23-19Z-00345-meta_ai_ui-4075d54f.json,0.967
+raw/synthetic-browser-v3/2026-02-21T04-23-20Z-00138-mistral_ui-8e14338e.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-23-20Z-00138-mistral_ui-8e14338e.json,0.935
+raw/synthetic-browser-v3/2026-02-21T04-23-21Z-00115-meta_ai_ui-ef2ecdc9.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-23-21Z-00115-meta_ai_ui-ef2ecdc9.json,0.879
+raw/synthetic-browser-v3/2026-02-21T04-23-27Z-00174-deepseek_ui-0b44f907.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-23-27Z-00174-deepseek_ui-0b44f907.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-23-28Z-00175-copilot_ui-668e43e1.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-23-28Z-00175-copilot_ui-668e43e1.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-23-34Z-00176-deepseek_ui-0e49a743.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-23-34Z-00176-deepseek_ui-0e49a743.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-23-36Z-00354-ai_ui-9b84d410.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-23-36Z-00354-ai_ui-9b84d410.json,0.793
+raw/synthetic-browser-v3/2026-02-21T04-23-43Z-00143-gemini_ui-4d620050.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-23-43Z-00143-gemini_ui-4d620050.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-23-46Z-00358-mistral_ui-315f190d.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-23-46Z-00358-mistral_ui-315f190d.json,0.861
+raw/synthetic-browser-v3/2026-02-21T04-23-50Z-00120-perplexity_ui-98610b0b.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-23-50Z-00120-perplexity_ui-98610b0b.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-23-53Z-00241-grok_ui-8b51dc99.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-23-53Z-00241-grok_ui-8b51dc99.json,0.958
+raw/synthetic-browser-v3/2026-02-21T04-23-55Z-00145-perplexity_ui-3ee1db8e.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-23-55Z-00145-perplexity_ui-3ee1db8e.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-24-05Z-00184-copilot_ui-054038d7.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-24-05Z-00184-copilot_ui-054038d7.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-24-06Z-00147-poe_ui-e5199bd9.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-24-06Z-00147-poe_ui-e5199bd9.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-24-16Z-00187-qwen_ui-41365c29.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-24-16Z-00187-qwen_ui-41365c29.json,0.857
+raw/synthetic-browser-v3/2026-02-21T04-24-18Z-00249-copilot_ui-03c82477.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-24-18Z-00249-copilot_ui-03c82477.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-24-30Z-00127-meta_ai_ui-ccbdd15e.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-24-30Z-00127-meta_ai_ui-ccbdd15e.json,0.935
+raw/synthetic-browser-v3/2026-02-21T04-24-33Z-00254-grok_ui-4f6f727a.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-24-33Z-00254-grok_ui-4f6f727a.json,0.837
+raw/synthetic-browser-v3/2026-02-21T04-24-35Z-00382-poe_ui-4ff0816f.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-24-35Z-00382-poe_ui-4ff0816f.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-24-39Z-00384-meta_ai_ui-04a9b572.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-24-39Z-00384-meta_ai_ui-04a9b572.json,0.894
+raw/synthetic-browser-v3/2026-02-21T04-24-50Z-00260-mistral_ui-af85203c.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-24-50Z-00260-mistral_ui-af85203c.json,0.884
+raw/synthetic-browser-v3/2026-02-21T04-24-53Z-00196-mistral_ui-99222b37.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-24-53Z-00196-mistral_ui-99222b37.json,0.869
+raw/synthetic-browser-v3/2026-02-21T04-24-56Z-00157-copilot_ui-71f07cbe.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-24-56Z-00157-copilot_ui-71f07cbe.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-25-08Z-00200-qwen_ui-ce635ae0.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-25-08Z-00200-qwen_ui-ce635ae0.json,0.832
+raw/synthetic-browser-v3/2026-02-21T04-25-14Z-00268-copilot_ui-356c8206.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-25-14Z-00268-copilot_ui-356c8206.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-25-15Z-00403-mistral_ui-565c9f6a.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-25-15Z-00403-mistral_ui-565c9f6a.json,0.788
+raw/synthetic-browser-v3/2026-02-21T04-25-17Z-00269-ai_ui-84622ac5.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-25-17Z-00269-ai_ui-84622ac5.json,0.954
+raw/synthetic-browser-v3/2026-02-21T04-25-19Z-00270-ai_ui-f6876db2.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-25-19Z-00270-ai_ui-f6876db2.json,0.809
+raw/synthetic-browser-v3/2026-02-21T04-25-20Z-00405-mistral_ui-02f92c9c.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-25-20Z-00405-mistral_ui-02f92c9c.json,0.851
+raw/synthetic-browser-v3/2026-02-21T04-25-23Z-00271-poe_ui-6be1de7d.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-25-23Z-00271-poe_ui-6be1de7d.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-25-24Z-00163-mistral_ui-1336eb28.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-25-24Z-00163-mistral_ui-1336eb28.json,0.939
+raw/synthetic-browser-v3/2026-02-21T04-25-25Z-00407-chatgpt_ui-496035f2.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-25-25Z-00407-chatgpt_ui-496035f2.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-25-26Z-00408-mistral_ui-057062c3.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-25-26Z-00408-mistral_ui-057062c3.json,0.767
+raw/synthetic-browser-v3/2026-02-21T04-25-28Z-00409-perplexity_ui-7ddfd0cc.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-25-28Z-00409-perplexity_ui-7ddfd0cc.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-25-38Z-00276-qwen_ui-d17403d2.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-25-38Z-00276-qwen_ui-d17403d2.json,0.944
+raw/synthetic-browser-v3/2026-02-21T04-25-42Z-00139-qwen_ui-21c20510.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-25-42Z-00139-qwen_ui-21c20510.json,0.964
+raw/synthetic-browser-v3/2026-02-21T04-25-42Z-00417-qwen_ui-b8227841.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-25-42Z-00417-qwen_ui-b8227841.json,0.826
+raw/synthetic-browser-v3/2026-02-21T04-25-43Z-00167-copilot_ui-8612944f.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-25-43Z-00167-copilot_ui-8612944f.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-25-50Z-00140-gemini_ui-ac98c942.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-25-50Z-00140-gemini_ui-ac98c942.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-25-52Z-00211-claude_ui-65c7fb93.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-25-52Z-00211-claude_ui-65c7fb93.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-25-54Z-00423-mistral_ui-c738e97e.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-25-54Z-00423-mistral_ui-c738e97e.json,0.930
+raw/synthetic-browser-v3/2026-02-21T04-26-05Z-00428-meta_ai_ui-64b91ffc.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-05Z-00428-meta_ai_ui-64b91ffc.json,0.781
+raw/synthetic-browser-v3/2026-02-21T04-26-06Z-00429-qwen_ui-cd40e071.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-06Z-00429-qwen_ui-cd40e071.json,0.798
+raw/synthetic-browser-v3/2026-02-21T04-26-09Z-00287-meta_ai_ui-75ca15dc.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-09Z-00287-meta_ai_ui-75ca15dc.json,0.847
+raw/synthetic-browser-v3/2026-02-21T04-26-12Z-00288-meta_ai_ui-3ae17621.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-12Z-00288-meta_ai_ui-3ae17621.json,0.782
+raw/synthetic-browser-v3/2026-02-21T04-26-12Z-00431-meta_ai_ui-1e505871.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-12Z-00431-meta_ai_ui-1e505871.json,0.905
+raw/synthetic-browser-v3/2026-02-21T04-26-16Z-00173-grok_ui-bff9e3b2.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-16Z-00173-grok_ui-bff9e3b2.json,0.850
+raw/synthetic-browser-v3/2026-02-21T04-26-20Z-00436-qwen_ui-f5f49802.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-20Z-00436-qwen_ui-f5f49802.json,0.938
+raw/synthetic-browser-v3/2026-02-21T04-26-24Z-00438-meta_ai_ui-fc42a8da.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-24Z-00438-meta_ai_ui-fc42a8da.json,0.872
+raw/synthetic-browser-v3/2026-02-21T04-26-26Z-00146-meta_ai_ui-ac5e1ec3.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-26Z-00146-meta_ai_ui-ac5e1ec3.json,0.934
+raw/synthetic-browser-v3/2026-02-21T04-26-28Z-00220-mistral_ui-0ea20640.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-28Z-00220-mistral_ui-0ea20640.json,0.863
+raw/synthetic-browser-v3/2026-02-21T04-26-36Z-00222-poe_ui-a72052b4.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-26-36Z-00222-poe_ui-a72052b4.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-26-48Z-00150-meta_ai_ui-fe54c772.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-48Z-00150-meta_ai_ui-fe54c772.json,0.819
+raw/synthetic-browser-v3/2026-02-21T04-26-53Z-00301-mistral_ui-a857bfab.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-53Z-00301-mistral_ui-a857bfab.json,0.868
+raw/synthetic-browser-v3/2026-02-21T04-26-57Z-00454-meta_ai_ui-c592e484.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-26-57Z-00454-meta_ai_ui-c592e484.json,0.765
+raw/synthetic-browser-v3/2026-02-21T04-27-04Z-00229-gemini_ui-a8fa71a6.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-27-04Z-00229-gemini_ui-a8fa71a6.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-27-14Z-00231-claude_ui-f3aa6da6.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-27-14Z-00231-claude_ui-f3aa6da6.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-27-28Z-00313-claude_ui-77d6bb66.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-27-28Z-00313-claude_ui-77d6bb66.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-27-31Z-00188-poe_ui-80b6d44f.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-27-31Z-00188-poe_ui-80b6d44f.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-27-33Z-00314-meta_ai_ui-3f2e3130.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-27-33Z-00314-meta_ai_ui-3f2e3130.json,0.926
+raw/synthetic-browser-v3/2026-02-21T04-27-39Z-00158-copilot_ui-4984e0ab.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-27-39Z-00158-copilot_ui-4984e0ab.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-27-45Z-00191-perplexity_ui-126ff5ed.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-27-45Z-00191-perplexity_ui-126ff5ed.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-27-47Z-00239-mistral_ui-08614abb.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-27-47Z-00239-mistral_ui-08614abb.json,0.902
+raw/synthetic-browser-v3/2026-02-21T04-27-48Z-00240-poe_ui-8ccc2888.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-27-48Z-00240-poe_ui-8ccc2888.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-27-57Z-00323-mistral_ui-26909126.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-27-57Z-00323-mistral_ui-26909126.json,0.934
+raw/synthetic-browser-v3/2026-02-21T04-27-58Z-00194-qwen_ui-a6b02299.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-27-58Z-00194-qwen_ui-a6b02299.json,0.885
+raw/synthetic-browser-v3/2026-02-21T04-28-11Z-00245-claude_ui-d0e1c093.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-28-11Z-00245-claude_ui-d0e1c093.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-28-14Z-00164-perplexity_ui-0c3badd8.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-28-14Z-00164-perplexity_ui-0c3badd8.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-28-16Z-00197-copilot_ui-1374975f.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-28-16Z-00197-copilot_ui-1374975f.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-28-20Z-00165-chatgpt_ui-3c375315.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-28-20Z-00165-chatgpt_ui-3c375315.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-28-20Z-00248-deepseek_ui-449a1d03.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-28-20Z-00248-deepseek_ui-449a1d03.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-28-26Z-00166-mistral_ui-ca1ef8d9.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-28-26Z-00166-mistral_ui-ca1ef8d9.json,0.951
+raw/synthetic-browser-v3/2026-02-21T04-28-33Z-00251-deepseek_ui-71a5e9e3.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-28-33Z-00251-deepseek_ui-71a5e9e3.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-28-33Z-00335-qwen_ui-36f5e62f.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-28-33Z-00335-qwen_ui-36f5e62f.json,0.935
+raw/synthetic-browser-v3/2026-02-21T04-28-38Z-00336-meta_ai_ui-cdec28d1.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-28-38Z-00336-meta_ai_ui-cdec28d1.json,0.880
+raw/synthetic-browser-v3/2026-02-21T04-28-45Z-00203-copilot_ui-689998d6.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-28-45Z-00203-copilot_ui-689998d6.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-28-51Z-00255-claude_ui-3d11d205.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-28-51Z-00255-claude_ui-3d11d205.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-28-54Z-00205-meta_ai_ui-358017d6.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-28-54Z-00205-meta_ai_ui-358017d6.json,0.936
+raw/synthetic-browser-v3/2026-02-21T04-28-57Z-00342-grok_ui-5fb8a277.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-28-57Z-00342-grok_ui-5fb8a277.json,0.832
+raw/synthetic-browser-v3/2026-02-21T04-28-58Z-00514-qwen_ui-bdb4971b.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-28-58Z-00514-qwen_ui-bdb4971b.json,0.898
+raw/synthetic-browser-v3/2026-02-21T04-29-11Z-00520-grok_ui-1fef945f.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-29-11Z-00520-grok_ui-1fef945f.json,0.860
+raw/synthetic-browser-v3/2026-02-21T04-29-13Z-00348-grok_ui-add3f1b4.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-29-13Z-00348-grok_ui-add3f1b4.json,0.971
+raw/synthetic-browser-v3/2026-02-21T04-29-15Z-00261-chatgpt_ui-bf461cbe.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-29-15Z-00261-chatgpt_ui-bf461cbe.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-29-17Z-00524-meta_ai_ui-6f285b1a.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-29-17Z-00524-meta_ai_ui-6f285b1a.json,0.828
+raw/synthetic-browser-v3/2026-02-21T04-29-28Z-00353-copilot_ui-43d6b29d.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-29-28Z-00353-copilot_ui-43d6b29d.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-29-30Z-00212-grok_ui-f93adb04.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-29-30Z-00212-grok_ui-f93adb04.json,0.812
+raw/synthetic-browser-v3/2026-02-21T04-29-32Z-00266-mistral_ui-2f2b68ba.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-29-32Z-00266-mistral_ui-2f2b68ba.json,0.954
+raw/synthetic-browser-v3/2026-02-21T04-29-35Z-00532-qwen_ui-2dca8cfd.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-29-35Z-00532-qwen_ui-2dca8cfd.json,0.874
+raw/synthetic-browser-v3/2026-02-21T04-29-37Z-00267-claude_ui-ab0c16dd.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-29-37Z-00267-claude_ui-ab0c16dd.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-29-40Z-00214-poe_ui-10f897ab.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-29-40Z-00214-poe_ui-10f897ab.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-29-50Z-00540-mistral_ui-6aab0fa6.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-29-50Z-00540-mistral_ui-6aab0fa6.json,0.824
+raw/synthetic-browser-v3/2026-02-21T04-29-51Z-00180-claude_ui-28c840b1.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-29-51Z-00180-claude_ui-28c840b1.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-30-01Z-00545-qwen_ui-6e471908.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-30-01Z-00545-qwen_ui-6e471908.json,0.839
+raw/synthetic-browser-v3/2026-02-21T04-30-02Z-00273-copilot_ui-74e4f34c.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-30-02Z-00273-copilot_ui-74e4f34c.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-30-02Z-00364-poe_ui-d99567be.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-30-02Z-00364-poe_ui-d99567be.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-30-17Z-00553-qwen_ui-1c0e3978.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-30-17Z-00553-qwen_ui-1c0e3978.json,0.784
+raw/synthetic-browser-v3/2026-02-21T04-30-20Z-00555-qwen_ui-f245a3b6.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-30-20Z-00555-qwen_ui-f245a3b6.json,0.765
+raw/synthetic-browser-v3/2026-02-21T04-30-24Z-00186-qwen_ui-10e7ee6f.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-30-24Z-00186-qwen_ui-10e7ee6f.json,0.887
+raw/synthetic-browser-v3/2026-02-21T04-30-30Z-00280-mistral_ui-518775b3.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-30-30Z-00280-mistral_ui-518775b3.json,0.898
+raw/synthetic-browser-v3/2026-02-21T04-30-32Z-00281-perplexity_ui-8041ca31.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-30-32Z-00281-perplexity_ui-8041ca31.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-30-33Z-00375-poe_ui-b5cdc3e2.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-30-33Z-00375-poe_ui-b5cdc3e2.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-30-38Z-00376-copilot_ui-c758a01d.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-30-38Z-00376-copilot_ui-c758a01d.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-30-43Z-00283-deepseek_ui-57675574.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-30-43Z-00283-deepseek_ui-57675574.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-30-45Z-00189-meta_ai_ui-52ec03ca.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-30-45Z-00189-meta_ai_ui-52ec03ca.json,0.803
+raw/synthetic-browser-v3/2026-02-21T04-30-45Z-00284-mistral_ui-1b4c5a82.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-30-45Z-00284-mistral_ui-1b4c5a82.json,0.899
+raw/synthetic-browser-v3/2026-02-21T04-30-49Z-00285-mistral_ui-7283555d.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-30-49Z-00285-mistral_ui-7283555d.json,0.798
+raw/synthetic-browser-v3/2026-02-21T04-30-51Z-00228-meta_ai_ui-06927c51.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-30-51Z-00228-meta_ai_ui-06927c51.json,0.852
+raw/synthetic-browser-v3/2026-02-21T04-30-53Z-00381-copilot_ui-70316939.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-30-53Z-00381-copilot_ui-70316939.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-30-58Z-00383-deepseek_ui-481e70ff.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-30-58Z-00383-deepseek_ui-481e70ff.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-31-06Z-00578-meta_ai_ui-019cf4e1.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-31-06Z-00578-meta_ai_ui-019cf4e1.json,0.816
+raw/synthetic-browser-v3/2026-02-21T04-31-10Z-00290-perplexity_ui-fa18e71f.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-31-10Z-00290-perplexity_ui-fa18e71f.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-31-13Z-00388-ai_ui-96de1b89.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-31-13Z-00388-ai_ui-96de1b89.json,0.965
+raw/synthetic-browser-v3/2026-02-21T04-31-15Z-00291-deepseek_ui-18eefdc3.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-31-15Z-00291-deepseek_ui-18eefdc3.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-31-16Z-00292-mistral_ui-92e17ce5.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-31-16Z-00292-mistral_ui-92e17ce5.json,0.844
+raw/synthetic-browser-v3/2026-02-21T04-31-18Z-00585-meta_ai_ui-c2d99f47.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-31-18Z-00585-meta_ai_ui-c2d99f47.json,0.787
+raw/synthetic-browser-v3/2026-02-21T04-31-25Z-00588-qwen_ui-3283bcda.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-31-25Z-00588-qwen_ui-3283bcda.json,0.948
+raw/synthetic-browser-v3/2026-02-21T04-31-29Z-00236-deepseek_ui-9f493777.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-31-29Z-00236-deepseek_ui-9f493777.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-31-35Z-00237-copilot_ui-6b97c617.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-31-35Z-00237-copilot_ui-6b97c617.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-31-35Z-00592-mistral_ui-24584e79.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-31-35Z-00592-mistral_ui-24584e79.json,0.876
+raw/synthetic-browser-v3/2026-02-21T04-31-47Z-00299-poe_ui-febc2729.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-31-47Z-00299-poe_ui-febc2729.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-31-56Z-00302-grok_ui-686b797f.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-31-56Z-00302-grok_ui-686b797f.json,0.854
+raw/synthetic-browser-v3/2026-02-21T04-32-00Z-00242-copilot_ui-36b22d4e.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-32-00Z-00242-copilot_ui-36b22d4e.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-32-11Z-00244-poe_ui-26968a0a.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-32-11Z-00244-poe_ui-26968a0a.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-32-13Z-00306-qwen_ui-d189a330.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-32-13Z-00306-qwen_ui-d189a330.json,0.813
+raw/synthetic-browser-v3/2026-02-21T04-32-18Z-00410-qwen_ui-1880f8f0.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-32-18Z-00410-qwen_ui-1880f8f0.json,0.858
+raw/synthetic-browser-v3/2026-02-21T04-32-25Z-00247-meta_ai_ui-e4b7405a.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-32-25Z-00247-meta_ai_ui-e4b7405a.json,0.791
+raw/synthetic-browser-v3/2026-02-21T04-32-29Z-00620-meta_ai_ui-c6c0e08c.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-32-29Z-00620-meta_ai_ui-c6c0e08c.json,0.766
+raw/synthetic-browser-v3/2026-02-21T04-32-33Z-00207-perplexity_ui-4f3fbe07.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-32-33Z-00207-perplexity_ui-4f3fbe07.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-32-40Z-00625-qwen_ui-e261dfa5.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-32-40Z-00625-qwen_ui-e261dfa5.json,0.923
+raw/synthetic-browser-v3/2026-02-21T04-32-40Z-00626-mistral_ui-ff559199.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-32-40Z-00626-mistral_ui-ff559199.json,0.770
+raw/synthetic-browser-v3/2026-02-21T04-32-49Z-00252-ai_ui-7f36f4a1.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-32-49Z-00252-ai_ui-7f36f4a1.json,0.885
+raw/synthetic-browser-v3/2026-02-21T04-32-51Z-00315-meta_ai_ui-2163e697.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-32-51Z-00315-meta_ai_ui-2163e697.json,0.797
+raw/synthetic-browser-v3/2026-02-21T04-33-02Z-00424-grok_ui-cbc12513.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-33-02Z-00424-grok_ui-cbc12513.json,0.843
+raw/synthetic-browser-v3/2026-02-21T04-33-02Z-00636-qwen_ui-76b0dec9.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-33-02Z-00636-qwen_ui-76b0dec9.json,0.887
+raw/synthetic-browser-v3/2026-02-21T04-33-24Z-00259-claude_ui-b5e8f105.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-33-24Z-00259-claude_ui-b5e8f105.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-33-24Z-00432-grok_ui-100f6126.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-33-24Z-00432-grok_ui-100f6126.json,0.873
+raw/synthetic-browser-v3/2026-02-21T04-33-29Z-00649-qwen_ui-3571d89e.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-33-29Z-00649-qwen_ui-3571d89e.json,0.813
+raw/synthetic-browser-v3/2026-02-21T04-33-30Z-00217-copilot_ui-4421d249.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-33-30Z-00217-copilot_ui-4421d249.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-33-32Z-00652-qwen_ui-4c99a53f.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-33-32Z-00652-qwen_ui-4c99a53f.json,0.884
+raw/synthetic-browser-v3/2026-02-21T04-33-35Z-00435-grok_ui-5701aae3.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-33-35Z-00435-grok_ui-5701aae3.json,0.969
+raw/synthetic-browser-v3/2026-02-21T04-33-39Z-00655-meta_ai_ui-eadc2b3a.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-33-39Z-00655-meta_ai_ui-eadc2b3a.json,0.960
+raw/synthetic-browser-v3/2026-02-21T04-33-47Z-00329-claude_ui-06d9d2cf.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-33-47Z-00329-claude_ui-06d9d2cf.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-33-47Z-00658-meta_ai_ui-183e4993.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-33-47Z-00658-meta_ai_ui-183e4993.json,0.970
+raw/synthetic-browser-v3/2026-02-21T04-33-49Z-00264-meta_ai_ui-ba3ed4f4.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-33-49Z-00264-meta_ai_ui-ba3ed4f4.json,0.825
+raw/synthetic-browser-v3/2026-02-21T04-33-51Z-00330-grok_ui-cc6a3edf.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-33-51Z-00330-grok_ui-cc6a3edf.json,0.874
+raw/synthetic-browser-v3/2026-02-21T04-33-56Z-00221-grok_ui-02a48d6e.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-33-56Z-00221-grok_ui-02a48d6e.json,0.832
+raw/synthetic-browser-v3/2026-02-21T04-34-05Z-00334-chatgpt_ui-82c27462.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-34-05Z-00334-chatgpt_ui-82c27462.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-34-22Z-00451-meta_ai_ui-c5db7545.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-34-22Z-00451-meta_ai_ui-c5db7545.json,0.776
+raw/synthetic-browser-v3/2026-02-21T04-34-27Z-00226-deepseek_ui-12dd5bb7.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-34-27Z-00226-deepseek_ui-12dd5bb7.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-34-31Z-00272-mistral_ui-4d6d1f82.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-34-31Z-00272-mistral_ui-4d6d1f82.json,0.780
+raw/synthetic-browser-v3/2026-02-21T04-34-44Z-00344-mistral_ui-113d001c.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-34-44Z-00344-mistral_ui-113d001c.json,0.913
+raw/synthetic-browser-v3/2026-02-21T04-34-49Z-00230-copilot_ui-e538ef54.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-34-49Z-00230-copilot_ui-e538ef54.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-34-56Z-00462-mistral_ui-46175fce.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-34-56Z-00462-mistral_ui-46175fce.json,0.822
+raw/synthetic-browser-v3/2026-02-21T04-35-00Z-00278-copilot_ui-1a96b9d0.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-35-00Z-00278-copilot_ui-1a96b9d0.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-35-03Z-00232-mistral_ui-b7efef05.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-35-03Z-00232-mistral_ui-b7efef05.json,0.807
+raw/synthetic-browser-v3/2026-02-21T04-35-05Z-00349-poe_ui-e53428c5.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-35-05Z-00349-poe_ui-e53428c5.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-35-07Z-00233-perplexity_ui-ac33f5c1.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-35-07Z-00233-perplexity_ui-ac33f5c1.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-35-07Z-00466-meta_ai_ui-444249f1.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-35-07Z-00466-meta_ai_ui-444249f1.json,0.945
+raw/synthetic-browser-v3/2026-02-21T04-35-15Z-00234-meta_ai_ui-35783a44.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-35-15Z-00234-meta_ai_ui-35783a44.json,0.964
+raw/synthetic-browser-v3/2026-02-21T04-35-15Z-00702-mistral_ui-18f61454.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-35-15Z-00702-mistral_ui-18f61454.json,0.866
+raw/synthetic-browser-v3/2026-02-21T04-35-18Z-00235-ai_ui-bb35a4c8.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-35-18Z-00235-ai_ui-bb35a4c8.json,0.887
+raw/synthetic-browser-v3/2026-02-21T04-35-20Z-00706-meta_ai_ui-ecf8c47d.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-35-20Z-00706-meta_ai_ui-ecf8c47d.json,0.963
+raw/synthetic-browser-v3/2026-02-21T04-35-36Z-00238-copilot_ui-4d70a2ea.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-35-36Z-00238-copilot_ui-4d70a2ea.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-35-39Z-00357-chatgpt_ui-cb899eae.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-35-39Z-00357-chatgpt_ui-cb899eae.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-35-48Z-00479-grok_ui-1330eafc.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-35-48Z-00479-grok_ui-1330eafc.json,0.761
+raw/synthetic-browser-v3/2026-02-21T04-35-55Z-00361-grok_ui-a341c5f8.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-35-55Z-00361-grok_ui-a341c5f8.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-36-06Z-00243-chatgpt_ui-3143f35f.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-36-06Z-00243-chatgpt_ui-3143f35f.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-36-12Z-00732-grok_ui-614fe562.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-36-12Z-00732-grok_ui-614fe562.json,0.829
+raw/synthetic-browser-v3/2026-02-21T04-36-16Z-00293-chatgpt_ui-59c074d1.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-36-16Z-00293-chatgpt_ui-59c074d1.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-36-18Z-00294-grok_ui-9d0953a0.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-36-18Z-00294-grok_ui-9d0953a0.json,0.812
+raw/synthetic-browser-v3/2026-02-21T04-36-21Z-00491-mistral_ui-bb23c98c.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-36-21Z-00491-mistral_ui-bb23c98c.json,0.875
+raw/synthetic-browser-v3/2026-02-21T04-36-23Z-00295-ai_ui-75ad231b.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-36-23Z-00295-ai_ui-75ad231b.json,0.817
+raw/synthetic-browser-v3/2026-02-21T04-36-40Z-00298-copilot_ui-ce8f984b.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-36-40Z-00298-copilot_ui-ce8f984b.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-36-40Z-00373-perplexity_ui-76200721.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-36-40Z-00373-perplexity_ui-76200721.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-36-41Z-00497-grok_ui-a913060c.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-36-41Z-00497-grok_ui-a913060c.json,0.805
+raw/synthetic-browser-v3/2026-02-21T04-36-47Z-00374-poe_ui-9469709f.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-36-47Z-00374-poe_ui-9469709f.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-36-49Z-00250-deepseek_ui-d447c810.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-36-49Z-00250-deepseek_ui-d447c810.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-36-54Z-00501-meta_ai_ui-c3e685d8.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-36-54Z-00501-meta_ai_ui-c3e685d8.json,0.824
+raw/synthetic-browser-v3/2026-02-21T04-37-04Z-00379-qwen_ui-4f261681.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-37-04Z-00379-qwen_ui-4f261681.json,0.860
+raw/synthetic-browser-v3/2026-02-21T04-37-06Z-00303-poe_ui-ca0ea52e.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-37-06Z-00303-poe_ui-ca0ea52e.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-37-15Z-00305-mistral_ui-c294dd0a.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-37-15Z-00305-mistral_ui-c294dd0a.json,0.793
+raw/synthetic-browser-v3/2026-02-21T04-37-28Z-00308-chatgpt_ui-540dff12.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-37-28Z-00308-chatgpt_ui-540dff12.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-37-33Z-00309-qwen_ui-4b0d4cbd.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-37-33Z-00309-qwen_ui-4b0d4cbd.json,0.851
+raw/synthetic-browser-v3/2026-02-21T04-37-36Z-00258-poe_ui-b012c7e6.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-37-36Z-00258-poe_ui-b012c7e6.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-37-45Z-00311-perplexity_ui-16aa9954.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-37-45Z-00311-perplexity_ui-16aa9954.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-37-46Z-00778-qwen_ui-2a962ee4.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-37-46Z-00778-qwen_ui-2a962ee4.json,0.804
+raw/synthetic-browser-v3/2026-02-21T04-37-47Z-00389-perplexity_ui-11886095.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-37-47Z-00389-perplexity_ui-11886095.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-37-48Z-00312-perplexity_ui-a7bad5f1.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-37-48Z-00312-perplexity_ui-a7bad5f1.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-37-51Z-00390-grok_ui-4054e5b0.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-37-51Z-00390-grok_ui-4054e5b0.json,0.847
+raw/synthetic-browser-v3/2026-02-21T04-37-55Z-00391-poe_ui-a27ef480.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-37-55Z-00391-poe_ui-a27ef480.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-38-00Z-00262-gemini_ui-efa60f91.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-38-00Z-00262-gemini_ui-efa60f91.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-38-07Z-00788-meta_ai_ui-751983ce.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-38-07Z-00788-meta_ai_ui-751983ce.json,0.812
+raw/synthetic-browser-v3/2026-02-21T04-38-08Z-00316-chatgpt_ui-98324d70.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-38-08Z-00316-chatgpt_ui-98324d70.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-38-09Z-00395-meta_ai_ui-27b728b9.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-38-09Z-00395-meta_ai_ui-27b728b9.json,0.840
+raw/synthetic-browser-v3/2026-02-21T04-38-12Z-00527-meta_ai_ui-6a12de3d.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-38-12Z-00527-meta_ai_ui-6a12de3d.json,0.963
+raw/synthetic-browser-v3/2026-02-21T04-38-15Z-00528-grok_ui-db2c85dc.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-38-15Z-00528-grok_ui-db2c85dc.json,0.885
+raw/synthetic-browser-v3/2026-02-21T04-38-18Z-00529-grok_ui-4e5e025a.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-38-18Z-00529-grok_ui-4e5e025a.json,0.832
+raw/synthetic-browser-v3/2026-02-21T04-38-18Z-00795-qwen_ui-e94d505c.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-38-18Z-00795-qwen_ui-e94d505c.json,0.823
+raw/synthetic-browser-v3/2026-02-21T04-38-21Z-00265-qwen_ui-ca600190.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-38-21Z-00265-qwen_ui-ca600190.json,0.838
+raw/synthetic-browser-v3/2026-02-21T04-38-21Z-00530-mistral_ui-31c9a3c0.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-38-21Z-00530-mistral_ui-31c9a3c0.json,0.912
+raw/synthetic-browser-v3/2026-02-21T04-38-30Z-00400-poe_ui-04a753fc.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-38-30Z-00400-poe_ui-04a753fc.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-38-34Z-00401-grok_ui-e22b66d6.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-38-34Z-00401-grok_ui-e22b66d6.json,0.965
+raw/synthetic-browser-v3/2026-02-21T04-38-37Z-00402-mistral_ui-4a1e8e91.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-38-37Z-00402-mistral_ui-4a1e8e91.json,0.894
+raw/synthetic-browser-v3/2026-02-21T04-38-45Z-00404-claude_ui-a410f7a9.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-38-45Z-00404-claude_ui-a410f7a9.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-38-54Z-00406-poe_ui-5a150e27.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-38-54Z-00406-poe_ui-5a150e27.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-38-58Z-00326-mistral_ui-211f2c82.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-38-58Z-00326-mistral_ui-211f2c82.json,0.829
+raw/synthetic-browser-v3/2026-02-21T04-39-04Z-00327-claude_ui-83d50363.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-39-04Z-00327-claude_ui-83d50363.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-39-15Z-00411-qwen_ui-4c6f016a.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-39-15Z-00411-qwen_ui-4c6f016a.json,0.855
+raw/synthetic-browser-v3/2026-02-21T04-39-17Z-00412-perplexity_ui-5c7cf2ca.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-39-17Z-00412-perplexity_ui-5c7cf2ca.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-39-21Z-00275-mistral_ui-c52d50fd.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-39-21Z-00275-mistral_ui-c52d50fd.json,0.844
+raw/synthetic-browser-v3/2026-02-21T04-39-22Z-00413-meta_ai_ui-c475e2ad.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-39-22Z-00413-meta_ai_ui-c475e2ad.json,0.940
+raw/synthetic-browser-v3/2026-02-21T04-39-25Z-00331-qwen_ui-098f4aeb.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-39-25Z-00331-qwen_ui-098f4aeb.json,0.947
+raw/synthetic-browser-v3/2026-02-21T04-39-31Z-00277-deepseek_ui-28a189bc.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-39-31Z-00277-deepseek_ui-28a189bc.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-39-50Z-00560-qwen_ui-035e2682.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-39-50Z-00560-qwen_ui-035e2682.json,0.897
+raw/synthetic-browser-v3/2026-02-21T04-39-55Z-00337-perplexity_ui-fb1c1fb4.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-39-55Z-00337-perplexity_ui-fb1c1fb4.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-40-03Z-00564-qwen_ui-262d0dee.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-40-03Z-00564-qwen_ui-262d0dee.json,0.914
+raw/synthetic-browser-v3/2026-02-21T04-40-04Z-00565-qwen_ui-3a46f479.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-40-04Z-00565-qwen_ui-3a46f479.json,0.792
+raw/synthetic-browser-v3/2026-02-21T04-40-11Z-00425-qwen_ui-66e2f50e.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-40-11Z-00425-qwen_ui-66e2f50e.json,0.894
+raw/synthetic-browser-v3/2026-02-21T04-40-16Z-00341-claude_ui-c8eedd25.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-40-16Z-00341-claude_ui-c8eedd25.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-40-16Z-00569-meta_ai_ui-293086ec.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-40-16Z-00569-meta_ai_ui-293086ec.json,0.903
+raw/synthetic-browser-v3/2026-02-21T04-40-18Z-00427-qwen_ui-add9d782.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-40-18Z-00427-qwen_ui-add9d782.json,0.854
+raw/synthetic-browser-v3/2026-02-21T04-40-20Z-00570-meta_ai_ui-9e28601e.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-40-20Z-00570-meta_ai_ui-9e28601e.json,0.855
+raw/synthetic-browser-v3/2026-02-21T04-40-25Z-00286-claude_ui-f93d8ee6.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-40-25Z-00286-claude_ui-f93d8ee6.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-40-26Z-00572-qwen_ui-6a084141.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-40-26Z-00572-qwen_ui-6a084141.json,0.964
+raw/synthetic-browser-v3/2026-02-21T04-40-32Z-00574-grok_ui-93a2101b.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-40-32Z-00574-grok_ui-93a2101b.json,0.968
+raw/synthetic-browser-v3/2026-02-21T04-40-42Z-00577-meta_ai_ui-e764582a.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-40-42Z-00577-meta_ai_ui-e764582a.json,0.920
+raw/synthetic-browser-v3/2026-02-21T04-40-43Z-00347-qwen_ui-adad91d6.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-40-43Z-00347-qwen_ui-adad91d6.json,0.899
+raw/synthetic-browser-v3/2026-02-21T04-41-00Z-00350-perplexity_ui-3ebc5194.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-41-00Z-00350-perplexity_ui-3ebc5194.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-41-00Z-00583-qwen_ui-eea16f8c.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-41-00Z-00583-qwen_ui-eea16f8c.json,0.884
+raw/synthetic-browser-v3/2026-02-21T04-41-04Z-00351-perplexity_ui-9ff7386b.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-41-04Z-00351-perplexity_ui-9ff7386b.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-41-10Z-00352-perplexity_ui-3387dc6b.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-41-10Z-00352-perplexity_ui-3387dc6b.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-41-11Z-00440-qwen_ui-2b692471.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-41-11Z-00440-qwen_ui-2b692471.json,0.882
+raw/synthetic-browser-v3/2026-02-21T04-41-13Z-00441-meta_ai_ui-82848720.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-41-13Z-00441-meta_ai_ui-82848720.json,0.864
+raw/synthetic-browser-v3/2026-02-21T04-41-26Z-00355-chatgpt_ui-deac7a4c.jpg,,chatgpt_ui,keyword: chatgpt/openai,raw/synthetic-browser-v3/2026-02-21T04-41-26Z-00355-chatgpt_ui-deac7a4c.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-41-27Z-00296-perplexity_ui-c2f8e4f9.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-41-27Z-00296-perplexity_ui-c2f8e4f9.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-41-49Z-00300-mistral_ui-7eef8149.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-41-49Z-00300-mistral_ui-7eef8149.json,0.959
+raw/synthetic-browser-v3/2026-02-21T04-41-49Z-00360-grok_ui-90a1fe4b.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-41-49Z-00360-grok_ui-90a1fe4b.json,0.893
+raw/synthetic-browser-v3/2026-02-21T04-41-57Z-00452-grok_ui-e4a93588.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-41-57Z-00452-grok_ui-e4a93588.json,0.975
+raw/synthetic-browser-v3/2026-02-21T04-42-03Z-00453-mistral_ui-c19fdfc8.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-42-03Z-00453-mistral_ui-c19fdfc8.json,0.890
+raw/synthetic-browser-v3/2026-02-21T04-42-17Z-00609-mistral_ui-5b20bf68.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-42-17Z-00609-mistral_ui-5b20bf68.json,0.896
+raw/synthetic-browser-v3/2026-02-21T04-42-25Z-00367-claude_ui-88a193a4.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-42-25Z-00367-claude_ui-88a193a4.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-42-29Z-00368-poe_ui-40d0cd24.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-42-29Z-00368-poe_ui-40d0cd24.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-42-31Z-00307-mistral_ui-404c89c7.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-42-31Z-00307-mistral_ui-404c89c7.json,0.874
+raw/synthetic-browser-v3/2026-02-21T04-42-40Z-00617-mistral_ui-48b5e1c8.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-42-40Z-00617-mistral_ui-48b5e1c8.json,0.968
+raw/synthetic-browser-v3/2026-02-21T04-42-44Z-00371-deepseek_ui-3459a938.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-42-44Z-00371-deepseek_ui-3459a938.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-42-48Z-00372-grok_ui-62b099a5.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-42-48Z-00372-grok_ui-62b099a5.json,0.918
+raw/synthetic-browser-v3/2026-02-21T04-42-50Z-00310-ai_ui-f9ec5842.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-42-50Z-00310-ai_ui-f9ec5842.json,0.956
+raw/synthetic-browser-v3/2026-02-21T04-43-00Z-00468-qwen_ui-1d406357.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-43-00Z-00468-qwen_ui-1d406357.json,0.967
+raw/synthetic-browser-v3/2026-02-21T04-43-14Z-00377-mistral_ui-1fe003e1.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-43-14Z-00377-mistral_ui-1fe003e1.json,0.833
+raw/synthetic-browser-v3/2026-02-21T04-43-18Z-00472-grok_ui-663f305c.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-43-18Z-00472-grok_ui-663f305c.json,0.954
+raw/synthetic-browser-v3/2026-02-21T04-43-24Z-00632-meta_ai_ui-c0f9ed51.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-43-24Z-00632-meta_ai_ui-c0f9ed51.json,0.867
+raw/synthetic-browser-v3/2026-02-21T04-43-31Z-00380-mistral_ui-403d6ce6.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-43-31Z-00380-mistral_ui-403d6ce6.json,0.919
+raw/synthetic-browser-v3/2026-02-21T04-43-37Z-00318-meta_ai_ui-772160ec.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-43-37Z-00318-meta_ai_ui-772160ec.json,0.869
+raw/synthetic-browser-v3/2026-02-21T04-43-39Z-00477-mistral_ui-fbf87ff0.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-43-39Z-00477-mistral_ui-fbf87ff0.json,0.856
+raw/synthetic-browser-v3/2026-02-21T04-43-42Z-00637-mistral_ui-a6c1000f.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-43-42Z-00637-mistral_ui-a6c1000f.json,0.892
+raw/synthetic-browser-v3/2026-02-21T04-43-43Z-00319-copilot_ui-ad7f0730.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-43-43Z-00319-copilot_ui-ad7f0730.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-43-43Z-00638-qwen_ui-7785d854.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-43-43Z-00638-qwen_ui-7785d854.json,0.819
+raw/synthetic-browser-v3/2026-02-21T04-43-53Z-00385-qwen_ui-631fe702.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-43-53Z-00385-qwen_ui-631fe702.json,0.862
+raw/synthetic-browser-v3/2026-02-21T04-43-57Z-00321-grok_ui-98490c68.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-43-57Z-00321-grok_ui-98490c68.json,0.979
+raw/synthetic-browser-v3/2026-02-21T04-44-01Z-00386-copilot_ui-e085bca6.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-44-01Z-00386-copilot_ui-e085bca6.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-44-03Z-00322-copilot_ui-8841d98b.jpg,,copilot_ui,keyword: copilot,raw/synthetic-browser-v3/2026-02-21T04-44-03Z-00322-copilot_ui-8841d98b.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-44-03Z-00387-meta_ai_ui-d37f4be6.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-44-03Z-00387-meta_ai_ui-d37f4be6.json,0.938
+raw/synthetic-browser-v3/2026-02-21T04-44-15Z-00324-mistral_ui-1f9b41d4.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-44-15Z-00324-mistral_ui-1f9b41d4.json,0.908
+raw/synthetic-browser-v3/2026-02-21T04-44-21Z-00325-deepseek_ui-831204ff.jpg,,deepseek_ui,keyword: deepseek,raw/synthetic-browser-v3/2026-02-21T04-44-21Z-00325-deepseek_ui-831204ff.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-44-29Z-00392-claude_ui-b7b3475c.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-44-29Z-00392-claude_ui-b7b3475c.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-44-36Z-00393-meta_ai_ui-7f69aef2.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-44-36Z-00393-meta_ai_ui-7f69aef2.json,0.815
+raw/synthetic-browser-v3/2026-02-21T04-44-39Z-00394-qwen_ui-92b760df.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-44-39Z-00394-qwen_ui-92b760df.json,0.949
+raw/synthetic-browser-v3/2026-02-21T04-44-49Z-00396-gemini_ui-502f5b2a.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-44-49Z-00396-gemini_ui-502f5b2a.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-44-55Z-00397-gemini_ui-8cef7ab9.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-44-55Z-00397-gemini_ui-8cef7ab9.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-44-57Z-00662-qwen_ui-4a34aa5b.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-44-57Z-00662-qwen_ui-4a34aa5b.json,0.761
+raw/synthetic-browser-v3/2026-02-21T04-44-59Z-00398-qwen_ui-a333cf2d.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-44-59Z-00398-qwen_ui-a333cf2d.json,0.780
+raw/synthetic-browser-v3/2026-02-21T04-45-01Z-00332-ai_ui-4d27f119.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-45-01Z-00332-ai_ui-4d27f119.json,0.921
+raw/synthetic-browser-v3/2026-02-21T04-45-09Z-00667-qwen_ui-c003457a.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-45-09Z-00667-qwen_ui-c003457a.json,0.897
+raw/synthetic-browser-v3/2026-02-21T04-45-17Z-00502-grok_ui-28e3e551.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-45-17Z-00502-grok_ui-28e3e551.json,0.947
+raw/synthetic-browser-v3/2026-02-21T04-45-39Z-00338-grok_ui-993db795.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-45-39Z-00338-grok_ui-993db795.json,0.946
+raw/synthetic-browser-v3/2026-02-21T04-45-51Z-00680-qwen_ui-bab00a7a.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-45-51Z-00680-qwen_ui-bab00a7a.json,0.891
+raw/synthetic-browser-v3/2026-02-21T04-46-09Z-00343-perplexity_ui-a4396c91.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-46-09Z-00343-perplexity_ui-a4396c91.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-46-10Z-00687-qwen_ui-27d14542.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-46-10Z-00687-qwen_ui-27d14542.json,0.825
+raw/synthetic-browser-v3/2026-02-21T04-46-17Z-00689-grok_ui-ca08d6cf.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-46-17Z-00689-grok_ui-ca08d6cf.json,0.762
+raw/synthetic-browser-v3/2026-02-21T04-46-26Z-00346-poe_ui-942d1b01.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-46-26Z-00346-poe_ui-942d1b01.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-46-34Z-00521-meta_ai_ui-5520be1f.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-46-34Z-00521-meta_ai_ui-5520be1f.json,0.808
+raw/synthetic-browser-v3/2026-02-21T04-46-39Z-00522-meta_ai_ui-4dedfdcb.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-46-39Z-00522-meta_ai_ui-4dedfdcb.json,0.858
+raw/synthetic-browser-v3/2026-02-21T04-46-54Z-00526-qwen_ui-56aafa64.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-46-54Z-00526-qwen_ui-56aafa64.json,0.973
+raw/synthetic-browser-v3/2026-02-21T04-47-00Z-00703-grok_ui-4da8ba16.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-47-00Z-00703-grok_ui-4da8ba16.json,0.789
+raw/synthetic-browser-v3/2026-02-21T04-47-14Z-00708-meta_ai_ui-bcc7961b.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-47-14Z-00708-meta_ai_ui-bcc7961b.json,0.898
+raw/synthetic-browser-v3/2026-02-21T04-47-20Z-00426-grok_ui-d27f6f41.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-47-20Z-00426-grok_ui-d27f6f41.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-47-22Z-00711-grok_ui-7d1bb702.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-47-22Z-00711-grok_ui-7d1bb702.json,0.890
+raw/synthetic-browser-v3/2026-02-21T04-47-24Z-00356-gemini_ui-89a63692.jpg,,gemini_ui,keyword: gemini/bard,raw/synthetic-browser-v3/2026-02-21T04-47-24Z-00356-gemini_ui-89a63692.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-47-35Z-00715-meta_ai_ui-983f4fb7.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-47-35Z-00715-meta_ai_ui-983f4fb7.json,0.763
+raw/synthetic-browser-v3/2026-02-21T04-47-39Z-00717-qwen_ui-a9597976.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-47-39Z-00717-qwen_ui-a9597976.json,0.859
+raw/synthetic-browser-v3/2026-02-21T04-47-40Z-00430-grok_ui-71d7c324.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-47-40Z-00430-grok_ui-71d7c324.json,0.908
+raw/synthetic-browser-v3/2026-02-21T04-47-44Z-00359-perplexity_ui-28dd2e89.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-47-44Z-00359-perplexity_ui-28dd2e89.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-47-44Z-00539-grok_ui-40e30fab.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-47-44Z-00539-grok_ui-40e30fab.json,0.938
+raw/synthetic-browser-v3/2026-02-21T04-47-48Z-00720-qwen_ui-37d192e1.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-47-48Z-00720-qwen_ui-37d192e1.json,0.813
+raw/synthetic-browser-v3/2026-02-21T04-48-03Z-00362-perplexity_ui-e5d43fe5.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-48-03Z-00362-perplexity_ui-e5d43fe5.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-48-07Z-00363-poe_ui-9f697eb3.jpg,,poe_ui,keyword: poe,raw/synthetic-browser-v3/2026-02-21T04-48-07Z-00363-poe_ui-9f697eb3.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-48-12Z-00546-mistral_ui-9d040be3.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-48-12Z-00546-mistral_ui-9d040be3.json,0.820
+raw/synthetic-browser-v3/2026-02-21T04-48-13Z-00437-meta_ai_ui-6729ef02.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-48-13Z-00437-meta_ai_ui-6729ef02.json,0.869
+raw/synthetic-browser-v3/2026-02-21T04-48-19Z-00730-mistral_ui-9b0608e3.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-48-19Z-00730-mistral_ui-9b0608e3.json,0.797
+raw/synthetic-browser-v3/2026-02-21T04-48-21Z-00365-ai_ui-bca28574.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-48-21Z-00365-ai_ui-bca28574.json,0.762
+raw/synthetic-browser-v3/2026-02-21T04-48-27Z-00366-perplexity_ui-8e5fe3a5.jpg,,perplexity_ui,keyword: perplexity,raw/synthetic-browser-v3/2026-02-21T04-48-27Z-00366-perplexity_ui-8e5fe3a5.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-48-30Z-00734-grok_ui-19bf997c.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-48-30Z-00734-grok_ui-19bf997c.json,0.807
+raw/synthetic-browser-v3/2026-02-21T04-48-40Z-00442-grok_ui-97ab07d6.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-48-40Z-00442-grok_ui-97ab07d6.json,0.849
+raw/synthetic-browser-v3/2026-02-21T04-48-43Z-00369-qwen_ui-a38d188b.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-48-43Z-00369-qwen_ui-a38d188b.json,0.964
+raw/synthetic-browser-v3/2026-02-21T04-48-50Z-00370-claude_ui-2128eb08.jpg,,claude_ui,keyword: claude/anthropic,raw/synthetic-browser-v3/2026-02-21T04-48-50Z-00370-claude_ui-2128eb08.json,0.800
+raw/synthetic-browser-v3/2026-02-21T04-48-56Z-00557-grok_ui-c7e5b1f8.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-48-56Z-00557-grok_ui-c7e5b1f8.json,0.880
+raw/synthetic-browser-v3/2026-02-21T04-48-58Z-00743-grok_ui-a9d8f4d9.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-48-58Z-00743-grok_ui-a9d8f4d9.json,0.801
+raw/synthetic-browser-v3/2026-02-21T04-49-01Z-00558-mistral_ui-017d1b8f.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-49-01Z-00558-mistral_ui-017d1b8f.json,0.801
+raw/synthetic-browser-v3/2026-02-21T04-49-36Z-00378-ai_ui-c5879378.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-49-36Z-00378-ai_ui-c5879378.json,0.883
+raw/synthetic-browser-v3/2026-02-21T04-49-49Z-00760-grok_ui-63255845.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-49-49Z-00760-grok_ui-63255845.json,0.929
+raw/synthetic-browser-v3/2026-02-21T04-49-52Z-00571-mistral_ui-37ae6469.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-49-52Z-00571-mistral_ui-37ae6469.json,0.823
+raw/synthetic-browser-v3/2026-02-21T04-50-24Z-00579-meta_ai_ui-f93298e1.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-50-24Z-00579-meta_ai_ui-f93298e1.json,0.966
+raw/synthetic-browser-v3/2026-02-21T04-50-25Z-00772-qwen_ui-b5eac61c.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-50-25Z-00772-qwen_ui-b5eac61c.json,0.793
+raw/synthetic-browser-v3/2026-02-21T04-50-28Z-00773-qwen_ui-3521fe14.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-50-28Z-00773-qwen_ui-3521fe14.json,0.776
+raw/synthetic-browser-v3/2026-02-21T04-50-35Z-00775-qwen_ui-af24aa1d.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-50-35Z-00775-qwen_ui-af24aa1d.json,0.898
+raw/synthetic-browser-v3/2026-02-21T04-50-47Z-00779-qwen_ui-d817df99.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-50-47Z-00779-qwen_ui-d817df99.json,0.963
+raw/synthetic-browser-v3/2026-02-21T04-51-01Z-00470-grok_ui-d9aedffb.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-51-01Z-00470-grok_ui-d9aedffb.json,0.864
+raw/synthetic-browser-v3/2026-02-21T04-51-33Z-00794-meta_ai_ui-82cd3317.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-51-33Z-00794-meta_ai_ui-82cd3317.json,0.915
+raw/synthetic-browser-v3/2026-02-21T04-51-42Z-00399-meta_ai_ui-7292e764.jpg,,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-51-42Z-00399-meta_ai_ui-7292e764.json,0.835
+raw/synthetic-browser-v3/2026-02-21T04-52-08Z-00605-qwen_ui-ed37664d.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-52-08Z-00605-qwen_ui-ed37664d.json,0.893
+raw/synthetic-browser-v3/2026-02-21T04-52-09Z-00806-mistral_ui-4586b67f.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-52-09Z-00806-mistral_ui-4586b67f.json,0.803
+raw/synthetic-browser-v3/2026-02-21T04-52-12Z-00807-mistral_ui-6bd70a71.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-52-12Z-00807-mistral_ui-6bd70a71.json,0.810
+raw/synthetic-browser-v3/2026-02-21T04-52-22Z-00608-qwen_ui-7f98c22b.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-52-22Z-00608-qwen_ui-7f98c22b.json,0.968
+raw/synthetic-browser-v3/2026-02-21T04-52-26Z-00812-grok_ui-f472ed29.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-52-26Z-00812-grok_ui-f472ed29.json,0.865
+raw/synthetic-browser-v3/2026-02-21T04-52-40Z-00490-mistral_ui-42023f7d.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-52-40Z-00490-mistral_ui-42023f7d.json,0.763
+raw/synthetic-browser-v3/2026-02-21T04-53-36Z-00627-mistral_ui-ee4f7876.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-53-36Z-00627-mistral_ui-ee4f7876.json,0.947
+raw/synthetic-browser-v3/2026-02-21T04-53-36Z-00835-meta_ai_ui-194dc86f.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-53-36Z-00835-meta_ai_ui-194dc86f.json,0.824
+raw/synthetic-browser-v3/2026-02-21T04-53-43Z-00628-grok_ui-420c4d50.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-53-43Z-00628-grok_ui-420c4d50.json,0.946
+raw/synthetic-browser-v3/2026-02-21T04-54-32Z-00641-qwen_ui-5f69844a.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-54-32Z-00641-qwen_ui-5f69844a.json,0.766
+raw/synthetic-browser-v3/2026-02-21T04-54-44Z-00515-qwen_ui-36d47214.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-54-44Z-00515-qwen_ui-36d47214.json,0.842
+raw/synthetic-browser-v3/2026-02-21T04-54-51Z-00516-mistral_ui-2d648e44.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-54-51Z-00516-mistral_ui-2d648e44.json,0.868
+raw/synthetic-browser-v3/2026-02-21T04-55-42Z-00439-qwen_ui-0cbbcb4c.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-55-42Z-00439-qwen_ui-0cbbcb4c.json,0.976
+raw/synthetic-browser-v3/2026-02-21T04-56-12Z-00444-qwen_ui-415cddab.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-56-12Z-00444-qwen_ui-415cddab.json,0.783
+raw/synthetic-browser-v3/2026-02-21T04-57-25Z-00547-grok_ui-6c999ac8.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-57-25Z-00547-grok_ui-6c999ac8.json,0.859
+raw/synthetic-browser-v3/2026-02-21T04-57-28Z-00548-qwen_ui-be189c43.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-57-28Z-00548-qwen_ui-be189c43.json,0.787
+raw/synthetic-browser-v3/2026-02-21T04-58-02Z-00693-mistral_ui-5bfdd434.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-58-02Z-00693-mistral_ui-5bfdd434.json,0.781
+raw/synthetic-browser-v3/2026-02-21T04-59-09Z-00568-meta_ai_ui-5f51249e.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-59-09Z-00568-meta_ai_ui-5f51249e.json,0.911
+raw/synthetic-browser-v3/2026-02-21T04-59-24Z-00476-qwen_ui-9af526c9.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-59-24Z-00476-qwen_ui-9af526c9.json,0.928
+raw/synthetic-browser-v3/2026-02-21T04-59-36Z-00573-meta_ai_ui-587ee4be.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T04-59-36Z-00573-meta_ai_ui-587ee4be.json,0.950
+raw/synthetic-browser-v3/2026-02-21T05-01-09Z-00740-grok_ui-e86ac424.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-01-09Z-00740-grok_ui-e86ac424.json,0.774
+raw/synthetic-browser-v3/2026-02-21T05-01-17Z-00742-grok_ui-48e16544.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-01-17Z-00742-grok_ui-48e16544.json,0.888
+raw/synthetic-browser-v3/2026-02-21T05-01-29Z-00596-qwen_ui-7d4790e9.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-01-29Z-00596-qwen_ui-7d4790e9.json,0.772
+raw/synthetic-browser-v3/2026-02-21T05-01-33Z-00597-grok_ui-3600f1ae.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-01-33Z-00597-grok_ui-3600f1ae.json,0.785
+raw/synthetic-browser-v3/2026-02-21T05-01-56Z-00752-grok_ui-15f85e91.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-01-56Z-00752-grok_ui-15f85e91.json,0.765
+raw/synthetic-browser-v3/2026-02-21T05-02-08Z-00604-meta_ai_ui-12a9d9cf.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-02-08Z-00604-meta_ai_ui-12a9d9cf.json,0.807
+raw/synthetic-browser-v3/2026-02-21T05-02-09Z-00503-mistral_ui-3dafa586.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-02-09Z-00503-mistral_ui-3dafa586.json,0.918
+raw/synthetic-browser-v3/2026-02-21T05-02-17Z-00757-meta_ai_ui-fdca3443.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-02-17Z-00757-meta_ai_ui-fdca3443.json,0.828
+raw/synthetic-browser-v3/2026-02-21T05-02-25Z-00759-mistral_ui-bbbd7c92.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-02-25Z-00759-mistral_ui-bbbd7c92.json,0.781
+raw/synthetic-browser-v3/2026-02-21T05-02-27Z-00506-meta_ai_ui-6adbf03c.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-02-27Z-00506-meta_ai_ui-6adbf03c.json,0.927
+raw/synthetic-browser-v3/2026-02-21T05-02-48Z-00612-meta_ai_ui-804a89a4.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-02-48Z-00612-meta_ai_ui-804a89a4.json,0.816
+raw/synthetic-browser-v3/2026-02-21T05-02-50Z-00765-qwen_ui-a013b01a.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-02-50Z-00765-qwen_ui-a013b01a.json,0.915
+raw/synthetic-browser-v3/2026-02-21T05-03-19Z-00618-grok_ui-fd00e8fd.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-03-19Z-00618-grok_ui-fd00e8fd.json,0.930
+raw/synthetic-browser-v3/2026-02-21T05-03-48Z-00624-meta_ai_ui-f27409ef.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-03-48Z-00624-meta_ai_ui-f27409ef.json,0.920
+raw/synthetic-browser-v3/2026-02-21T05-04-34Z-00791-meta_ai_ui-271c77fb.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-04-34Z-00791-meta_ai_ui-271c77fb.json,0.861
+raw/synthetic-browser-v3/2026-02-21T05-05-07Z-00533-grok_ui-4ea2cd73.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-05-07Z-00533-grok_ui-4ea2cd73.json,0.924
+raw/synthetic-browser-v3/2026-02-21T05-05-57Z-00541-qwen_ui-8ba7acf4.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-05-57Z-00541-qwen_ui-8ba7acf4.json,0.820
+raw/synthetic-browser-v3/2026-02-21T05-06-18Z-00817-qwen_ui-5fa0c43e.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-06-18Z-00817-qwen_ui-5fa0c43e.json,0.906
+raw/synthetic-browser-v3/2026-02-21T05-06-45Z-00549-qwen_ui-b7092ce3.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-06-45Z-00549-qwen_ui-b7092ce3.json,0.848
+raw/synthetic-browser-v3/2026-02-21T05-07-09Z-00830-grok_ui-251d5e05.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-07-09Z-00830-grok_ui-251d5e05.json,0.968
+raw/synthetic-browser-v3/2026-02-21T05-07-18Z-00832-qwen_ui-6693349a.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-07-18Z-00832-qwen_ui-6693349a.json,0.811
+raw/synthetic-browser-v3/2026-02-21T05-07-48Z-00672-grok_ui-0b2c7790.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-07-48Z-00672-grok_ui-0b2c7790.json,0.857
+raw/synthetic-browser-v3/2026-02-21T05-07-56Z-00673-qwen_ui-a52b0e5d.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-07-56Z-00673-qwen_ui-a52b0e5d.json,0.903
+raw/synthetic-browser-v3/2026-02-21T05-08-08Z-00676-meta_ai_ui-15559eac.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-08-08Z-00676-meta_ai_ui-15559eac.json,0.802
+raw/synthetic-browser-v3/2026-02-21T05-08-51Z-00684-meta_ai_ui-53f1dda7.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-08-51Z-00684-meta_ai_ui-53f1dda7.json,0.840
+raw/synthetic-browser-v3/2026-02-21T05-08-55Z-00685-mistral_ui-7d9d6715.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-08-55Z-00685-mistral_ui-7d9d6715.json,0.855
+raw/synthetic-browser-v3/2026-02-21T05-09-41Z-00694-grok_ui-1b722a98.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-09-41Z-00694-grok_ui-1b722a98.json,0.850
+raw/synthetic-browser-v3/2026-02-21T05-11-31Z-00716-grok_ui-acf181f1.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-11-31Z-00716-grok_ui-acf181f1.json,0.798
+raw/synthetic-browser-v3/2026-02-21T05-11-38Z-00718-mistral_ui-9745bdbc.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-11-38Z-00718-mistral_ui-9745bdbc.json,0.904
+raw/synthetic-browser-v3/2026-02-21T05-12-51Z-00610-grok_ui-d4d8fd21.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-12-51Z-00610-grok_ui-d4d8fd21.json,0.845
+raw/synthetic-browser-v3/2026-02-21T05-13-06Z-00735-grok_ui-c9c7ab94.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-13-06Z-00735-grok_ui-c9c7ab94.json,0.890
+raw/synthetic-browser-v3/2026-02-21T05-13-55Z-00745-meta_ai_ui-110d7132.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-13-55Z-00745-meta_ai_ui-110d7132.json,0.781
+raw/synthetic-browser-v3/2026-02-21T05-14-08Z-00623-meta_ai_ui-bd956748.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-14-08Z-00623-meta_ai_ui-bd956748.json,0.931
+raw/synthetic-browser-v3/2026-02-21T05-15-44Z-00639-mistral_ui-7588433e.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-15-44Z-00639-mistral_ui-7588433e.json,0.775
+raw/synthetic-browser-v3/2026-02-21T05-15-51Z-00640-grok_ui-6b55633b.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-15-51Z-00640-grok_ui-6b55633b.json,0.809
+raw/synthetic-browser-v3/2026-02-21T05-17-00Z-00782-qwen_ui-10e7e66f.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-17-00Z-00782-qwen_ui-10e7e66f.json,0.809
+raw/synthetic-browser-v3/2026-02-21T05-17-13Z-00785-grok_ui-e0c5c296.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-17-13Z-00785-grok_ui-e0c5c296.json,0.965
+raw/synthetic-browser-v3/2026-02-21T05-17-30Z-00657-qwen_ui-3b1d0b20.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-17-30Z-00657-qwen_ui-3b1d0b20.json,0.784
+raw/synthetic-browser-v3/2026-02-21T05-19-13Z-00674-qwen_ui-10c55a1b.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-19-13Z-00674-qwen_ui-10c55a1b.json,0.947
+raw/synthetic-browser-v3/2026-02-21T05-19-16Z-00809-meta_ai_ui-92196eab.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-19-16Z-00809-meta_ai_ui-92196eab.json,0.788
+raw/synthetic-browser-v3/2026-02-21T05-19-43Z-00815-mistral_ui-ddbb281e.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-19-43Z-00815-mistral_ui-ddbb281e.json,0.872
+raw/synthetic-browser-v3/2026-02-21T05-20-03Z-00682-meta_ai_ui-6dbcdfd2.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-20-03Z-00682-meta_ai_ui-6dbcdfd2.json,0.909
+raw/synthetic-browser-v3/2026-02-21T05-20-51Z-00828-meta_ai_ui-fc5ae805.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-20-51Z-00828-meta_ai_ui-fc5ae805.json,0.786
+raw/synthetic-browser-v3/2026-02-21T05-20-54Z-00829-qwen_ui-fee916bf.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-20-54Z-00829-qwen_ui-fee916bf.json,0.782
+raw/synthetic-browser-v3/2026-02-21T05-21-05Z-00831-qwen_ui-302a3123.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-21-05Z-00831-qwen_ui-302a3123.json,0.796
+raw/synthetic-browser-v3/2026-02-21T05-26-25Z-00746-qwen_ui-cc1882a1.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-26-25Z-00746-qwen_ui-cc1882a1.json,0.842
+raw/synthetic-browser-v3/2026-02-21T05-26-42Z-00749-grok_ui-8965f57e.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-26-42Z-00749-grok_ui-8965f57e.json,0.795
+raw/synthetic-browser-v3/2026-02-21T05-27-25Z-00756-mistral_ui-aa4d6006.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-27-25Z-00756-mistral_ui-aa4d6006.json,0.815
+raw/synthetic-browser-v3/2026-02-21T05-28-09Z-00763-meta_ai_ui-e3509321.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-28-09Z-00763-meta_ai_ui-e3509321.json,0.913
+raw/synthetic-browser-v3/2026-02-21T05-28-26Z-00766-grok_ui-f226fad0.jpg,grok_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-28-26Z-00766-grok_ui-f226fad0.json,0.913
+raw/synthetic-browser-v3/2026-02-21T05-31-57Z-00801-mistral_ui-93f5a46c.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-31-57Z-00801-mistral_ui-93f5a46c.json,0.972
+raw/synthetic-browser-v3/2026-02-21T05-32-00Z-00802-meta_ai_ui-86332112.jpg,meta_ai_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-32-00Z-00802-meta_ai_ui-86332112.json,0.893
+raw/synthetic-browser-v3/2026-02-21T05-32-48Z-00810-mistral_ui-f6311b7e.jpg,mistral_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-32-48Z-00810-mistral_ui-f6311b7e.json,0.816
+raw/synthetic-browser-v3/2026-02-21T05-35-14Z-00834-qwen_ui-91de1d0c.jpg,qwen_ui,ai_ui,detector marked ai_ui,raw/synthetic-browser-v3/2026-02-21T05-35-14Z-00834-qwen_ui-91de1d0c.json,0.796

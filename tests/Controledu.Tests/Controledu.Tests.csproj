@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.8" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Controledu.Common\Controledu.Common.csproj" />
+    <ProjectReference Include="..\..\src\Controledu.Transport\Controledu.Transport.csproj" />
+    <ProjectReference Include="..\..\src\Controledu.Teacher.Server\Controledu.Teacher.Server.csproj" />
+    <ProjectReference Include="..\..\src\Controledu.Storage\Controledu.Storage.csproj" />
+    <ProjectReference Include="..\..\src\Controledu.Detection.Abstractions\Controledu.Detection.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Controledu.Detection.Core\Controledu.Detection.Core.csproj" />
+    <ProjectReference Include="..\..\src\Controledu.Detection.Onnx\Controledu.Detection.Onnx.csproj" />
+  </ItemGroup>
+</Project>

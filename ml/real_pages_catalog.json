@@ -1,0 +1,68 @@
+{
+  "ai": {
+    "chatgpt_ui": [
+      { "url": "https://chatgpt.com/", "title": "ChatGPT" },
+      { "url": "https://openai.com/chatgpt/", "title": "OpenAI ChatGPT" }
+    ],
+    "claude_ui": [
+      { "url": "https://claude.ai/", "title": "Claude" },
+      { "url": "https://www.anthropic.com/claude", "title": "Anthropic Claude" }
+    ],
+    "gemini_ui": [
+      { "url": "https://gemini.google.com/", "title": "Gemini" },
+      { "url": "https://deepmind.google/technologies/gemini/", "title": "Google Gemini" }
+    ],
+    "copilot_ui": [
+      { "url": "https://copilot.microsoft.com/", "title": "Microsoft Copilot" },
+      { "url": "https://www.microsoft.com/microsoft-copilot", "title": "Copilot" }
+    ],
+    "perplexity_ui": [
+      { "url": "https://www.perplexity.ai/", "title": "Perplexity" }
+    ],
+    "deepseek_ui": [
+      { "url": "https://chat.deepseek.com/", "title": "DeepSeek" },
+      { "url": "https://www.deepseek.com/", "title": "DeepSeek" }
+    ],
+    "poe_ui": [
+      { "url": "https://poe.com/", "title": "Poe" }
+    ],
+    "grok_ui": [
+      { "url": "https://grok.com/", "title": "Grok" },
+      { "url": "https://x.ai/", "title": "xAI" }
+    ],
+    "qwen_ui": [
+      { "url": "https://chat.qwen.ai/", "title": "Qwen" },
+      { "url": "https://www.alibabacloud.com/help/en/model-studio/developer-reference/what-is-qwen-llm", "title": "Qwen" }
+    ],
+    "mistral_ui": [
+      { "url": "https://chat.mistral.ai/", "title": "Le Chat" },
+      { "url": "https://mistral.ai/", "title": "Mistral AI" }
+    ],
+    "meta_ai_ui": [
+      { "url": "https://www.meta.ai/", "title": "Meta AI" },
+      { "url": "https://www.meta.ai/ai-assistant", "title": "Meta AI Assistant" }
+    ],
+    "ai_ui": [
+      { "url": "https://huggingface.co/chat/", "title": "HuggingFace Chat" },
+      { "url": "https://platform.openai.com/playground", "title": "OpenAI Playground" }
+    ]
+  },
+  "not_ai": [
+    { "url": "https://www.wikipedia.org/", "title": "Wikipedia" },
+    { "url": "https://docs.python.org/3/", "title": "Python Docs" },
+    { "url": "https://learn.microsoft.com/en-us/", "title": "Microsoft Learn" },
+    { "url": "https://news.ycombinator.com/", "title": "Hacker News" },
+    { "url": "https://github.com/trending", "title": "GitHub Trending" },
+    { "url": "https://stackoverflow.com/questions", "title": "Stack Overflow" },
+    { "url": "https://www.nasa.gov/", "title": "NASA" }
+  ],
+  "hard_negative": [
+    { "url": "https://en.wikipedia.org/wiki/ChatGPT", "title": "ChatGPT - Wikipedia" },
+    { "url": "https://en.wikipedia.org/wiki/Claude_(language_model)", "title": "Claude - Wikipedia" },
+    { "url": "https://en.wikipedia.org/wiki/Gemini_(chatbot)", "title": "Gemini - Wikipedia" },
+    { "url": "https://learn.microsoft.com/en-us/azure/ai-services/openai/", "title": "Azure OpenAI docs" },
+    { "url": "https://openai.com/research/", "title": "OpenAI Research" },
+    { "url": "https://www.anthropic.com/news", "title": "Anthropic News" },
+    { "url": "https://deepmind.google/technologies/gemini/", "title": "DeepMind Gemini" }
+  ]
+}

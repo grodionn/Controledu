@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Controledu.Common\Controledu.Common.csproj" />
+    <ProjectReference Include="..\Controledu.Detection.Abstractions\Controledu.Detection.Abstractions.csproj" />
+  </ItemGroup>
+</Project>

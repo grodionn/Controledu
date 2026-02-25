@@ -1,0 +1,13 @@
+{
+  "TeacherHost": {
+    "StartMaximized": false
+  },
+  "AutoUpdate": {
+    "Enabled": false
+  },
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Debug"
+    }
+  }
+}

@@ -1,0 +1,213 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 8% 97%;
+    --foreground: 220 9% 16%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 9% 16%;
+    --primary: 220 7% 27%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 8% 93%;
+    --secondary-foreground: 220 9% 18%;
+    --muted: 220 10% 94%;
+    --muted-foreground: 220 7% 40%;
+    --accent: 220 10% 92%;
+    --accent-foreground: 220 9% 18%;
+    --destructive: 0 65% 44%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 9% 85%;
+    --input: 220 9% 85%;
+    --ring: 220 8% 35%;
+    --gradient-start: 220 14% 95%;
+    --gradient-end: 220 9% 91%;
+  }
+
+  .dark {
+    --background: 220 13% 8%;
+    --foreground: 210 10% 92%;
+    --card: 220 11% 11%;
+    --card-foreground: 210 10% 92%;
+    --primary: 220 8% 73%;
+    --primary-foreground: 220 13% 8%;
+    --secondary: 220 9% 17%;
+    --secondary-foreground: 210 8% 89%;
+    --muted: 220 9% 16%;
+    --muted-foreground: 220 7% 68%;
+    --accent: 220 8% 18%;
+    --accent-foreground: 210 9% 92%;
+    --destructive: 0 62% 54%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 8% 24%;
+    --input: 220 8% 24%;
+    --ring: 220 8% 63%;
+    --gradient-start: 220 11% 13%;
+    --gradient-end: 220 9% 9%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    margin: 0;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 8% 0%, hsl(var(--gradient-start) / 0.75), transparent 46%),
+      radial-gradient(circle at 100% 100%, hsl(var(--gradient-end) / 0.68), transparent 46%);
+    background-attachment: fixed;
+  }
+
+  .skip-link {
+    position: fixed;
+    left: 0.75rem;
+    top: -3rem;
+    z-index: 80;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    text-decoration: none;
+    box-shadow: 0 8px 24px hsl(var(--foreground) / 0.12);
+    transition: top 120ms ease;
+  }
+
+  .skip-link:focus {
+    top: 0.75rem;
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  html[data-a11y-contrast="aa"] {
+    --background: 0 0% 100%;
+    --foreground: 220 30% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 8%;
+    --primary: 220 55% 18%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 20% 92%;
+    --secondary-foreground: 220 30% 10%;
+    --muted: 220 18% 92%;
+    --muted-foreground: 220 20% 22%;
+    --accent: 220 25% 90%;
+    --accent-foreground: 220 30% 8%;
+    --border: 220 18% 70%;
+    --input: 220 18% 68%;
+    --ring: 220 70% 25%;
+  }
+
+  html.dark[data-a11y-contrast="aa"] {
+    --background: 220 22% 5%;
+    --foreground: 0 0% 98%;
+    --card: 220 20% 8%;
+    --card-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 220 22% 6%;
+    --secondary: 220 15% 14%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 220 14% 12%;
+    --muted-foreground: 210 15% 84%;
+    --accent: 220 16% 16%;
+    --accent-foreground: 0 0% 98%;
+    --border: 220 10% 35%;
+    --input: 220 10% 35%;
+    --ring: 58 100% 68%;
+  }
+
+  html[data-a11y-contrast="aaa"] {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 14%;
+    --accent: 0 0% 92%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 92% 35%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 40%;
+    --input: 0 0% 40%;
+    --ring: 0 0% 0%;
+    --gradient-start: 0 0% 100%;
+    --gradient-end: 0 0% 94%;
+  }
+
+  html.dark[data-a11y-contrast="aaa"] {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 3%;
+    --card-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 88%;
+    --accent: 0 0% 14%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 100% 62%;
+    --destructive-foreground: 0 0% 0%;
+    --border: 0 0% 55%;
+    --input: 0 0% 55%;
+    --ring: 60 100% 60%;
+    --gradient-start: 0 0% 6%;
+    --gradient-end: 0 0% 2%;
+  }
+
+  html[data-a11y-dyslexia-font="true"],
+  html[data-a11y-dyslexia-font="true"] button,
+  html[data-a11y-dyslexia-font="true"] input,
+  html[data-a11y-dyslexia-font="true"] select,
+  html[data-a11y-dyslexia-font="true"] textarea {
+    font-family: "OpenDyslexic", "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+    letter-spacing: 0.012em;
+    word-spacing: 0.04em;
+  }
+
+  html[data-a11y-large-buttons="true"] button,
+  html[data-a11y-large-buttons="true"] input[type="button"],
+  html[data-a11y-large-buttons="true"] input[type="submit"] {
+    min-height: 2.9rem;
+    padding-inline: 0.95rem;
+    font-size: 0.98rem;
+  }
+
+  html[data-a11y-highlight-focus="true"] :focus-visible {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px hsl(var(--background)), 0 0 0 6px hsl(var(--ring) / 0.28);
+  }
+
+  html[data-a11y-highlight-focus="true"] input:focus,
+  html[data-a11y-highlight-focus="true"] textarea:focus,
+  html[data-a11y-highlight-focus="true"] select:focus {
+    background-color: hsl(var(--accent) / 0.45);
+  }
+
+  html[data-a11y-simple-nav="true"] button,
+  html[data-a11y-simple-nav="true"] input,
+  html[data-a11y-simple-nav="true"] select {
+    border-radius: 0.8rem;
+  }
+
+  html[data-a11y-large-cursor="true"] button,
+  html[data-a11y-large-cursor="true"] [role="button"],
+  html[data-a11y-large-cursor="true"] a {
+    cursor: pointer;
+  }
+}

@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Controledu Overlay</title>
+    <style>
+      :root {
+        --bg: #111319;
+        --panel: rgba(22, 26, 34, 0.94);
+        --panel-2: rgba(16, 19, 26, 0.92);
+        --border: rgba(255, 255, 255, 0.12);
+        --text: #eef2ff;
+        --muted: #b0b7c8;
+        --accent: #47a7ff;
+        --accent-2: #6dc6ff;
+        --ok: #5ed28f;
+        --warn: #ffbf47;
+        --danger: #ff6f6f;
+        --shadow: 0 16px 40px rgba(0, 0, 0, 0.34);
+        --font-scale: 1;
+      }
+
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        color: var(--text);
+        font-family: "Segoe UI", system-ui, sans-serif;
+        font-size: calc(14px * var(--font-scale));
+        overflow: hidden;
+      }
+
+      body {
+        padding: 0;
+        cursor: default;
+      }
+
+      body.large-cursor * {
+        cursor: pointer;
+      }
+
+      #app {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        gap: 0.55rem;
+        padding: 0.6rem;
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        background:
+          radial-gradient(circle at 100% 0%, rgba(71, 167, 255, 0.18), transparent 56%),
+          radial-gradient(circle at 0% 100%, rgba(94, 210, 143, 0.14), transparent 60%),
+          linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)),
+          var(--bg);
+        box-shadow: var(--shadow);
+      }
+
+      .sr-only {
+        position: absolute !important;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.7rem 0.8rem;
+        border-radius: 0.85rem;
+        border: 1px solid var(--border);
+        background: var(--panel);
+      }
+
+      .title-wrap h1 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+      }
+
+      .title-wrap p {
+        margin: 0.2rem 0 0;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.32rem 0.55rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(255,255,255,0.03);
+        color: var(--muted);
+        font-size: 0.74rem;
+        white-space: nowrap;
+      }
+
+      .pill .dot {
+        width: 0.42rem;
+        height: 0.42rem;
+        border-radius: 50%;
+        background: var(--ok);
+        box-shadow: 0 0 0 0.22rem rgba(94, 210, 143, 0.15);
+      }
+
+      .toolbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.55rem;
+        align-items: stretch;
+      }
+
+      .raise-button {
+        border: 1px solid rgba(71, 167, 255, 0.34);
+        background:
+          linear-gradient(180deg, rgba(71,167,255,0.22), rgba(71,167,255,0.13)),
+          rgba(71,167,255,0.07);
+        color: #f5fbff;
+        border-radius: 0.85rem;
+        padding: 0.8rem 0.9rem;
+        font: inherit;
+        font-weight: 700;
+        text-align: left;
+        display: grid;
+        gap: 0.2rem;
+        min-height: 3.35rem;
+      }
+
+      .raise-button small {
+        color: rgba(238, 242, 255, 0.78);
+        font-weight: 500;
+        font-size: 0.78rem;
+      }
+
+      .raise-button:hover:not(:disabled) {
+        border-color: rgba(109, 198, 255, 0.5);
+        transform: translateY(-1px);
+      }
+
+      .raise-button:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      .raise-button:disabled {
+        opacity: 0.65;
+      }
+
+      .font-panel {
+        min-width: 8.8rem;
+        border-radius: 0.85rem;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        padding: 0.55rem 0.65rem;
+        display: grid;
+        gap: 0.35rem;
+      }
+
+      .font-panel label {
+        font-size: 0.74rem;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        gap: 0.4rem;
+      }
+
+      .font-panel input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
+      }
+
+      .chat-panel {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        border-radius: 0.95rem;
+        border: 1px solid var(--border);
+        background: var(--panel-2);
+        overflow: hidden;
+      }
+
+      .chat-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.7rem 0.8rem;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        background: rgba(255,255,255,0.02);
+      }
+
+      .chat-panel-header strong {
+        font-size: 0.84rem;
+        letter-spacing: 0.02em;
+      }
+
+      .chat-status {
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+
+      .messages {
+        overflow: auto;
+        padding: 0.75rem;
+        display: grid;
+        gap: 0.5rem;
+        align-content: start;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)),
+          transparent;
+      }
+
+      .messages.flash {
+        animation: flash-ring 900ms ease-out;
+      }
+
+      @keyframes flash-ring {
+        0% { box-shadow: inset 0 0 0 0 rgba(71,167,255,0.25); }
+        100% { box-shadow: inset 0 0 0 14px rgba(71,167,255,0); }
+      }
+
+      .empty-state {
+        color: var(--muted);
+        font-size: 0.84rem;
+        border: 1px dashed rgba(255,255,255,0.11);
+        border-radius: 0.75rem;
+        padding: 0.9rem;
+        text-align: center;
+        background: rgba(255,255,255,0.02);
+      }
+
+      .bubble {
+        max-width: 92%;
+        border-radius: 0.9rem;
+        padding: 0.58rem 0.7rem;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.03);
+        display: grid;
+        gap: 0.22rem;
+      }
+
+      .bubble[data-role="teacher"] {
+        justify-self: start;
+        background: linear-gradient(180deg, rgba(71,167,255,0.13), rgba(71,167,255,0.05));
+        border-color: rgba(71, 167, 255, 0.22);
+      }
+
+      .bubble[data-role="student"] {
+        justify-self: end;
+        background: linear-gradient(180deg, rgba(94,210,143,0.13), rgba(94,210,143,0.05));
+        border-color: rgba(94, 210, 143, 0.22);
+      }
+
+      .bubble-meta {
+        display: flex;
+        gap: 0.4rem;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.68rem;
+        color: var(--muted);
+      }
+
+      .bubble-author {
+        font-weight: 600;
+        color: inherit;
+      }
+
+      .bubble-text {
+        white-space: pre-wrap;
+        line-height: 1.38;
+        word-break: break-word;
+        color: var(--text);
+      }
+
+      .composer {
+        display: grid;
+        gap: 0.42rem;
+        border: 1px solid var(--border);
+        border-radius: 0.95rem;
+        background: var(--panel);
+        padding: 0.65rem;
+      }
+
+      .composer textarea {
+        width: 100%;
+        min-height: 4.8rem;
+        max-height: 9.5rem;
+        resize: vertical;
+        border-radius: 0.7rem;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.025);
+        color: var(--text);
+        padding: 0.65rem 0.7rem;
+        font: inherit;
+        line-height: 1.35;
+      }
+
+      .composer textarea::placeholder {
+        color: #9ea8bb;
+      }
+
+      .composer-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.55rem;
+      }
+
+      .composer-tools {
+        display: flex;
+        gap: 0.45rem;
+        align-items: center;
+        color: var(--muted);
+        font-size: 0.73rem;
+      }
+
+      .send-btn {
+        border: 1px solid rgba(255,255,255,0.12);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)),
+          rgba(255,255,255,0.01);
+        color: var(--text);
+        border-radius: 0.7rem;
+        min-height: 2.2rem;
+        padding: 0.45rem 0.85rem;
+        font: inherit;
+        font-weight: 700;
+      }
+
+      .send-btn.primary {
+        border-color: rgba(71,167,255,0.32);
+        background:
+          linear-gradient(180deg, rgba(71,167,255,0.24), rgba(71,167,255,0.08)),
+          rgba(71,167,255,0.05);
+      }
+
+      .send-btn:disabled {
+        opacity: 0.55;
+      }
+
+      .status-bar {
+        border-radius: 0.75rem;
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.02);
+        padding: 0.45rem 0.6rem;
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+
+      .status-bar[data-tone="success"] { color: #b8ffd6; border-color: rgba(94,210,143,0.25); }
+      .status-bar[data-tone="warn"] { color: #ffe1a7; border-color: rgba(255,191,71,0.25); }
+      .status-bar[data-tone="error"] { color: #ffc2c2; border-color: rgba(255,111,111,0.25); }
+
+      .focus-strong :focus-visible,
+      .focus-strong:focus-visible {
+        outline: 2px solid rgba(71, 167, 255, 0.9);
+        outline-offset: 2px;
+      }
+
+      body.contrast-aa {
+        --bg: #090b0f;
+        --panel: rgba(12, 15, 20, 0.97);
+        --panel-2: rgba(8, 10, 14, 0.97);
+        --border: rgba(255,255,255,0.2);
+        --text: #ffffff;
+        --muted: #d7dced;
+      }
+
+      body.contrast-aaa {
+        --bg: #000000;
+        --panel: rgba(0, 0, 0, 0.985);
+        --panel-2: rgba(0, 0, 0, 0.985);
+        --border: rgba(255,255,255,0.32);
+        --text: #ffffff;
+        --muted: #f0f0f0;
+        --accent: #8fd8ff;
+        --accent-2: #b5e8ff;
+      }
+
+      body.dyslexia-font {
+        font-family: "OpenDyslexic", "Comic Sans MS", "Verdana", sans-serif;
+      }
+
+      body.invert-colors {
+        filter: invert(1) hue-rotate(180deg);
+      }
+
+      body.large-buttons .raise-button,
+      body.large-buttons .send-btn {
+        min-height: 2.7rem;
+        padding-top: 0.65rem;
+        padding-bottom: 0.65rem;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+      }
+    </style>
+  </head>
+  <body class="focus-strong">
+    <div id="app" aria-live="off">
+      <div class="header" role="region" aria-label="Статус оверлея">
+        <div class="title-wrap">
+          <h1>Помощь и чат с учителем</h1>
+          <p>Быстрый вызов учителя и сообщения поверх экрана</p>
+        </div>
+        <div class="pill" id="teacherStatusPill">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="teacherStatusText">Подключение…</span>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button id="raiseHandBtn" class="raise-button focus-strong" type="button">
+          <span>Поднять руку</span>
+          <small id="raiseHandSub">Запросить помощь у учителя</small>
+        </button>
+
+        <div class="font-panel" role="group" aria-labelledby="fontScaleLabel">
+          <label id="fontScaleLabel">
+            <span>Размер текста</span>
+            <strong id="fontScaleValue">100%</strong>
+          </label>
+          <input id="fontScaleRange" type="range" min="80" max="220" step="5" value="100" />
+        </div>
+      </div>
+
+      <section class="chat-panel" aria-labelledby="chatPanelTitle">
+        <div class="chat-panel-header">
+          <strong id="chatPanelTitle">Чат с учителем</strong>
+          <div class="chat-status" id="chatPanelStatus">Загрузка сообщений…</div>
+        </div>
+        <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions text">
+          <div class="empty-state">Сообщений пока нет. Напишите учителю или используйте кнопку “Поднять руку”.</div>
+        </div>
+      </section>
+
+      <form id="composer" class="composer" novalidate>
+        <label class="sr-only" for="chatInput">Сообщение учителю</label>
+        <textarea id="chatInput" placeholder="Напишите вопрос учителю… (Enter для отправки, Shift+Enter — новая строка)" maxlength="2000"></textarea>
+        <div class="composer-row">
+          <div class="composer-tools">
+            <span id="charCount">0 / 2000</span>
+            <span aria-hidden="true">•</span>
+            <span id="profileLabel">Профиль: стандарт</span>
+          </div>
+          <button id="sendBtn" class="send-btn primary focus-strong" type="submit">Отправить</button>
+        </div>
+      </form>
+
+      <div id="statusBar" class="status-bar" data-tone="neutral" role="status" aria-live="polite">
+        Overlay готовится…
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const state = {
+          token: null,
+          clientId: "unpaired-endpoint",
+          messages: [],
+          prefs: { fontScalePercent: 100 },
+          accessibility: null,
+          lastThreadFingerprint: "",
+          lastTeacherMessageId: null,
+          pollingTimer: null,
+          profileTimer: null,
+          sending: false,
+          raising: false,
+          sessionReady: false,
+        };
+
+        const els = {
+          raiseBtn: document.getElementById("raiseHandBtn"),
+          raiseSub: document.getElementById("raiseHandSub"),
+          teacherStatusText: document.getElementById("teacherStatusText"),
+          fontScaleRange: document.getElementById("fontScaleRange"),
+          fontScaleValue: document.getElementById("fontScaleValue"),
+          messages: document.getElementById("messages"),
+          chatPanelStatus: document.getElementById("chatPanelStatus"),
+          composer: document.getElementById("composer"),
+          chatInput: document.getElementById("chatInput"),
+          sendBtn: document.getElementById("sendBtn"),
+          charCount: document.getElementById("charCount"),
+          statusBar: document.getElementById("statusBar"),
+          profileLabel: document.getElementById("profileLabel"),
+        };
+
+        const PROFILE_LABELS = {
+          default: "стандарт",
+          vision: "зрение",
+          hearing: "слух",
+          motor: "моторика",
+          dyslexia: "дислексия/СДВГ",
+          custom: "кастом",
+        };
+
+        function setStatus(text, tone = "neutral") {
+          els.statusBar.textContent = text;
+          els.statusBar.setAttribute("data-tone", tone);
+        }
+
+        function setTeacherStatus(text) {
+          els.teacherStatusText.textContent = text;
+        }
+
+        async function fetchJson(url, init = {}) {
+          const headers = new Headers(init.headers || {});
+          if (state.token) {
+            headers.set("X-Controledu-LocalToken", state.token);
+          }
+          const response = await fetch(url, { ...init, headers });
+          const text = await response.text();
+          if (!response.ok) {
+            throw new Error(text || `Request failed (${response.status})`);
+          }
+          return text ? JSON.parse(text) : null;
+        }
+
+        async function ensureSession() {
+          if (state.token) return;
+          const session = await fetchJson("/api/session");
+          state.token = session?.token || null;
+          if (!state.token) {
+            throw new Error("Не удалось получить локальный токен сессии.");
+          }
+          state.sessionReady = true;
+        }
+
+        function applyAccessibility(profile) {
+          state.accessibility = profile || null;
+          const ui = profile?.ui || {};
+          const features = profile?.features || {};
+
+          document.body.classList.toggle("contrast-aa", ui.contrastMode === "aa");
+          document.body.classList.toggle("contrast-aaa", ui.contrastMode === "aaa");
+          document.body.classList.toggle("invert-colors", !!ui.invertColors);
+          document.body.classList.toggle("dyslexia-font", !!ui.dyslexiaFontEnabled);
+          document.body.classList.toggle("large-cursor", !!ui.largeCursorEnabled);
+          document.body.classList.toggle("large-buttons", !!features.largeActionButtonsEnabled);
+          document.body.classList.toggle("focus-strong", !!ui.highlightFocusEnabled);
+
+          const profileScale = Math.max(80, Math.min(300, Number(ui.scalePercent || 100)));
+          const localScale = Math.max(80, Math.min(220, Number(state.prefs.fontScalePercent || 100)));
+          const combinedScale = (profileScale / 100) * (localScale / 100);
+          document.documentElement.style.setProperty("--font-scale", String(combinedScale));
+
+          const preset = String(profile?.activePreset || "default");
+          els.profileLabel.textContent = `Профиль: ${PROFILE_LABELS[preset] || preset}`;
+        }
+
+        function renderMessages() {
+          const list = state.messages || [];
+          if (!list.length) {
+            els.messages.innerHTML = '<div class="empty-state">Сообщений пока нет. Напишите учителю или используйте кнопку “Поднять руку”.</div>';
+            els.chatPanelStatus.textContent = "Нет сообщений";
+            return;
+          }
+
+          const wasNearBottom = Math.abs(els.messages.scrollHeight - els.messages.clientHeight - els.messages.scrollTop) < 48;
+          els.messages.innerHTML = "";
+          for (const message of list) {
+            const bubble = document.createElement("article");
+            bubble.className = "bubble";
+            bubble.dataset.role = (message.senderRole || "").toLowerCase() === "teacher" ? "teacher" : "student";
+            bubble.setAttribute("tabindex", "0");
+
+            const meta = document.createElement("div");
+            meta.className = "bubble-meta";
+            const author = document.createElement("span");
+            author.className = "bubble-author";
+            author.textContent = message.senderDisplayName || (bubble.dataset.role === "teacher" ? "Учитель" : "Вы");
+            const time = document.createElement("time");
+            const d = new Date(message.timestampUtc);
+            time.dateTime = Number.isNaN(d.getTime()) ? "" : d.toISOString();
+            time.textContent = Number.isNaN(d.getTime()) ? "" : d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            meta.append(author, time);
+
+            const text = document.createElement("div");
+            text.className = "bubble-text";
+            text.textContent = message.text || "";
+
+            bubble.append(meta, text);
+            els.messages.appendChild(bubble);
+          }
+
+          const last = list[list.length - 1];
+          els.chatPanelStatus.textContent = `Сообщений: ${list.length} · последнее ${new Date(last.timestampUtc).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+          if (wasNearBottom || list.length < 4) {
+            els.messages.scrollTop = els.messages.scrollHeight;
+          }
+        }
+
+        function flashMessagesIfTeacherAdded(previousLastTeacherId) {
+          const teacherMessages = state.messages.filter((m) => String(m.senderRole || "").toLowerCase() === "teacher");
+          const lastTeacher = teacherMessages[teacherMessages.length - 1];
+          if (!lastTeacher) return;
+          if (previousLastTeacherId && lastTeacher.messageId === previousLastTeacherId) return;
+
+          const visualAlerts = !!state.accessibility?.features?.visualAlertsEnabled;
+          if (visualAlerts) {
+            els.messages.classList.remove("flash");
+            void els.messages.offsetWidth;
+            els.messages.classList.add("flash");
+            setTimeout(() => els.messages.classList.remove("flash"), 900);
+          }
+        }
+
+        function updateCharCount() {
+          const len = els.chatInput.value.length;
+          els.charCount.textContent = `${len} / 2000`;
+        }
+
+        function setSendBusy(isBusy) {
+          state.sending = isBusy;
+          els.sendBtn.disabled = isBusy || !els.chatInput.value.trim();
+          els.sendBtn.textContent = isBusy ? "Отправка…" : "Отправить";
+        }
+
+        function setRaiseBusy(isBusy, cooldownText = "") {
+          state.raising = isBusy;
+          els.raiseBtn.disabled = isBusy;
+          els.raiseSub.textContent = cooldownText || "Запросить помощь у учителя";
+        }
+
+        async function pollThread() {
+          try {
+            await ensureSession();
+            const thread = await fetchJson("/api/chat/thread");
+            state.clientId = thread?.clientId || state.clientId;
+            state.prefs = thread?.preferences || state.prefs;
+            els.fontScaleRange.value = String(Math.max(80, Math.min(220, state.prefs.fontScalePercent || 100)));
+            els.fontScaleValue.textContent = `${Math.max(80, Math.min(220, state.prefs.fontScalePercent || 100))}%`;
+
+            const messages = Array.isArray(thread?.messages) ? thread.messages : [];
+            const fingerprint = messages.map((m) => m.messageId).join("|");
+            if (fingerprint !== state.lastThreadFingerprint) {
+              const previousTeacherId = state.lastTeacherMessageId;
+              state.messages = messages;
+              state.lastThreadFingerprint = fingerprint;
+              const teacherMessages = messages.filter((m) => String(m.senderRole || "").toLowerCase() === "teacher");
+              state.lastTeacherMessageId = teacherMessages.length ? teacherMessages[teacherMessages.length - 1].messageId : null;
+              renderMessages();
+              flashMessagesIfTeacherAdded(previousTeacherId);
+            }
+
+            setTeacherStatus("Учитель на связи");
+          } catch (error) {
+            setTeacherStatus("Нет связи");
+            els.chatPanelStatus.textContent = "Ошибка загрузки";
+            setStatus(`Чат недоступен: ${error.message || error}`, "error");
+          }
+        }
+
+        async function pollAccessibility() {
+          try {
+            await ensureSession();
+            const profile = await fetchJson("/api/accessibility/profile");
+            applyAccessibility(profile);
+          } catch {
+            // Keep current UI if profile read failed.
+          }
+        }
+
+        async function sendChatMessage() {
+          const text = els.chatInput.value.trim();
+          if (!text || state.sending) return;
+
+          setSendBusy(true);
+          try {
+            await ensureSession();
+            await fetchJson("/api/chat/messages", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text }),
+            });
+            els.chatInput.value = "";
+            updateCharCount();
+            setStatus("Сообщение отправлено в очередь доставки.", "success");
+            await pollThread();
+          } catch (error) {
+            setStatus(`Не удалось отправить сообщение: ${error.message || error}`, "error");
+          } finally {
+            setSendBusy(false);
+          }
+        }
+
+        async function sendRaiseHand() {
+          if (state.raising) return;
+          setRaiseBusy(true, "Отправка сигнала…");
+          try {
+            await ensureSession();
+            const result = await fetchJson("/api/signals/raise-hand", { method: "POST" });
+            if (result?.ok) {
+              setStatus("Сигнал учителю отправлен.", "success");
+              setRaiseBusy(false, "Запросить помощь у учителя");
+              return;
+            }
+
+            const message = result?.message || "Сигнал не отправлен.";
+            setStatus(message, "warn");
+            setRaiseBusy(true, message);
+            const match = /(\d+)s/.exec(message);
+            const seconds = match ? Number(match[1]) : 5;
+            let left = Number.isFinite(seconds) ? seconds : 5;
+            const timer = setInterval(() => {
+              left -= 1;
+              if (left <= 0) {
+                clearInterval(timer);
+                setRaiseBusy(false, "Запросить помощь у учителя");
+                return;
+              }
+              setRaiseBusy(true, `Повтор через ${left}с`);
+            }, 1000);
+          } catch (error) {
+            setStatus(`Не удалось отправить сигнал: ${error.message || error}`, "error");
+            setRaiseBusy(false, "Запросить помощь у учителя");
+          }
+        }
+
+        let saveFontTimer = null;
+        function scheduleFontSave(value) {
+          if (saveFontTimer) clearTimeout(saveFontTimer);
+          saveFontTimer = setTimeout(async () => {
+            try {
+              await ensureSession();
+              state.prefs.fontScalePercent = value;
+              els.fontScaleValue.textContent = `${value}%`;
+              applyAccessibility(state.accessibility);
+              await fetchJson("/api/chat/preferences", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ fontScalePercent: value }),
+              });
+            } catch (error) {
+              setStatus(`Не удалось сохранить размер текста: ${error.message || error}`, "warn");
+            }
+          }, 250);
+        }
+
+        async function start() {
+          updateCharCount();
+          setStatus("Подготовка overlay…", "neutral");
+          try {
+            await ensureSession();
+            setStatus("Overlay готов. Подключаем чат…", "success");
+          } catch (error) {
+            setStatus(`Ошибка сессии: ${error.message || error}`, "error");
+            return;
+          }
+
+          await Promise.allSettled([pollThread(), pollAccessibility()]);
+          state.pollingTimer = setInterval(pollThread, 1200);
+          state.profileTimer = setInterval(pollAccessibility, 3500);
+        }
+
+        els.composer.addEventListener("submit", (event) => {
+          event.preventDefault();
+          void sendChatMessage();
+        });
+
+        els.chatInput.addEventListener("input", () => {
+          updateCharCount();
+          els.sendBtn.disabled = state.sending || !els.chatInput.value.trim();
+        });
+
+        els.chatInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            void sendChatMessage();
+          }
+        });
+
+        els.raiseBtn.addEventListener("click", () => void sendRaiseHand());
+
+        els.fontScaleRange.addEventListener("input", () => {
+          const value = Number(els.fontScaleRange.value);
+          els.fontScaleValue.textContent = `${value}%`;
+          state.prefs.fontScalePercent = value;
+          applyAccessibility(state.accessibility);
+          scheduleFontSave(value);
+        });
+
+        window.addEventListener("beforeunload", () => {
+          if (state.pollingTimer) clearInterval(state.pollingTimer);
+          if (state.profileTimer) clearInterval(state.profileTimer);
+        });
+
+        start().catch((error) => {
+          setStatus(`Ошибка запуска overlay: ${error.message || error}`, "error");
+        });
+      })();
+    </script>
+  </body>
+</html>
+

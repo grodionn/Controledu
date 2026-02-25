@@ -1,0 +1,11 @@
+.env
+tmp/
+models/*
+!models/piper/
+!models/piper/.gitkeep
+!models/whisper/
+!models/whisper/.gitkeep
+runtime/*
+!runtime/piper/
+!runtime/piper/.gitkeep
+

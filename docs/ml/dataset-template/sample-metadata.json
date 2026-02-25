@@ -1,0 +1,17 @@
+{
+  "studentId": "student-001",
+  "timestampUtc": "2026-02-20T12:31:10Z",
+  "screenFrameHash": "FF00AA11CC22DD33",
+  "frameChanged": true,
+  "activeProcessName": "msedge",
+  "activeWindowTitle": "ChatGPT - OpenAI",
+  "browserHintUrl": "https://chat.openai.com/",
+  "detection": {
+    "isAiUiDetected": true,
+    "confidence": 0.92,
+    "class": "ChatGpt",
+    "stageSource": "MetadataRule",
+    "reason": "Сработало правило по ключевым словам в метаданных",
+    "isStable": true
+  }
+}

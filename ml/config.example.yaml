@@ -1,0 +1,59 @@
+dataset:
+  root: "dataset"
+  labels_csv: "labels/classification.csv"
+  train_split: "splits/train.txt"
+  val_split: "splits/val.txt"
+  test_split: "splits/test.txt"
+  image_column: "image_path"
+  label_column: "label"
+
+training:
+  model_name: "mobilenet_v3_small"
+  image_size: 224
+  batch_size: 32
+  epochs: 8
+  learning_rate: 0.0005
+  weight_decay: 0.00001
+  num_workers: 2
+  seed: 42
+  use_pretrained: true
+  output_dir: "ml/artifacts"
+
+binary:
+  positive_labels:
+    - "ai_ui"
+    - "chatgpt_ui"
+    - "claude_ui"
+    - "gemini_ui"
+    - "copilot_ui"
+    - "perplexity_ui"
+    - "deepseek_ui"
+    - "poe_ui"
+    - "grok_ui"
+    - "qwen_ui"
+    - "mistral_ui"
+    - "meta_ai_ui"
+  negative_labels:
+    - "not_ai_ui"
+  checkpoint_name: "binary-best.pt"
+  onnx_name: "ai-ui-binary.onnx"
+
+multiclass:
+  class_labels:
+    - "chatgpt_ui"
+    - "claude_ui"
+    - "gemini_ui"
+    - "copilot_ui"
+    - "perplexity_ui"
+    - "deepseek_ui"
+    - "poe_ui"
+    - "grok_ui"
+    - "qwen_ui"
+    - "mistral_ui"
+    - "meta_ai_ui"
+    - "not_ai_ui"
+  checkpoint_name: "multiclass-best.pt"
+  onnx_name: "ai-ui-multiclass.onnx"
+
+evaluation:
+  onnx_runtime_provider: "CPUExecutionProvider"

@@ -1,0 +1,64 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Publish Artifacts
+        run: scripts\publish.cmd
+
+      - name: Resolve Version
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.TrimStart('v')
+          if ([string]::IsNullOrWhiteSpace($version)) { $version = '0.1.0' }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Build Installers
+        run: |
+          mkdir artifacts\installers
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\inno\controledu-teacher.iss /DMyAppVersion=${{ steps.version.outputs.version }} /DOutputDir="${{ github.workspace }}\\artifacts\\installers" /DSourceDir="${{ github.workspace }}\\artifacts\\publish\\teacher-host"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\inno\controledu-student.iss /DMyAppVersion=${{ steps.version.outputs.version }} /DOutputDir="${{ github.workspace }}\\artifacts\\installers" /DSourceHostDir="${{ github.workspace }}\\artifacts\\publish\\student-host" /DSourceAgentDir="${{ github.workspace }}\\artifacts\\publish\\student-agent"
+
+      - name: Create Portable ZIPs
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts\portable | Out-Null
+          Compress-Archive -Path artifacts\publish\teacher-host\* -DestinationPath artifacts\portable\Controledu-Teacher-Portable-${{ steps.version.outputs.version }}.zip -Force
+          Compress-Archive -Path artifacts\publish\student-host\* -DestinationPath artifacts\portable\Controledu-Student-Portable-${{ steps.version.outputs.version }}.zip -Force
+
+      - name: Publish GitHub Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/installers/TeacherInstaller.exe
+            artifacts/installers/StudentInstaller.exe
+            artifacts/portable/Controledu-Teacher-Portable-${{ steps.version.outputs.version }}.zip
+            artifacts/portable/Controledu-Student-Portable-${{ steps.version.outputs.version }}.zip
