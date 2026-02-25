@@ -206,6 +206,35 @@ public sealed record TeacherChatLocalDeliveryRequest(
 public sealed record StudentChatPreferencesUpdateRequest(int FontScalePercent);
 
 /// <summary>
+/// Current live caption/subtitle text for the endpoint overlay.
+/// </summary>
+public sealed record StudentLiveCaptionResponse(
+    bool Visible,
+    string CaptionId,
+    string TeacherDisplayName,
+    string? LanguageCode,
+    string Text,
+    bool IsFinal,
+    long Sequence,
+    string? TimestampUtc,
+    string? ExpiresAtUtc);
+
+/// <summary>
+/// Loopback-only request used by local agent bridge to push teacher live-caption updates to overlay.
+/// </summary>
+public sealed record TeacherLiveCaptionLocalDeliveryRequest(
+    string ClientId,
+    string CaptionId,
+    string TimestampUtc,
+    string TeacherDisplayName,
+    string? LanguageCode,
+    string Text,
+    bool IsFinal,
+    bool Clear,
+    int TtlMs,
+    long Sequence);
+
+/// <summary>
 /// Agent bridge response containing current (non-destructive) outgoing chat queue snapshot.
 /// </summary>
 public sealed record StudentChatOutboxPeekResponse(IReadOnlyList<StudentTeacherChatMessageDto> Messages);

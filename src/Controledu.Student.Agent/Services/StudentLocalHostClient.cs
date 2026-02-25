@@ -27,6 +27,11 @@ public interface IStudentLocalHostClient
     Task<bool> TryDeliverTeacherChatMessageAsync(StudentTeacherChatMessageDto message, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Pushes teacher live caption update into local student-host overlay state.
+    /// </summary>
+    Task<bool> TryDeliverTeacherLiveCaptionAsync(TeacherLiveCaptionCommandDto caption, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Returns locally queued outgoing student chat messages from Student.Host without removing them.
     /// </summary>
     Task<IReadOnlyList<StudentTeacherChatMessageDto>> TryPeekStudentChatOutboxAsync(CancellationToken cancellationToken);
@@ -156,6 +161,42 @@ internal sealed class StudentLocalHostClient(
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
         {
             logger.LogDebug(ex, "Unable to deliver teacher chat message to Student.Host.");
+            return false;
+        }
+    }
+
+    public async Task<bool> TryDeliverTeacherLiveCaptionAsync(TeacherLiveCaptionCommandDto caption, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(caption);
+
+        try
+        {
+            var http = httpClientFactory.CreateClient();
+            http.Timeout = TimeSpan.FromSeconds(5);
+            var baseUrl = $"http://127.0.0.1:{options.Value.LocalHostPort}";
+            var token = await GetSessionTokenAsync(http, baseUrl, cancellationToken);
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return false;
+            }
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/api/captions/live/teacher")
+            {
+                Content = JsonContent.Create(caption, options: JsonOptions),
+            };
+            request.Headers.TryAddWithoutValidation(LocalApiTokenHeader, token);
+            using var response = await http.SendAsync(request, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogDebug("Student.Host rejected teacher live caption bridge with status {StatusCode}.", (int)response.StatusCode);
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+        {
+            logger.LogDebug(ex, "Unable to deliver teacher live caption to Student.Host.");
             return false;
         }
     }

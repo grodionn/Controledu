@@ -71,6 +71,11 @@ public static class HubMethods
     public const string TeacherChatMessageRequested = "TeacherChatMessageRequested";
 
     /// <summary>
+    /// Server to student command: teacher live caption update for endpoint overlay subtitles.
+    /// </summary>
+    public const string TeacherLiveCaptionRequested = "TeacherLiveCaptionRequested";
+
+    /// <summary>
     /// Server to teacher event: transfer progress update.
     /// </summary>
     public const string FileProgressUpdated = "FileProgressUpdated";

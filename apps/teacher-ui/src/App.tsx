@@ -38,7 +38,11 @@ const SOUND_NOTIFICATIONS_KEY = "controledu.teacher.sound-notifications-enabled"
 const NOTIFICATION_VOLUME_KEY = "controledu.teacher.notification-volume";
 const SELFHOST_TTS_URL_KEY = "controledu.teacher.selfhost-tts-url";
 const SELFHOST_TTS_TOKEN_KEY = "controledu.teacher.selfhost-tts-token";
+const STT_MIC_DEVICE_ID_KEY = "controledu.teacher.stt-microphone-device-id";
+const STT_LANGUAGE_KEY = "controledu.teacher.stt-language";
 const THUMBNAIL_FRAME_INTERVAL_MS = 200;
+const STT_RECORDER_SLICE_MS = 3600;
+const STT_CAPTION_SEND_MIN_INTERVAL_MS = 900;
 
 type Theme = "light" | "dark";
 
@@ -73,6 +77,31 @@ type RemoteControlUiSession = {
   state: string;
   message?: string | null;
   updatedAtMs: number;
+};
+
+type TeacherSttTranscribeResponse = {
+  ok: boolean;
+  text: string;
+  language?: string | null;
+  task?: string | null;
+  duration?: number | null;
+  durationAfterVad?: number | null;
+};
+
+type TeacherLiveCaptionRequestDto = {
+  text: string;
+  isFinal?: boolean;
+  clear?: boolean;
+  captionId?: string;
+  sequence?: number;
+  ttlMs?: number;
+  languageCode?: string;
+  teacherDisplayName?: string;
+};
+
+type AudioInputDevice = {
+  deviceId: string;
+  label: string;
 };
 
 async function readResponseText(response: Response): Promise<string> {
@@ -190,6 +219,52 @@ function IconList(props: IconProps) {
   );
 }
 
+function IconMic(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Z" />
+      <path d="M19 11.5a7 7 0 0 1-14 0" />
+      <path d="M12 18.5V21" />
+      <path d="M8.5 21h7" />
+    </svg>
+  );
+}
+
+function IconMicOff(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="m3 3 18 18" />
+      <path d="M9.2 9.2V12a2.8 2.8 0 0 0 4.73 2.01" />
+      <path d="M15 8v4" />
+      <path d="M19 11.5a7 7 0 0 1-1.56 4.42" />
+      <path d="M5 11.5a7 7 0 0 0 10.08 6.34" />
+      <path d="M12 18.5V21" />
+      <path d="M8.5 21h7" />
+      <path d="M12 4a3 3 0 0 1 2.63 1.56" />
+    </svg>
+  );
+}
+
+function IconChat(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M7 18 3.5 20v-4.2A8 8 0 1 1 7 18Z" />
+      <path d="M8 10h8" />
+      <path d="M8 14h5" />
+    </svg>
+  );
+}
+
+function IconVolume(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+      <path d="M15.5 9.5a4 4 0 0 1 0 5" />
+      <path d="M18.5 7a8 8 0 0 1 0 10" />
+    </svg>
+  );
+}
+
 function IconExpand(props: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -231,6 +306,7 @@ function App() {
   const [accessibilityAssignStatus, setAccessibilityAssignStatus] = useState<{ tone: "neutral" | "success" | "error"; text: string } | null>(null);
   const [teacherTtsStatus, setTeacherTtsStatus] = useState<{ tone: "neutral" | "success" | "error"; text: string } | null>(null);
   const [teacherChatStatus, setTeacherChatStatus] = useState<{ tone: "neutral" | "success" | "error"; text: string } | null>(null);
+  const [teacherSttStatus, setTeacherSttStatus] = useState<{ tone: "neutral" | "success" | "error"; text: string } | null>(null);
   const [chatByStudent, setChatByStudent] = useState<Record<string, TeacherStudentChatMessage[]>>({});
   const [chatUnreadByStudent, setChatUnreadByStudent] = useState<Record<string, number>>({});
   const [chatHistoryLoadingFor, setChatHistoryLoadingFor] = useState<string | null>(null);
@@ -256,9 +332,24 @@ function App() {
   });
   const [selfHostTtsUrl, setSelfHostTtsUrl] = useState(() => (localStorage.getItem(SELFHOST_TTS_URL_KEY) ?? "https://tts.kilocraft.org").trim() || "https://tts.kilocraft.org");
   const [selfHostTtsToken, setSelfHostTtsToken] = useState(() => localStorage.getItem(SELFHOST_TTS_TOKEN_KEY) ?? "");
+  const [sttMicrophoneDeviceId, setSttMicrophoneDeviceId] = useState(() => localStorage.getItem(STT_MIC_DEVICE_ID_KEY) ?? "");
+  const [sttLanguageCode, setSttLanguageCode] = useState(() => {
+    const stored = (localStorage.getItem(STT_LANGUAGE_KEY) ?? "auto").trim().toLowerCase();
+    if (!stored) {
+      return "auto";
+    }
+    return stored === "kz" ? "kk" : stored;
+  });
+  const [sttAudioInputs, setSttAudioInputs] = useState<AudioInputDevice[]>([]);
+  const [sttAudioInputsLoading, setSttAudioInputsLoading] = useState(false);
+  const [isLiveSttActive, setIsLiveSttActive] = useState(false);
+  const [liveSttTargetClientId, setLiveSttTargetClientId] = useState<string | null>(null);
+  const [liveSttPreviewText, setLiveSttPreviewText] = useState("");
   const [handRaisedUntil, setHandRaisedUntil] = useState<Record<string, number>>({});
   const [uiClock, setUiClock] = useState(() => Date.now());
   const [isLogsOpen, setIsLogsOpen] = useState(false);
+  const [isTeacherChatModalOpen, setIsTeacherChatModalOpen] = useState(false);
+  const [isTeacherTtsModalOpen, setIsTeacherTtsModalOpen] = useState(false);
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
   const [isThumbnailsExpanded, setIsThumbnailsExpanded] = useState(false);
   const [isRemoteViewOpen, setIsRemoteViewOpen] = useState(false);
@@ -281,6 +372,18 @@ function App() {
   const desktopNotificationsEnabledRef = useRef(desktopNotificationsEnabled);
   const soundNotificationsEnabledRef = useRef(soundNotificationsEnabled);
   const notificationVolumeRef = useRef(notificationVolume);
+  const sttMediaStreamRef = useRef<MediaStream | null>(null);
+  const sttRecorderRef = useRef<MediaRecorder | null>(null);
+  const sttRecorderSliceTimerRef = useRef<number | null>(null);
+  const sttQueueRef = useRef<Blob[]>([]);
+  const sttProcessingRef = useRef(false);
+  const sttActiveRef = useRef(false);
+  const sttTargetClientIdRef = useRef<string | null>(null);
+  const sttCaptionIdRef = useRef<string>("");
+  const sttSequenceRef = useRef(0);
+  const sttLastCaptionTextRef = useRef("");
+  const sttCaptionSegmentsRef = useRef<string[]>([]);
+  const sttLastCaptionSentAtRef = useRef(0);
 
   const t = (key: string) => teacherDictionary[lang][key] ?? key;
 
@@ -432,6 +535,483 @@ function App() {
 
   const describeError = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
+  const isLowValueSttFragment = (text: string) => {
+    const normalized = text.trim();
+    if (!normalized) {
+      return true;
+    }
+
+    const compact = normalized.replace(/[\s.,!?;:()[\]{}"'`~\\/|@#$%^&*_+=<>-]+/g, "");
+    if (compact.length === 0) {
+      return true;
+    }
+
+    // Drop noisy micro-fragments ("a", "и", "ну", etc.) that flicker in subtitles.
+    if (compact.length <= 2 && !/\s/.test(normalized)) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const appendCaptionFragment = (base: string, fragment: string) => {
+    const left = base.trim();
+    const right = fragment.trim();
+    if (!left) {
+      return right;
+    }
+    if (!right) {
+      return left;
+    }
+
+    const leftLower = left.toLowerCase();
+    const rightLower = right.toLowerCase();
+    if (leftLower === rightLower || leftLower.endsWith(rightLower)) {
+      return left;
+    }
+    if (rightLower.startsWith(leftLower)) {
+      return right;
+    }
+
+    let overlap = 0;
+    const maxOverlap = Math.min(80, left.length, right.length);
+    for (let len = maxOverlap; len >= 4; len--) {
+      if (leftLower.slice(-len) === rightLower.slice(0, len)) {
+        overlap = len;
+        break;
+      }
+    }
+
+    const suffix = right.slice(overlap).trimStart();
+    return suffix ? `${left} ${suffix}` : left;
+  };
+
+  const pushSttCaptionSegment = (fragment: string) => {
+    const next = fragment.trim();
+    if (!next) {
+      return "";
+    }
+
+    const segments = sttCaptionSegmentsRef.current;
+    const last = segments[segments.length - 1];
+    if (last) {
+      const lastLower = last.toLowerCase();
+      const nextLower = next.toLowerCase();
+      if (nextLower === lastLower || lastLower.endsWith(nextLower)) {
+        return segments.reduce((acc, part) => appendCaptionFragment(acc, part), "");
+      }
+      if (nextLower.startsWith(lastLower)) {
+        segments[segments.length - 1] = next;
+      } else {
+        segments.push(next);
+      }
+    } else {
+      segments.push(next);
+    }
+
+    if (segments.length > 4) {
+      segments.splice(0, segments.length - 4);
+    }
+
+    let combined = "";
+    for (const part of segments) {
+      combined = appendCaptionFragment(combined, part);
+    }
+    combined = combined.replace(/\s+/g, " ").trim();
+    if (combined.length > 260) {
+      combined = combined.slice(-260).trimStart();
+      const firstSpace = combined.indexOf(" ");
+      if (firstSpace > 0 && firstSpace < 32) {
+        combined = combined.slice(firstSpace + 1);
+      }
+    }
+
+    return combined;
+  };
+
+  const stopLiveStt = async (
+    reason = "Live captions stopped.",
+    options?: { clearCaption?: boolean; tone?: "neutral" | "success" | "error"; keepStatus?: boolean },
+  ) => {
+    const clearCaption = options?.clearCaption ?? true;
+    const tone = options?.tone ?? "neutral";
+    const keepStatus = options?.keepStatus ?? false;
+
+    sttActiveRef.current = false;
+    setIsLiveSttActive(false);
+
+    if (sttRecorderSliceTimerRef.current !== null) {
+      window.clearTimeout(sttRecorderSliceTimerRef.current);
+      sttRecorderSliceTimerRef.current = null;
+    }
+
+    const recorder = sttRecorderRef.current;
+    sttRecorderRef.current = null;
+    if (recorder && recorder.state !== "inactive") {
+      try {
+        recorder.ondataavailable = null;
+        recorder.onerror = null;
+        recorder.onstop = null;
+        recorder.stop();
+      } catch {
+        // Ignore recorder stop failures.
+      }
+    }
+
+    const stream = sttMediaStreamRef.current;
+    sttMediaStreamRef.current = null;
+    if (stream) {
+      stream.getTracks().forEach((track) => {
+        try {
+          track.stop();
+        } catch {
+          // Ignore track stop failures.
+        }
+      });
+    }
+
+    sttQueueRef.current = [];
+    sttLastCaptionTextRef.current = "";
+    sttCaptionSegmentsRef.current = [];
+    sttLastCaptionSentAtRef.current = 0;
+    sttCaptionIdRef.current = "";
+    sttSequenceRef.current = 0;
+    setLiveSttPreviewText("");
+
+    const targetClientId = sttTargetClientIdRef.current;
+    sttTargetClientIdRef.current = null;
+    setLiveSttTargetClientId(null);
+
+    if (clearCaption && targetClientId) {
+      try {
+        await fetchJson<{ ok: boolean; message?: string }>(`/api/students/${encodeURIComponent(targetClientId)}/live-caption`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: "",
+            clear: true,
+            isFinal: true,
+            ttlMs: 1000,
+            teacherDisplayName: "Teacher Console",
+          } satisfies TeacherLiveCaptionRequestDto),
+        });
+      } catch {
+        // Ignore clear failures during shutdown.
+      }
+    }
+
+    if (!keepStatus) {
+      setTeacherSttStatus({ tone, text: reason });
+    }
+  };
+
+  const refreshSttMicrophones = async (options?: { requestPermission?: boolean }) => {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.enumerateDevices) {
+      setTeacherSttStatus({ tone: "error", text: "This environment does not support microphone device enumeration." });
+      return;
+    }
+
+    setSttAudioInputsLoading(true);
+    try {
+      if (options?.requestPermission) {
+        try {
+          const probeStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          probeStream.getTracks().forEach((track) => track.stop());
+        } catch {
+          // Permission may be denied; still try enumerateDevices for device IDs.
+        }
+      }
+
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audioInputs = devices
+        .filter((device) => device.kind === "audioinput")
+        .map((device, index) => ({
+          deviceId: device.deviceId,
+          label: device.label?.trim() || `Microphone ${index + 1}`,
+        }));
+
+      setSttAudioInputs(audioInputs);
+      setSttMicrophoneDeviceId((current) => {
+        if (!audioInputs.length) {
+          return "";
+        }
+        if (current && audioInputs.some((device) => device.deviceId === current)) {
+          return current;
+        }
+        return audioInputs[0]?.deviceId ?? "";
+      });
+    } catch (error) {
+      setTeacherSttStatus({ tone: "error", text: `Microphone list error: ${describeError(error)}` });
+    } finally {
+      setSttAudioInputsLoading(false);
+    }
+  };
+
+  const sendLiveCaptionToStudent = async (clientId: string, payload: TeacherLiveCaptionRequestDto) => {
+    return fetchJson<{ ok: boolean; message?: string }>(`/api/students/${encodeURIComponent(clientId)}/live-caption`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  };
+
+  const transcribeMicrophoneChunk = async (audioBlob: Blob): Promise<TeacherSttTranscribeResponse> => {
+    const formData = new FormData();
+    const mimeType = audioBlob.type || "audio/webm";
+    const extension = mimeType.includes("ogg") ? "ogg" : mimeType.includes("mp4") || mimeType.includes("m4a") ? "m4a" : "webm";
+    formData.append("File", audioBlob, `teacher-mic.${extension}`);
+    formData.append("LanguageCode", sttLanguageCode);
+    formData.append("Task", "transcribe");
+    formData.append("SelfHostBaseUrl", selfHostTtsUrl.trim() || "https://tts.kilocraft.org");
+    formData.append("SelfHostApiToken", selfHostTtsToken.trim());
+    formData.append("SelfHostSttPath", "/v1/stt/transcribe");
+
+    return fetchJson<TeacherSttTranscribeResponse>("/api/speech/stt/transcribe", {
+      method: "POST",
+      body: formData,
+    });
+  };
+
+  const processLiveSttQueue = async () => {
+    if (sttProcessingRef.current) {
+      return;
+    }
+
+    sttProcessingRef.current = true;
+    try {
+      while (sttActiveRef.current) {
+        const targetClientId = sttTargetClientIdRef.current;
+        if (!targetClientId) {
+          sttQueueRef.current = [];
+          return;
+        }
+
+        const nextChunk = sttQueueRef.current.shift();
+        if (!nextChunk) {
+          return;
+        }
+
+        try {
+          const result = await transcribeMicrophoneChunk(nextChunk);
+          const rawText = (result.text ?? "").trim();
+          if (!rawText) {
+            continue;
+          }
+
+          const normalized = rawText.replace(/\s+/g, " ").trim();
+          if (!normalized || isLowValueSttFragment(normalized)) {
+            continue;
+          }
+
+          const combinedCaption = pushSttCaptionSegment(normalized);
+          if (!combinedCaption || combinedCaption === sttLastCaptionTextRef.current) {
+            continue;
+          }
+
+          const nowMs = Date.now();
+          if (
+            nowMs - sttLastCaptionSentAtRef.current < STT_CAPTION_SEND_MIN_INTERVAL_MS &&
+            sttQueueRef.current.length > 0
+          ) {
+            continue;
+          }
+
+          sttLastCaptionSentAtRef.current = nowMs;
+          sttLastCaptionTextRef.current = combinedCaption;
+          setLiveSttPreviewText(combinedCaption);
+          sttSequenceRef.current += 1;
+
+          await sendLiveCaptionToStudent(targetClientId, {
+            text: combinedCaption,
+            isFinal: true,
+            clear: false,
+            captionId: sttCaptionIdRef.current,
+            sequence: sttSequenceRef.current,
+            ttlMs: 7000,
+            languageCode: (result.language ?? sttLanguageCode) || undefined,
+            teacherDisplayName: "Teacher Console",
+          });
+
+          setTeacherSttStatus({
+            tone: "success",
+            text: `Live captions: ${combinedCaption.slice(0, 90)}${combinedCaption.length > 90 ? "..." : ""}`,
+          });
+        } catch (error) {
+          const message = `STT error: ${describeError(error)}`;
+          setTeacherSttStatus({ tone: "error", text: message });
+          appendEvent(message);
+        }
+      }
+    } finally {
+      sttProcessingRef.current = false;
+    }
+  };
+
+  const startLiveSttRecorderSlice = (stream: MediaStream, preferredMimeType: string) => {
+    if (!sttActiveRef.current || !stream.active) {
+      return;
+    }
+
+    let recorder: MediaRecorder;
+    try {
+      recorder = preferredMimeType ? new MediaRecorder(stream, { mimeType: preferredMimeType }) : new MediaRecorder(stream);
+    } catch {
+      recorder = new MediaRecorder(stream);
+    }
+
+    const chunks: Blob[] = [];
+    recorder.ondataavailable = (event: BlobEvent) => {
+      const blob = event.data;
+      if (blob && blob.size > 0) {
+        chunks.push(blob);
+      }
+    };
+
+    recorder.onerror = (event) => {
+      const err = (event as unknown as { error?: { message?: string } }).error?.message ?? "Recorder error";
+      void stopLiveStt(`Live captions stopped: ${err}`, { tone: "error" });
+    };
+
+    recorder.onstop = () => {
+      if (sttRecorderRef.current === recorder) {
+        sttRecorderRef.current = null;
+      }
+
+      if (sttRecorderSliceTimerRef.current !== null) {
+        window.clearTimeout(sttRecorderSliceTimerRef.current);
+        sttRecorderSliceTimerRef.current = null;
+      }
+
+      if (chunks.length > 0 && sttActiveRef.current) {
+        const mimeType = recorder.mimeType || preferredMimeType || chunks[0]?.type || "audio/webm";
+        const blob = new Blob(chunks, { type: mimeType });
+        sttQueueRef.current.push(blob);
+        if (sttQueueRef.current.length > 2) {
+          sttQueueRef.current.splice(0, sttQueueRef.current.length - 2);
+        }
+        void processLiveSttQueue();
+      }
+
+      if (!sttActiveRef.current || sttMediaStreamRef.current !== stream || !stream.active) {
+        return;
+      }
+
+      window.setTimeout(() => {
+        if (sttActiveRef.current && sttMediaStreamRef.current === stream && stream.active) {
+          startLiveSttRecorderSlice(stream, preferredMimeType);
+        }
+      }, 0);
+    };
+
+    sttRecorderRef.current = recorder;
+    recorder.start();
+    sttRecorderSliceTimerRef.current = window.setTimeout(() => {
+      if (!sttActiveRef.current) {
+        return;
+      }
+      if (sttRecorderRef.current !== recorder) {
+        return;
+      }
+      if (recorder.state !== "inactive") {
+        try {
+          recorder.stop();
+        } catch {
+          // Ignore stop race conditions.
+        }
+      }
+    }, STT_RECORDER_SLICE_MS);
+  };
+
+  const startLiveStt = async () => {
+    if (isLiveSttActive || sttActiveRef.current) {
+      return;
+    }
+
+    if (typeof window === "undefined" || typeof navigator === "undefined") {
+      setTeacherSttStatus({ tone: "error", text: "Microphone capture is not available in this environment." });
+      return;
+    }
+
+    if (!("MediaRecorder" in window)) {
+      setTeacherSttStatus({ tone: "error", text: "MediaRecorder is not supported in this environment." });
+      return;
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setTeacherSttStatus({ tone: "error", text: "Microphone API is not available." });
+      return;
+    }
+
+    if (!selectedStudentId || !students[selectedStudentId]?.isOnline) {
+      setTeacherSttStatus({ tone: "error", text: "Select an online student to start live captions." });
+      return;
+    }
+
+    if (!selfHostTtsToken.trim()) {
+      setTeacherSttStatus({ tone: "error", text: "Configure the self-host speech token in Settings before using STT." });
+      return;
+    }
+
+    try {
+      setTeacherSttStatus({ tone: "neutral", text: `Starting live captions for ${selectedStudentId}...` });
+
+      const audioConstraints: MediaTrackConstraints =
+        sttMicrophoneDeviceId && sttMicrophoneDeviceId !== "default"
+          ? {
+              deviceId: { exact: sttMicrophoneDeviceId },
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            }
+          : {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            };
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+      sttMediaStreamRef.current = stream;
+
+      const mimeCandidates = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"];
+      const selectedMimeType =
+        typeof MediaRecorder !== "undefined" && typeof MediaRecorder.isTypeSupported === "function"
+          ? (mimeCandidates.find((value) => MediaRecorder.isTypeSupported(value)) ?? "")
+          : "";
+      sttActiveRef.current = true;
+      setIsLiveSttActive(true);
+      sttTargetClientIdRef.current = selectedStudentId;
+      setLiveSttTargetClientId(selectedStudentId);
+      sttCaptionIdRef.current = `live-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      sttSequenceRef.current = 0;
+      sttLastCaptionTextRef.current = "";
+      sttCaptionSegmentsRef.current = [];
+      sttLastCaptionSentAtRef.current = 0;
+      sttQueueRef.current = [];
+      setLiveSttPreviewText("");
+      startLiveSttRecorderSlice(stream, selectedMimeType);
+
+      try {
+        await refreshSttMicrophones();
+      } catch {
+        // Device labels refresh is best effort.
+      }
+
+      await sendLiveCaptionToStudent(selectedStudentId, {
+        text: "",
+        clear: true,
+        isFinal: true,
+        captionId: sttCaptionIdRef.current,
+        ttlMs: 1000,
+        teacherDisplayName: "Teacher Console",
+      });
+
+      appendEvent(`Live captions started for ${selectedStudentId}`);
+      setTeacherSttStatus({ tone: "success", text: `Live captions enabled for ${selectedStudentId}.` });
+    } catch (error) {
+      await stopLiveStt(`Live captions failed to start: ${describeError(error)}`, { clearCaption: false, tone: "error" });
+    }
+  };
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
     localStorage.setItem(THEME_KEY, theme);
@@ -470,6 +1050,39 @@ function App() {
   }, [selfHostTtsToken]);
 
   useEffect(() => {
+    localStorage.setItem(STT_MIC_DEVICE_ID_KEY, sttMicrophoneDeviceId);
+  }, [sttMicrophoneDeviceId]);
+
+  useEffect(() => {
+    localStorage.setItem(STT_LANGUAGE_KEY, sttLanguageCode);
+  }, [sttLanguageCode]);
+
+  useEffect(() => {
+    void refreshSttMicrophones();
+
+    const mediaDevices = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
+    if (!mediaDevices) {
+      return;
+    }
+
+    const handleDeviceChange = () => {
+      void refreshSttMicrophones();
+    };
+
+    if (typeof mediaDevices.addEventListener === "function") {
+      mediaDevices.addEventListener("devicechange", handleDeviceChange);
+      return () => mediaDevices.removeEventListener("devicechange", handleDeviceChange);
+    }
+
+    mediaDevices.ondevicechange = handleDeviceChange;
+    return () => {
+      if (mediaDevices.ondevicechange === handleDeviceChange) {
+        mediaDevices.ondevicechange = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     const audio = new Audio("/notification.mp3");
     audio.preload = "auto";
     audio.volume = Math.min(1, Math.max(0, notificationVolume / 100));
@@ -506,6 +1119,33 @@ function App() {
       toastTimersRef.current = [];
     };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      void stopLiveStt("Live captions stopped.", { clearCaption: true, keepStatus: true });
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isLiveSttActive) {
+      return;
+    }
+
+    const targetClientId = sttTargetClientIdRef.current;
+    if (!targetClientId) {
+      return;
+    }
+
+    const targetStudent = students[targetClientId];
+    if (!targetStudent || !targetStudent.isOnline) {
+      void stopLiveStt("Live captions stopped: target device went offline.", { tone: "error" });
+      return;
+    }
+
+    if (selectedStudentId !== targetClientId) {
+      void stopLiveStt("Live captions stopped: selected device changed.", { tone: "neutral" });
+    }
+  }, [isLiveSttActive, selectedStudentId, students]);
 
   useEffect(() => {
     let connection: HubConnection | null = null;
@@ -1059,10 +1699,41 @@ function App() {
   const canOpenRemoteView = Boolean(selectedStudent);
   const selectedChatMessages = selectedStudentId ? (chatByStudent[selectedStudentId] ?? []) : [];
   const unreadChatTotal = Object.values(chatUnreadByStudent).reduce((sum, count) => sum + count, 0);
+  const activeLiveSttTarget = liveSttTargetClientId ? students[liveSttTargetClientId] : undefined;
+  const sttSelectedLanguageLabel =
+    sttLanguageCode === "auto"
+      ? "Auto"
+      : sttLanguageCode === "ru"
+        ? "Русский"
+        : sttLanguageCode === "en"
+          ? "English"
+          : sttLanguageCode === "kk" || sttLanguageCode === "kz"
+            ? "Қазақша"
+            : sttLanguageCode;
   const selectedRemoteControlSession = selectedStudentId ? remoteControlSessions[selectedStudentId] : undefined;
   const isRemoteControlApproved = selectedRemoteControlSession?.state === "Approved";
   const isRemoteControlPending =
     remoteControlRequestPending || selectedRemoteControlSession?.state === "PendingApproval";
+
+  const handleFocusedTeacherChatSend = (text: string) => {
+    if (!selectedStudentId) {
+      setTeacherChatStatus({ tone: "error", text: "Select a device first." });
+      return;
+    }
+
+    setTeacherChatStatus({ tone: "neutral", text: `Sending chat to ${selectedStudentId}...` });
+    sendTeacherChat.mutate({ clientId: selectedStudentId, text });
+  };
+
+  const handleTeacherTtsSend = (draft: TeacherTtsDraft) => {
+    if (!selectedStudentId) {
+      setTeacherTtsStatus({ tone: "error", text: "Select a device first." });
+      return;
+    }
+
+    setTeacherTtsStatus({ tone: "neutral", text: `Dispatching TTS to ${selectedStudentId}...` });
+    sendTeacherTts.mutate({ clientId: selectedStudentId, draft });
+  };
 
   useEffect(() => {
     if (activeView !== "chats") {
@@ -1296,8 +1967,8 @@ function App() {
   }, [isRemoteViewOpen, isRemoteControlApproved, selectedStudentId, selectedRemoteControlSession?.sessionId]);
 
   return (
-    <div className="box-border min-h-screen min-w-0 overflow-x-hidden px-2 py-2 sm:px-3 sm:py-3 lg:px-5 lg:py-4">
-      <div className="mx-auto flex max-w-[1880px] min-w-0 flex-col gap-3">
+    <div className="box-border h-full min-h-0 min-w-0 overflow-hidden px-2 py-2 sm:px-3 sm:py-3 lg:px-5 lg:py-4">
+      <div className="mx-auto flex h-full max-w-[1880px] min-h-0 min-w-0 flex-col gap-3 overflow-x-hidden overflow-y-auto">
         <header className="px-1 py-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-0.5">
@@ -1368,7 +2039,7 @@ function App() {
         </header>
 
         {activeView === "monitoring" ? (
-        <div className="mt-1 grid gap-3 lg:grid-cols-[minmax(0,1fr)_290px] 2xl:grid-cols-[minmax(0,1fr)_308px]">
+        <div className="mt-1 grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_290px] 2xl:grid-cols-[minmax(0,1fr)_308px]">
           <Card className="overflow-visible">
             <CardContent className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
               <div className="flex flex-col gap-3">
@@ -1470,46 +2141,87 @@ function App() {
                           <IconList className="mr-1.5 h-3.5 w-3.5" />
                           {t("alertsAudit")}
                         </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsTeacherChatModalOpen(true)}
+                          className="h-8 rounded-full border border-border/80 bg-background/50 px-3 text-xs"
+                        >
+                          <IconChat className="mr-1.5 h-3.5 w-3.5" />
+                          Chat
+                          {selectedStudentId && (chatUnreadByStudent[selectedStudentId] ?? 0) > 0 ? (
+                            <span className="ml-1 inline-flex min-w-4 items-center justify-center rounded-full border border-sky-500/40 bg-sky-500/10 px-1 text-[10px] leading-4 text-sky-300">
+                              {chatUnreadByStudent[selectedStudentId]! > 99 ? "99+" : chatUnreadByStudent[selectedStudentId]}
+                            </span>
+                          ) : null}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsTeacherTtsModalOpen(true)}
+                          className="h-8 rounded-full border border-border/80 bg-background/50 px-3 text-xs"
+                        >
+                          <IconVolume className="mr-1.5 h-3.5 w-3.5" />
+                          TTS
+                        </Button>
+                      </div>
+
+                      <div className="mt-2 rounded-lg border border-border/80 bg-background/55 p-2.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                              Live captions (STT)
+                            </p>
+                            <p className="mt-0.5 text-[11px] text-muted-foreground">
+                              {isLiveSttActive
+                                ? `Streaming to ${activeLiveSttTarget?.hostName ?? liveSttTargetClientId ?? "student"}`
+                                : "Microphone off"}
+                              {" • "}
+                              {sttSelectedLanguageLabel}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant={isLiveSttActive ? "destructive" : "outline"}
+                            size="sm"
+                            className="h-9 min-w-9 rounded-full px-0"
+                            aria-label={isLiveSttActive ? "Disable live captions microphone" : "Enable live captions microphone"}
+                            title={isLiveSttActive ? "Turn off live captions microphone" : "Turn on live captions microphone"}
+                            disabled={!selectedStudent || !selectedStudent.isOnline}
+                            onClick={() => {
+                              if (isLiveSttActive) {
+                                void stopLiveStt("Live captions stopped.", { tone: "neutral" });
+                                return;
+                              }
+                              void startLiveStt();
+                            }}
+                          >
+                            {isLiveSttActive ? <IconMicOff className="h-4 w-4" /> : <IconMic className="h-4 w-4" />}
+                          </Button>
+                        </div>
+
+                        {teacherSttStatus ? (
+                          <div
+                            className={cn(
+                              "mt-2 rounded-md border px-2 py-1.5 text-xs",
+                              teacherSttStatus.tone === "success" && "border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+                              teacherSttStatus.tone === "error" && "border-destructive/40 bg-destructive/10 text-destructive",
+                              teacherSttStatus.tone === "neutral" && "border-border/80 bg-muted/20 text-muted-foreground",
+                            )}
+                          >
+                            {teacherSttStatus.text}
+                          </div>
+                        ) : null}
+
+                        {liveSttPreviewText ? (
+                          <p className="mt-2 line-clamp-2 text-xs text-foreground/90">{liveSttPreviewText}</p>
+                        ) : null}
                       </div>
                     </div>
                   </div>
                   <p className="mt-2 text-xs text-muted-foreground">{uploadStatus || t("noActiveTransfers")}</p>
                 </section>
 
-                <FocusedChatCard
-                  selectedStudent={selectedStudent}
-                  messages={selectedChatMessages}
-                  isLoadingHistory={chatHistoryLoadingFor === selectedStudentId}
-                  isSending={sendTeacherChat.isPending}
-                  statusText={teacherChatStatus?.text}
-                  statusTone={teacherChatStatus?.tone}
-                  onSend={(text) => {
-                    if (!selectedStudentId) {
-                      setTeacherChatStatus({ tone: "error", text: "Select a device first." });
-                      return;
-                    }
-
-                    setTeacherChatStatus({ tone: "neutral", text: `Sending chat to ${selectedStudentId}...` });
-                    sendTeacherChat.mutate({ clientId: selectedStudentId, text });
-                  }}
-                />
-
-                <TeacherTtsCard
-                  lang={lang}
-                  selectedStudent={selectedStudent}
-                  isPending={sendTeacherTts.isPending}
-                  statusText={teacherTtsStatus?.text}
-                  statusTone={teacherTtsStatus?.tone}
-                  onSend={(draft) => {
-                    if (!selectedStudentId) {
-                      setTeacherTtsStatus({ tone: "error", text: "Select a device first." });
-                      return;
-                    }
-
-                    setTeacherTtsStatus({ tone: "neutral", text: `Dispatching TTS to ${selectedStudentId}...` });
-                    sendTeacherTts.mutate({ clientId: selectedStudentId, draft });
-                  }}
-                />
               </div>
 
               <aside className="sticky top-3 flex min-h-0 self-start flex-col rounded-xl border border-border bg-background/75 p-3 max-h-[calc(100vh-7.5rem)]">
@@ -1636,12 +2348,12 @@ function App() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-visible">
+          <Card className="flex min-h-0 flex-col overflow-visible">
             <CardHeader className="pb-2">
               <CardTitle>{t("controlPanel")}</CardTitle>
               <CardDescription>{t("logsHint")}</CardDescription>
             </CardHeader>
-            <CardContent className="flex h-full min-h-0 flex-col gap-3 pb-3">
+            <CardContent className="flex min-h-0 flex-1 flex-col gap-3 pb-3">
               <div className="grid grid-cols-1 gap-2">
                 <div className="flex items-center justify-between rounded-md border border-border/80 bg-muted/25 px-2.5 py-1.5">
                   <p className="text-[11px] text-muted-foreground">{t("knownDevices")}</p>
@@ -1699,6 +2411,7 @@ function App() {
                       size="sm"
                       onClick={() => setIsLogsOpen(true)}
                       className="h-6 px-2 text-[10px]"
+                      aria-label={t("alertsAudit")}
                     >
                       <IconList className="h-3.5 w-3.5" />
                     </Button>
@@ -1993,6 +2706,66 @@ function App() {
                     />
                     <p className="text-[11px] text-muted-foreground">{t("settingsTtsProxyTokenHint")}</p>
                   </label>
+                </div>
+
+                <div className="rounded-lg border border-border/80 bg-muted/20 p-3 space-y-2">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium">Live captions (STT)</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        Microphone and speech language for teacher live subtitles in monitoring. Uses the same speech proxy URL/token above.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void refreshSttMicrophones({ requestPermission: true })}
+                      disabled={sttAudioInputsLoading}
+                    >
+                      {sttAudioInputsLoading ? "Refreshing..." : "Refresh microphones"}
+                    </Button>
+                  </div>
+
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <label className="block space-y-1">
+                      <span className="text-xs font-medium text-muted-foreground">Microphone</span>
+                      <select
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                        value={sttMicrophoneDeviceId}
+                        onChange={(event) => setSttMicrophoneDeviceId(event.target.value)}
+                      >
+                        {sttAudioInputs.length === 0 ? <option value="">No microphones detected</option> : null}
+                        {sttAudioInputs.map((device) => (
+                          <option key={device.deviceId} value={device.deviceId}>
+                            {device.label}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-[11px] text-muted-foreground">
+                        {sttAudioInputs.length > 0
+                          ? `${sttAudioInputs.length} input(s) found`
+                          : "If labels are empty or no devices show up, click refresh and allow microphone access."}
+                      </p>
+                    </label>
+
+                    <label className="block space-y-1">
+                      <span className="text-xs font-medium text-muted-foreground">Recognition language</span>
+                      <select
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                        value={sttLanguageCode}
+                        onChange={(event) => setSttLanguageCode(event.target.value)}
+                      >
+                        <option value="auto">Auto detect</option>
+                        <option value="ru">Russian (ru)</option>
+                        <option value="en">English (en)</option>
+                        <option value="kk">Kazakh (kk)</option>
+                      </select>
+                      <p className="text-[11px] text-muted-foreground">
+                        Choose the spoken language for faster and more stable transcription.
+                      </p>
+                    </label>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -2351,6 +3124,71 @@ function App() {
                   <ScrollArea.Thumb className="rounded bg-muted-foreground/30" />
                 </ScrollArea.Scrollbar>
               </ScrollArea.Root>
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
+
+      {isTeacherChatModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/55"
+            aria-label="Close teacher chat dialog"
+            onClick={() => setIsTeacherChatModalOpen(false)}
+          />
+          <Card className="relative z-10 flex h-[min(88vh,820px)] w-full max-w-4xl flex-col overflow-hidden">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle>Teacher Chat</CardTitle>
+                <Button variant="outline" size="sm" onClick={() => setIsTeacherChatModalOpen(false)}>
+                  {t("close")}
+                </Button>
+              </div>
+              <CardDescription>Chat with the selected student in an overlay window.</CardDescription>
+            </CardHeader>
+            <CardContent className="min-h-0 flex-1 overflow-auto pb-4">
+              <FocusedChatCard
+                selectedStudent={selectedStudent}
+                messages={selectedChatMessages}
+                isLoadingHistory={chatHistoryLoadingFor === selectedStudentId}
+                isSending={sendTeacherChat.isPending}
+                statusText={teacherChatStatus?.text}
+                statusTone={teacherChatStatus?.tone}
+                onSend={handleFocusedTeacherChatSend}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
+
+      {isTeacherTtsModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/55"
+            aria-label="Close teacher TTS dialog"
+            onClick={() => setIsTeacherTtsModalOpen(false)}
+          />
+          <Card className="relative z-10 flex h-[min(88vh,820px)] w-full max-w-3xl flex-col overflow-hidden">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle>TTS</CardTitle>
+                <Button variant="outline" size="sm" onClick={() => setIsTeacherTtsModalOpen(false)}>
+                  {t("close")}
+                </Button>
+              </div>
+              <CardDescription>Send a synthesized voice message to the selected student.</CardDescription>
+            </CardHeader>
+            <CardContent className="min-h-0 flex-1 overflow-auto pb-4">
+              <TeacherTtsCard
+                lang={lang}
+                selectedStudent={selectedStudent}
+                isPending={sendTeacherTts.isPending}
+                statusText={teacherTtsStatus?.text}
+                statusTone={teacherTtsStatus?.tone}
+                onSend={handleTeacherTtsSend}
+              />
             </CardContent>
           </Card>
         </div>

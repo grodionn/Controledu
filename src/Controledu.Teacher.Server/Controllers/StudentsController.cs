@@ -86,6 +86,53 @@ public sealed class StudentsController(
     }
 
     /// <summary>
+    /// Sends or clears live subtitle text for one student endpoint overlay.
+    /// </summary>
+    [HttpPost("{clientId}/live-caption")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SendTeacherLiveCaption(
+        string clientId,
+        [FromBody] TeacherLiveCaptionRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(clientId))
+        {
+            return BadRequest("Client id is required.");
+        }
+
+        if (!request.Clear)
+        {
+            var text = (request.Text ?? string.Empty).Trim();
+            if (text.Length == 0)
+            {
+                return BadRequest("Text is required unless clear=true.");
+            }
+        }
+
+        if (!studentRegistry.TryGetConnectionId(clientId, out var connectionId) || string.IsNullOrWhiteSpace(connectionId))
+        {
+            return NotFound("Student is offline or not connected.");
+        }
+
+        var command = new TeacherLiveCaptionCommandDto(
+            ClientId: clientId.Trim(),
+            CaptionId: string.IsNullOrWhiteSpace(request.CaptionId) ? Guid.NewGuid().ToString("N") : request.CaptionId.Trim(),
+            TimestampUtc: DateTimeOffset.UtcNow,
+            TeacherDisplayName: string.IsNullOrWhiteSpace(request.TeacherDisplayName) ? "Teacher Console" : request.TeacherDisplayName.Trim(),
+            LanguageCode: string.IsNullOrWhiteSpace(request.LanguageCode) ? null : request.LanguageCode.Trim(),
+            Text: request.Clear ? string.Empty : request.Text.Trim(),
+            IsFinal: request.IsFinal,
+            Clear: request.Clear,
+            TtlMs: Math.Clamp(request.TtlMs ?? 4500, 1000, 15000),
+            Sequence: request.Sequence ?? 0);
+
+        await studentHub.Clients.Client(connectionId).SendAsync(HubMethods.TeacherLiveCaptionRequested, command, cancellationToken);
+        return Ok(new { ok = true, message = "Live caption dispatched." });
+    }
+
+    /// <summary>
     /// Sends a teacher text message to one student endpoint for TTS playback.
     /// </summary>
     [HttpPost("{clientId}/tts")]
@@ -338,6 +385,19 @@ public sealed record TeacherTtsRequest(
 /// Teacher API payload for sending text chat to one student.
 /// </summary>
 public sealed record TeacherChatMessageRequest(string Text, string? TeacherDisplayName = null);
+
+/// <summary>
+/// Teacher API payload for sending live subtitle text to one student overlay.
+/// </summary>
+public sealed record TeacherLiveCaptionRequest(
+    string Text,
+    bool IsFinal = true,
+    bool Clear = false,
+    string? CaptionId = null,
+    long? Sequence = null,
+    int? TtlMs = null,
+    string? LanguageCode = null,
+    string? TeacherDisplayName = null);
 
 /// <summary>
 /// Teacher API response with recent student conversation history.

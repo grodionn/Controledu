@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
@@ -252,6 +252,9 @@ export function AccessibilitySettingsPanel({ api, lang, disabled = false, onStat
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string>("");
+  const profileRef = useRef<AccessibilityProfileResponse | null>(null);
+  const draftRef = useRef<AccessibilityProfileUpdateRequest | null>(null);
+  const isSavingRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -285,6 +288,62 @@ export function AccessibilitySettingsPanel({ api, lang, disabled = false, onStat
 
     return () => {
       cancelled = true;
+    };
+  }, [api]);
+
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
+
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
+
+  useEffect(() => {
+    isSavingRef.current = isSaving;
+  }, [isSaving]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const syncProfile = async () => {
+      if (isSavingRef.current) {
+        return;
+      }
+
+      try {
+        const payload = await api<AccessibilityProfileResponse>("/api/accessibility/profile");
+        if (cancelled) {
+          return;
+        }
+
+        const currentProfile = profileRef.current;
+        const currentDraft = draftRef.current;
+
+        const nextSnapshot = JSON.stringify(payload);
+        const currentSnapshot = currentProfile ? JSON.stringify(currentProfile) : null;
+        if (currentSnapshot === nextSnapshot) {
+          return;
+        }
+
+        const isDirtyNow = JSON.stringify(currentDraft) !== JSON.stringify(currentProfile ? toDraft(currentProfile) : null);
+        setProfile(payload);
+        if (!isDirtyNow) {
+          setDraft(toDraft(payload));
+          setError("");
+        }
+      } catch {
+        // Ignore background sync failures; keep local draft/UI usable.
+      }
+    };
+
+    const timer = window.setInterval(() => {
+      void syncProfile();
+    }, 3000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
     };
   }, [api]);
 

@@ -19,6 +19,7 @@ public sealed class StudentHubClient(ILogger<StudentHubClient> logger) : IAsyncD
     private readonly Channel<AccessibilityProfileAssignmentCommandDto> _accessibilityProfileCommands = Channel.CreateUnbounded<AccessibilityProfileAssignmentCommandDto>();
     private readonly Channel<TeacherTtsCommandDto> _teacherTtsCommands = Channel.CreateUnbounded<TeacherTtsCommandDto>();
     private readonly Channel<StudentTeacherChatMessageDto> _teacherChatMessages = Channel.CreateUnbounded<StudentTeacherChatMessageDto>();
+    private readonly Channel<TeacherLiveCaptionCommandDto> _teacherLiveCaptions = Channel.CreateUnbounded<TeacherLiveCaptionCommandDto>();
     private readonly Channel<RemoteControlSessionCommandDto> _remoteControlSessionCommands = Channel.CreateUnbounded<RemoteControlSessionCommandDto>();
     private readonly Channel<RemoteControlInputCommandDto> _remoteControlInputCommands = Channel.CreateUnbounded<RemoteControlInputCommandDto>();
     private readonly object _policySync = new();
@@ -197,6 +198,12 @@ public sealed class StudentHubClient(ILogger<StudentHubClient> logger) : IAsyncD
         _teacherChatMessages.Reader.TryRead(out message!);
 
     /// <summary>
+    /// Attempts to dequeue teacher live caption update for endpoint overlay subtitles.
+    /// </summary>
+    public bool TryDequeueTeacherLiveCaption(out TeacherLiveCaptionCommandDto caption) =>
+        _teacherLiveCaptions.Reader.TryRead(out caption!);
+
+    /// <summary>
     /// Attempts to dequeue pending remote-control session command.
     /// </summary>
     public bool TryDequeueRemoteControlSessionCommand(out RemoteControlSessionCommandDto command) =>
@@ -292,6 +299,11 @@ public sealed class StudentHubClient(ILogger<StudentHubClient> logger) : IAsyncD
         _connection.On<StudentTeacherChatMessageDto>(HubMethods.TeacherChatMessageRequested, message =>
         {
             _teacherChatMessages.Writer.TryWrite(message);
+        });
+
+        _connection.On<TeacherLiveCaptionCommandDto>(HubMethods.TeacherLiveCaptionRequested, caption =>
+        {
+            _teacherLiveCaptions.Writer.TryWrite(caption);
         });
 
         _connection.On<RemoteControlSessionCommandDto>(HubMethods.RemoteControlSessionCommand, command =>

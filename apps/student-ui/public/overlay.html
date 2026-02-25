@@ -46,7 +46,7 @@
         width: 100%;
         height: 100%;
         display: grid;
-        grid-template-rows: auto auto auto 1fr auto;
+        grid-template-rows: auto auto auto auto 1fr auto;
         gap: 0.55rem;
         padding: 0.6rem;
         border: 1px solid var(--border);
@@ -356,16 +356,94 @@
         overflow: hidden;
       }
 
+      .caption-panel {
+        border-radius: 0.9rem;
+        border: 1px solid rgba(109, 198, 255, 0.28);
+        background:
+          radial-gradient(circle at 100% 0%, rgba(109,198,255,0.14), transparent 58%),
+          linear-gradient(180deg, rgba(71,167,255,0.1), rgba(71,167,255,0.03)),
+          rgba(255,255,255,0.025);
+        padding: 0.7rem 0.8rem;
+        display: grid;
+        gap: 0.45rem;
+        min-height: 0;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+      }
+
+      .caption-panel[data-visible="false"] {
+        display: none;
+      }
+
+      .caption-panel[data-has-text="false"] {
+        border-style: dashed;
+        border-color: rgba(255,255,255,0.14);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01)),
+          rgba(255,255,255,0.01);
+      }
+
+      .caption-panel[data-final="false"] {
+        border-color: rgba(255,191,71,0.24);
+        background:
+          linear-gradient(180deg, rgba(255,191,71,0.08), rgba(255,191,71,0.03)),
+          rgba(255,255,255,0.02);
+      }
+
+      .caption-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        color: var(--muted);
+        font-size: 0.72rem;
+      }
+
+      .caption-head strong {
+        color: var(--text);
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .caption-text {
+        margin: 0;
+        min-height: 2.7em;
+        line-height: 1.42;
+        font-size: 1.06rem;
+        font-weight: 700;
+        color: var(--text);
+        word-break: break-word;
+        letter-spacing: 0.01em;
+      }
+
+      .caption-panel[data-has-text="false"] .caption-text {
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      .caption-meta {
+        color: var(--muted);
+        font-size: 0.7rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
       body:not(.collapsed-overlay) .chat-panel {
         min-height: 8.5rem;
       }
 
       body.collapsed-overlay .chat-panel,
+      body.collapsed-overlay .caption-panel,
       body.collapsed-overlay .composer,
       body.collapsed-overlay .status-bar,
       body.collapsed-overlay .font-panel,
       body.collapsed-overlay .font-panel .font-hint {
         display: none;
+      }
+
+      body.collapsed-overlay .caption-panel {
+        padding-block: 0.5rem;
       }
 
       body.collapsed-overlay .raise-button {
@@ -678,6 +756,22 @@
         </div>
       </div>
 
+      <section
+        id="captionPanel"
+        class="caption-panel"
+        role="region"
+        aria-label="Live captions"
+        data-visible="false"
+        data-has-text="false"
+        data-final="true"
+      >
+        <div class="caption-head">
+          <strong id="captionState">Live subtitles</strong>
+          <span id="captionMeta" class="caption-meta"></span>
+        </div>
+        <p id="captionText" class="caption-text">Live subtitles will appear here</p>
+      </section>
+
       <section id="chatPanel" class="chat-panel" aria-labelledby="chatPanelTitle">
         <div class="chat-panel-header">
           <strong id="chatPanelTitle">Чат с учителем</strong>
@@ -870,6 +964,9 @@
           lastTeacherMessageId: null,
           pollingTimer: null,
           profileTimer: null,
+          captionTimer: null,
+          liveCaption: null,
+          lastCaptionFingerprint: "",
           sending: false,
           raising: false,
           sessionReady: false,
@@ -891,6 +988,10 @@
           fontScaleRange: document.getElementById("fontScaleRange"),
           fontScaleValue: document.getElementById("fontScaleValue"),
           fontHint: document.querySelector(".font-hint"),
+          captionPanel: document.getElementById("captionPanel"),
+          captionText: document.getElementById("captionText"),
+          captionState: document.getElementById("captionState"),
+          captionMeta: document.getElementById("captionMeta"),
           messages: document.getElementById("messages"),
           chatPanelTitle: document.getElementById("chatPanelTitle"),
           chatPanelStatus: document.getElementById("chatPanelStatus"),
@@ -1004,6 +1105,50 @@
           els.teacherStatusText.textContent = text;
         }
 
+        function renderLiveCaption() {
+          if (!els.captionPanel || !els.captionText || !els.captionState || !els.captionMeta) {
+            return;
+          }
+
+          const captionsAllowed = !!state.accessibility?.features?.liveCaptionsEnabled;
+          const caption = state.liveCaption;
+          const hasText = !!(captionsAllowed && caption && caption.visible && String(caption.text || "").trim().length > 0);
+          const panelVisible = captionsAllowed;
+
+          els.captionPanel.setAttribute("data-visible", panelVisible ? "true" : "false");
+          els.captionPanel.setAttribute("data-has-text", hasText ? "true" : "false");
+          if (!panelVisible) {
+            els.captionPanel.setAttribute("data-final", "true");
+            els.captionText.textContent = "";
+            els.captionState.textContent = "Live subtitles";
+            els.captionMeta.textContent = "";
+            return;
+          }
+
+          if (!hasText) {
+            els.captionPanel.setAttribute("data-final", "true");
+            els.captionText.textContent = "Live subtitles will appear here";
+            els.captionState.textContent = "Live subtitles";
+            els.captionMeta.textContent = "Waiting for speech";
+            return;
+          }
+
+          const isFinal = caption.isFinal !== false;
+          els.captionPanel.setAttribute("data-final", isFinal ? "true" : "false");
+          els.captionText.textContent = String(caption.text || "");
+          els.captionState.textContent = isFinal ? "Subtitles" : "Listening";
+
+          const meta = [];
+          if (caption.languageCode) {
+            meta.push(String(caption.languageCode).toUpperCase());
+          }
+          const ts = caption.timestampUtc ? new Date(caption.timestampUtc) : null;
+          if (ts && !Number.isNaN(ts.getTime())) {
+            meta.push(ts.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+          }
+          els.captionMeta.textContent = meta.join(" | ") || "Teacher speech";
+        }
+
         function postHostMessage(payload) {
           try {
             const bridge = window.chrome && window.chrome.webview;
@@ -1067,6 +1212,19 @@
           document.body.classList.toggle("large-buttons", !!features.largeActionButtonsEnabled);
           document.body.classList.toggle("focus-strong", !!ui.highlightFocusEnabled);
 
+          const filters = [];
+          if (ui.invertColors) {
+            filters.push("invert(1)", "hue-rotate(180deg)");
+          }
+          if (ui.colorBlindMode === "protanopia") {
+            filters.push("sepia(0.22)", "saturate(0.75)", "hue-rotate(-12deg)");
+          } else if (ui.colorBlindMode === "deuteranopia") {
+            filters.push("sepia(0.15)", "saturate(0.7)", "hue-rotate(18deg)");
+          } else if (ui.colorBlindMode === "tritanopia") {
+            filters.push("saturate(0.82)", "hue-rotate(35deg)");
+          }
+          document.body.style.filter = filters.length ? filters.join(" ") : "";
+
           const profileScale = Math.max(80, Math.min(300, Number(ui.scalePercent || 100)));
           const localScale = Math.max(80, Math.min(220, Number(state.prefs.fontScalePercent || 100)));
           const combinedScale = (profileScale / 100) * (localScale / 100);
@@ -1074,6 +1232,7 @@
 
           const preset = String(profile?.activePreset || "default");
           updateProfileLabel(preset);
+          renderLiveCaption();
         }
 
         function renderMessages() {
@@ -1192,6 +1351,35 @@
           }
         }
 
+        async function pollLiveCaption() {
+          try {
+            const captionsAllowed = !!state.accessibility?.features?.liveCaptionsEnabled;
+            if (!captionsAllowed && !state.liveCaption?.visible) {
+              return;
+            }
+
+            await ensureSession();
+            const caption = await fetchJson("/api/captions/live");
+            const fingerprint = JSON.stringify([
+              !!caption?.visible,
+              caption?.captionId || "",
+              Number(caption?.sequence || 0),
+              caption?.isFinal !== false,
+              caption?.text || "",
+              caption?.languageCode || "",
+            ]);
+            if (fingerprint === state.lastCaptionFingerprint) {
+              return;
+            }
+
+            state.liveCaption = caption || null;
+            state.lastCaptionFingerprint = fingerprint;
+            renderLiveCaption();
+          } catch {
+            // Keep last caption on transient failure; service TTL clears stale text.
+          }
+        }
+
         async function sendChatMessage() {
           const text = els.chatInput.value.trim();
           if (!text || state.sending) return;
@@ -1293,9 +1481,10 @@
             return;
           }
 
-          await Promise.allSettled([pollThread(), pollAccessibility()]);
+          await Promise.allSettled([pollThread(), pollAccessibility(), pollLiveCaption()]);
           state.pollingTimer = setInterval(pollThread, 1200);
           state.profileTimer = setInterval(pollAccessibility, 3500);
+          state.captionTimer = setInterval(pollLiveCaption, 1100);
         }
 
         els.composer.addEventListener("submit", (event) => {
@@ -1342,6 +1531,7 @@
         window.addEventListener("beforeunload", () => {
           if (state.pollingTimer) clearInterval(state.pollingTimer);
           if (state.profileTimer) clearInterval(state.profileTimer);
+          if (state.captionTimer) clearInterval(state.captionTimer);
         });
 
         start().catch((error) => {

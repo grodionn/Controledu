@@ -149,6 +149,7 @@ public sealed class Worker(
                 await HandleHandRaiseRequestAsync(binding, currentDeviceName, hubClient, settingsStore, configuration.HandRaiseCooldownSeconds, stoppingToken);
                 await HandleDiagnosticsExportRequestsAsync(binding, hubClient, datasetCollectionService, diagnosticsExportUploader, settingsStore, stoppingToken);
                 await HandleAccessibilityProfileCommandsAsync(binding, hubClient, studentLocalHostClient, settingsStore, stoppingToken);
+                await HandleTeacherLiveCaptionCommandsAsync(binding, hubClient, studentLocalHostClient, settingsStore, stoppingToken);
                 if (now >= nextChatSyncAt)
                 {
                     await HandleTeacherChatCommandsAsync(binding, hubClient, studentLocalHostClient, settingsStore, stoppingToken);
@@ -532,6 +533,32 @@ public sealed class Worker(
             }
 
             await settingsStore.SetAsync(DetectionSettingKeys.LastAlert, "Teacher chat message received", cancellationToken);
+        }
+    }
+
+    private async Task HandleTeacherLiveCaptionCommandsAsync(
+        ResolvedStudentBinding binding,
+        Services.StudentHubClient hubClient,
+        Services.IStudentLocalHostClient studentLocalHostClient,
+        ISettingsStore settingsStore,
+        CancellationToken cancellationToken)
+    {
+        while (hubClient.TryDequeueTeacherLiveCaption(out var caption))
+        {
+            if (!string.Equals(caption.ClientId, binding.ClientId, StringComparison.Ordinal))
+            {
+                logger.LogWarning(
+                    "Ignoring live caption command for client {CommandClientId}; current binding is {BindingClientId}",
+                    caption.ClientId,
+                    binding.ClientId);
+                continue;
+            }
+
+            var delivered = await studentLocalHostClient.TryDeliverTeacherLiveCaptionAsync(caption, cancellationToken);
+            if (!delivered)
+            {
+                await settingsStore.SetAsync(DetectionSettingKeys.LastAlert, "Teacher live caption delivery failed", cancellationToken);
+            }
         }
     }
 

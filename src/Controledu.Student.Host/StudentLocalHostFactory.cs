@@ -71,6 +71,7 @@ public static class StudentLocalHostFactory
         builder.Services.AddSingleton<IHostControlService, HostControlService>();
         builder.Services.AddSingleton<IHandRaiseRequestService, HandRaiseRequestService>();
         builder.Services.AddSingleton<IStudentChatService, StudentChatService>();
+        builder.Services.AddSingleton<IStudentLiveCaptionService, StudentLiveCaptionService>();
         builder.Services.AddSingleton<IRemoteControlConsentService, RemoteControlConsentService>();
 
         builder.Host.UseSerilog((context, _, loggerConfiguration) =>
@@ -528,6 +529,21 @@ public static class StudentLocalHostFactory
         {
             var prefs = await studentChatService.UpdatePreferencesAsync(request, cancellationToken);
             return Results.Ok(prefs);
+        });
+
+        app.MapGet("/api/captions/live", async (IStudentLiveCaptionService studentLiveCaptionService, CancellationToken cancellationToken) =>
+        {
+            var caption = await studentLiveCaptionService.GetCurrentAsync(cancellationToken);
+            return Results.Ok(caption);
+        });
+
+        app.MapPost("/api/captions/live/teacher", async (
+            TeacherLiveCaptionLocalDeliveryRequest request,
+            IStudentLiveCaptionService studentLiveCaptionService,
+            CancellationToken cancellationToken) =>
+        {
+            var caption = await studentLiveCaptionService.ApplyTeacherCaptionAsync(request, cancellationToken);
+            return Results.Ok(caption);
         });
 
         app.UseDefaultFiles();

@@ -385,7 +385,7 @@ export function AccessibilityAssignmentCard({
             <div className="text-[11px] text-muted-foreground">
               <span className="font-medium">{showAdvanced ? "Advanced settings are visible" : "Advanced settings are hidden"}</span>
               <span className="ml-1">
-                ({t(lang, "scale")}: {draft.ui.scalePercent}% • {t(lang, "contrast")}: {t(lang, draft.ui.contrastMode === "standard" ? "contrastStandard" : draft.ui.contrastMode === "aa" ? "contrastAa" : "contrastAaa")})
+                ({t(lang, "scale")}: {draft.ui.scalePercent}% | {t(lang, "contrast")}: {t(lang, draft.ui.contrastMode === "standard" ? "contrastStandard" : draft.ui.contrastMode === "aa" ? "contrastAa" : "contrastAaa")})
               </span>
             </div>
             <Button

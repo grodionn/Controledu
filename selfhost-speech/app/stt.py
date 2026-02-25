@@ -73,10 +73,27 @@ class FasterWhisperSttService:
                     asyncio.to_thread(self._transcribe_sync, model, audio_path, options),
                     timeout=self._settings.stt_timeout_seconds,
                 )
+            except HTTPException:
+                raise
             except TimeoutError as exc:
                 raise HTTPException(
                     status_code=status.HTTP_504_GATEWAY_TIMEOUT,
                     detail="STT transcription timed out.",
+                ) from exc
+            except Exception as exc:
+                message = str(exc)
+                if "Invalid data found when processing input" in message:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=(
+                            "Invalid audio input: decoder could not parse the uploaded file. "
+                            "This often happens when a browser MediaRecorder fragment is sent as a standalone WebM chunk."
+                        ),
+                    ) from exc
+
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"STT transcription failed: {message}",
                 ) from exc
 
         return result
