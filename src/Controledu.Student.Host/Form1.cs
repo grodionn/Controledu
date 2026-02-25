@@ -53,6 +53,8 @@ public partial class Form1 : Form
     private Button? _autoUpdatePromptInstallButton;
     private Button? _autoUpdatePromptLaterButton;
     private TaskCompletionSource<bool>? _autoUpdateApprovalTcs;
+    private string? _autoUpdateApprovalVersion;
+    private string? _autoUpdateDeferredVersion;
     private bool _remoteControlPromptActive;
     private string? _remoteControlPromptShownForSessionId;
 
@@ -597,7 +599,6 @@ public partial class Form1 : Form
         try
         {
             WriteAutoUpdateTrace($"Check started (startup={startup}).");
-            ShowAutoUpdateBannerStatus("Checking for updates...", bannerKind: "info", showActions: false);
             if (startup)
             {
                 var delaySeconds = Math.Clamp(_autoUpdateOptions.StartupDelaySeconds, 0, 300);
@@ -617,26 +618,26 @@ public partial class Form1 : Form
             if (!_autoUpdateClient.IsUpdateAvailable(currentVersion, manifest))
             {
                 WriteAutoUpdateTrace("No update available.");
-                ShowAutoUpdateBannerStatus($"You are up to date ({currentVersion}).", bannerKind: "success", showActions: false);
-                _ = Task.Run(async () =>
-                {
-                    await Task.Delay(1800);
-                    if (!IsDisposed && !Disposing)
-                    {
-                        BeginInvoke(new Action(() => SetAutoUpdatePromptVisible(false)));
-                    }
-                });
                 return;
             }
 
-            if (!await RequestAutoUpdateApprovalAsync(manifest.Version))
+            if (string.Equals(_autoUpdateDeferredVersion, manifest.Version, StringComparison.OrdinalIgnoreCase))
             {
-                WriteAutoUpdateTrace($"User postponed update {manifest.Version}.");
-                ShowAutoUpdateBannerStatus($"Update {manifest.Version} postponed.", bannerKind: "info", showActions: false);
+                WriteAutoUpdateTrace($"Update {manifest.Version} is available but deferred by user.");
                 return;
             }
 
-            ShowAutoUpdateBannerStatus($"Downloading update {manifest.Version}...", bannerKind: "info", showActions: false);
+            var approved = await RequestAutoUpdateApprovalAsync(manifest.Version);
+            if (!approved)
+            {
+                _autoUpdateDeferredVersion = manifest.Version;
+                WriteAutoUpdateTrace($"Update {manifest.Version} deferred by user.");
+                return;
+            }
+
+            _autoUpdateDeferredVersion = null;
+            WriteAutoUpdateTrace($"User approved update {manifest.Version}. Downloading installer.");
+
             var installerPath = await _autoUpdateClient.DownloadInstallerAsync(
                 manifest,
                 "student-host",
@@ -644,7 +645,6 @@ public partial class Form1 : Form
                 CancellationToken.None);
 
             WriteAutoUpdateTrace($"Installer downloaded: {installerPath}");
-            ShowAutoUpdateBannerStatus($"Update {manifest.Version} downloaded. Starting installer...", bannerKind: "info", showActions: false);
             ShowAutoUpdateNotification($"Installing update {manifest.Version}...");
             if (!TryLaunchUpdater(installerPath, "student-host"))
             {
@@ -662,7 +662,6 @@ public partial class Form1 : Form
         catch (Exception ex)
         {
             WriteAutoUpdateTrace($"Check failed: {ex}");
-            ShowAutoUpdateBannerStatus($"Update error: {TrimNotification(ex.Message)}", bannerKind: "error", showActions: false);
             ShowAutoUpdateNotification($"Update check failed: {TrimNotification(ex.Message)}");
         }
         finally
@@ -885,6 +884,7 @@ public partial class Form1 : Form
             return _autoUpdateApprovalTcs.Task;
         }
 
+        _autoUpdateApprovalVersion = version;
         ShowAutoUpdateBannerStatus($"Update {version} is available. Install now?", bannerKind: "info", showActions: true);
 
         _autoUpdateApprovalTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -894,7 +894,13 @@ public partial class Form1 : Form
     private void ResolveAutoUpdateApproval(bool approved)
     {
         var tcs = _autoUpdateApprovalTcs;
+        var version = _autoUpdateApprovalVersion;
         _autoUpdateApprovalTcs = null;
+        _autoUpdateApprovalVersion = null;
+        if (!approved && !string.IsNullOrWhiteSpace(version))
+        {
+            _autoUpdateDeferredVersion = version;
+        }
         SetAutoUpdatePromptVisible(false);
         tcs?.TrySetResult(approved);
     }
@@ -908,6 +914,25 @@ public partial class Form1 : Form
 
         _autoUpdatePromptPanel.Visible = visible;
         _autoUpdatePromptPanel.BringToFront();
+    }
+
+    private void HideAutoUpdateBannerStatus()
+    {
+        if (IsDisposed || Disposing)
+        {
+            return;
+        }
+
+        if (InvokeRequired)
+        {
+            BeginInvoke(new Action(HideAutoUpdateBannerStatus));
+            return;
+        }
+
+        _autoUpdateApprovalVersion = null;
+        _autoUpdateApprovalTcs?.TrySetResult(false);
+        _autoUpdateApprovalTcs = null;
+        SetAutoUpdatePromptVisible(false);
     }
 
     private static void WriteAutoUpdateTrace(string message)

@@ -66,7 +66,7 @@ english.LaunchTeacher=Launch Controledu Teacher
 russian.LaunchTeacher=Запустить Controledu Teacher
 
 [Files]
-Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.xml,appsettings.Development.json"
 
 [Icons]
 Name: "{autoprograms}\Controledu Teacher"; Filename: "{app}\{#MyAppExeName}"

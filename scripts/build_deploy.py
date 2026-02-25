@@ -1,4 +1,4 @@
-import argparse
+﻿import argparse
 import getpass
 import json
 import os
@@ -79,6 +79,19 @@ def sftp_put_file(sftp, local_path: Path, remote_path: str, log_file) -> None:
     sftp.put(str(local_path), remote_path)
 
 
+def sftp_prune_old_update_installers(sftp, remote_dir: str, keep_installer_name: str, log_file) -> None:
+    remote_dir = remote_dir.replace("\\", "/").rstrip("/")
+    keep_lower = keep_installer_name.lower()
+    for name in sftp.listdir(remote_dir):
+        if not name.lower().endswith(".exe"):
+            continue
+        if name.lower() == keep_lower:
+            continue
+        remote_path = f"{remote_dir}/{name}"
+        log(f"> rm stale {remote_path}", log_file)
+        sftp.remove(remote_path)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build and deploy Controledu updates via SSH/SFTP using password auth.")
     parser.add_argument("--host", default="51.195.91.55")
@@ -87,7 +100,20 @@ def main() -> int:
     parser.add_argument("--password", default="", help="If omitted, script will ask securely.")
     parser.add_argument("--build", action="store_true", help="Run scripts/build.cmd before deploy.")
     parser.add_argument("--clean", action="store_true", help="Remove remote files under target directories before upload.")
-    parser.add_argument("--with-installers", action="store_true", help="Also upload artifacts/installers/* to /installers.")
+    installers_group = parser.add_mutually_exclusive_group()
+    installers_group.add_argument(
+        "--with-installers",
+        dest="with_installers",
+        action="store_true",
+        help="Upload artifacts/installers/* to /installers (default).",
+    )
+    installers_group.add_argument(
+        "--without-installers",
+        dest="with_installers",
+        action="store_false",
+        help="Skip uploading artifacts/installers/* to /installers.",
+    )
+    parser.set_defaults(with_installers=True)
     parser.add_argument("--updates-path", default="/var/www/controledu/updates")
     parser.add_argument("--installers-path", default="/var/www/controledu/installers")
     parser.add_argument("--artifacts-root", default="artifacts")
@@ -171,10 +197,12 @@ def main() -> int:
                     if args.with_installers:
                         sftp_mkdir_p(sftp, args.installers_path.rstrip("/"))
 
-                    sftp_put_file(sftp, teacher_manifest_path, f"{teacher_remote_dir}/manifest.json", log_file)
                     sftp_put_file(sftp, teacher_installer_local, f"{teacher_remote_dir}/{teacher_installer_name}", log_file)
-                    sftp_put_file(sftp, student_manifest_path, f"{student_remote_dir}/manifest.json", log_file)
                     sftp_put_file(sftp, student_installer_local, f"{student_remote_dir}/{student_installer_name}", log_file)
+                    sftp_put_file(sftp, teacher_manifest_path, f"{teacher_remote_dir}/manifest.json", log_file)
+                    sftp_put_file(sftp, student_manifest_path, f"{student_remote_dir}/manifest.json", log_file)
+                    sftp_prune_old_update_installers(sftp, teacher_remote_dir, teacher_installer_name, log_file)
+                    sftp_prune_old_update_installers(sftp, student_remote_dir, student_installer_name, log_file)
 
                     if args.with_installers:
                         files = [p for p in installers_local.iterdir() if p.is_file()]
@@ -197,3 +225,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

@@ -392,7 +392,7 @@ internal sealed class WindowsRemoteControlInputExecutor : IRemoteControlInputExe
 
     private static void SendKey(RemoteControlInputCommandDto command, bool isDown)
     {
-        if (!TryMapVirtualKey(command.Key, out var vk))
+        if (!TryMapVirtualKey(command.Key, command.Code, out var vk))
         {
             return;
         }
@@ -436,9 +436,15 @@ internal sealed class WindowsRemoteControlInputExecutor : IRemoteControlInputExe
 
     private static bool IsModifierKey(byte vk) => vk is 0x10 or 0x11 or 0x12;
 
-    private static bool TryMapVirtualKey(string? key, out byte vk)
+    private static bool TryMapVirtualKey(string? key, string? code, out byte vk)
     {
         vk = 0;
+        var normalizedCode = string.IsNullOrWhiteSpace(code) ? string.Empty : code.Trim();
+        if (!string.IsNullOrEmpty(normalizedCode) && TryMapVirtualKeyByCode(normalizedCode, out vk))
+        {
+            return true;
+        }
+
         if (string.IsNullOrWhiteSpace(key))
         {
             return false;
@@ -490,6 +496,94 @@ internal sealed class WindowsRemoteControlInputExecutor : IRemoteControlInputExe
                 vk = (byte)(vks & 0xFF);
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    private static bool TryMapVirtualKeyByCode(string code, out byte vk)
+    {
+        vk = 0;
+        switch (code)
+        {
+            case "Enter":
+            case "NumpadEnter": vk = 0x0D; return true;
+            case "Escape": vk = 0x1B; return true;
+            case "Backspace": vk = 0x08; return true;
+            case "Tab": vk = 0x09; return true;
+            case "Space": vk = 0x20; return true;
+            case "ArrowLeft": vk = 0x25; return true;
+            case "ArrowUp": vk = 0x26; return true;
+            case "ArrowRight": vk = 0x27; return true;
+            case "ArrowDown": vk = 0x28; return true;
+            case "Delete": vk = 0x2E; return true;
+            case "Home": vk = 0x24; return true;
+            case "End": vk = 0x23; return true;
+            case "PageUp": vk = 0x21; return true;
+            case "PageDown": vk = 0x22; return true;
+            case "ShiftLeft":
+            case "ShiftRight": vk = 0x10; return true;
+            case "ControlLeft":
+            case "ControlRight": vk = 0x11; return true;
+            case "AltLeft":
+            case "AltRight": vk = 0x12; return true;
+            case "CapsLock": vk = 0x14; return true;
+            case "Insert": vk = 0x2D; return true;
+            case "MetaLeft":
+            case "MetaRight": vk = 0x5B; return true;
+            case "ContextMenu": vk = 0x5D; return true;
+            case "Minus": vk = 0xBD; return true;
+            case "Equal": vk = 0xBB; return true;
+            case "BracketLeft": vk = 0xDB; return true;
+            case "BracketRight": vk = 0xDD; return true;
+            case "Backslash": vk = 0xDC; return true;
+            case "Semicolon": vk = 0xBA; return true;
+            case "Quote": vk = 0xDE; return true;
+            case "Comma": vk = 0xBC; return true;
+            case "Period": vk = 0xBE; return true;
+            case "Slash": vk = 0xBF; return true;
+            case "Backquote": vk = 0xC0; return true;
+            case "NumpadAdd": vk = 0x6B; return true;
+            case "NumpadSubtract": vk = 0x6D; return true;
+            case "NumpadMultiply": vk = 0x6A; return true;
+            case "NumpadDivide": vk = 0x6F; return true;
+            case "NumpadDecimal": vk = 0x6E; return true;
+            case "Numpad0": vk = 0x60; return true;
+            case "Numpad1": vk = 0x61; return true;
+            case "Numpad2": vk = 0x62; return true;
+            case "Numpad3": vk = 0x63; return true;
+            case "Numpad4": vk = 0x64; return true;
+            case "Numpad5": vk = 0x65; return true;
+            case "Numpad6": vk = 0x66; return true;
+            case "Numpad7": vk = 0x67; return true;
+            case "Numpad8": vk = 0x68; return true;
+            case "Numpad9": vk = 0x69; return true;
+        }
+
+        if (code.Length == 4 && code.StartsWith("Key", StringComparison.Ordinal))
+        {
+            var ch = code[3];
+            if (ch is >= 'A' and <= 'Z')
+            {
+                vk = (byte)ch;
+                return true;
+            }
+        }
+
+        if (code.Length == 6 && code.StartsWith("Digit", StringComparison.Ordinal))
+        {
+            var ch = code[5];
+            if (ch is >= '0' and <= '9')
+            {
+                vk = (byte)ch;
+                return true;
+            }
+        }
+
+        if (code.Length >= 2 && code[0] == 'F' && int.TryParse(code[1..], out var fn) && fn is >= 1 and <= 24)
+        {
+            vk = (byte)(0x70 + (fn - 1));
+            return true;
         }
 
         return false;

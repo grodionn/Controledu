@@ -56,6 +56,7 @@ public static class TeacherServerHostFactory
         {
             options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
+        builder.Services.AddHttpClient();
         builder.Services.AddCors(policy =>
         {
             policy.AddDefaultPolicy(cors => cors

@@ -467,7 +467,7 @@ function App() {
                   {t("lockUi")}
                 </Button>
               )}
-              <div className="hidden items-center gap-1 rounded-md border border-border bg-card/70 p-1 sm:flex">
+              <div className="flex items-center gap-1 rounded-md border border-border bg-card/70 p-1">
                 {(["ru", "en", "kz"] as UiLanguage[]).map((code) => (
                   <Button
                     key={code}

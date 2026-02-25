@@ -7,10 +7,17 @@
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <ControleduDisplayVersion>0.1.25b</ControleduDisplayVersion>
-    <Version>0.1.25</Version>
+    <ControleduDisplayVersion>0.1.54</ControleduDisplayVersion>
+    <Version>0.1.54</Version>
     <InformationalVersion>$(ControleduDisplayVersion)</InformationalVersion>
-    <AssemblyVersion>0.1.25.0</AssemblyVersion>
-    <FileVersion>0.1.25.0</FileVersion>
+    <AssemblyVersion>0.1.54.0</AssemblyVersion>
+    <FileVersion>0.1.54.0</FileVersion>
   </PropertyGroup>
 </Project>
+
+
+
+
+
+
+

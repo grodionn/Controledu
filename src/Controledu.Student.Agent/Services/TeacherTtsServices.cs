@@ -1,6 +1,8 @@
-using System.Media;
+﻿using System.Media;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Channels;
 using Controledu.Student.Agent.Options;
 using Controledu.Transport.Dto;
@@ -63,12 +65,6 @@ internal sealed class TeacherTtsSynthesisService(
             return null;
         }
 
-        if (!string.Equals(provider, "google", StringComparison.OrdinalIgnoreCase))
-        {
-            logger.LogWarning("Unsupported TTS provider '{Provider}'.", provider);
-            return null;
-        }
-
         var text = (command.MessageText ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -81,19 +77,34 @@ internal sealed class TeacherTtsSynthesisService(
             text = text[..maxTextLength];
         }
 
+        if (string.Equals(provider, "google", StringComparison.OrdinalIgnoreCase))
+        {
+            return await TrySynthesizeGoogleAsync(command, text, ttsOptions, cancellationToken);
+        }
+
+        if (string.Equals(provider, "selfhost", StringComparison.OrdinalIgnoreCase))
+        {
+            return await TrySynthesizeSelfHostAsync(command, text, ttsOptions, cancellationToken);
+        }
+
+        logger.LogWarning("Unsupported TTS provider '{Provider}'.", provider);
+        return null;
+    }
+
+    private async Task<byte[]?> TrySynthesizeGoogleAsync(
+        TeacherTtsCommandDto command,
+        string text,
+        StudentTeacherTtsOptions ttsOptions,
+        CancellationToken cancellationToken)
+    {
         var apiKey = (ttsOptions.GoogleApiKey ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(apiKey))
         {
-            logger.LogWarning("TeacherTts is enabled but GoogleApiKey is not configured.");
+            logger.LogWarning("TeacherTts provider=google but GoogleApiKey is not configured.");
             return null;
         }
 
-        var languageCode = string.IsNullOrWhiteSpace(command.LanguageCode) ? ttsOptions.LanguageCode : command.LanguageCode.Trim();
-        if (string.IsNullOrWhiteSpace(languageCode))
-        {
-            languageCode = "ru-RU";
-        }
-
+        var languageCode = ResolveLanguageCode(command, ttsOptions);
         var voiceName = string.IsNullOrWhiteSpace(command.VoiceName) ? ttsOptions.VoiceName : command.VoiceName.Trim();
         var speakingRate = Math.Clamp(command.SpeakingRate ?? ttsOptions.SpeakingRate, 0.25, 4.0);
         var pitch = Math.Clamp(command.Pitch ?? ttsOptions.Pitch, -20.0, 20.0);
@@ -140,11 +151,178 @@ internal sealed class TeacherTtsSynthesisService(
         }
     }
 
+    private async Task<byte[]?> TrySynthesizeSelfHostAsync(
+        TeacherTtsCommandDto command,
+        string text,
+        StudentTeacherTtsOptions ttsOptions,
+        CancellationToken cancellationToken)
+    {
+        var endpoint = BuildSelfHostEndpoint(ttsOptions);
+        if (endpoint is null)
+        {
+            logger.LogWarning("TeacherTts provider=selfhost but SelfHostBaseUrl/SelfHostTtsPath are invalid or missing.");
+            return null;
+        }
+
+        var token = (ttsOptions.SelfHostApiToken ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            logger.LogWarning("TeacherTts provider=selfhost but SelfHostApiToken is not configured.");
+            return null;
+        }
+
+        var languageCode = ResolveLanguageCode(command, ttsOptions);
+        var voice = ResolveSelfHostVoice(command, ttsOptions, languageCode);
+        var speakingRate = Math.Clamp(command.SpeakingRate ?? ttsOptions.SpeakingRate, 0.25, 4.0);
+        var lengthScale = ToPiperLengthScale(speakingRate);
+
+        var requestBody = new SelfHostTtsRequest(
+            Text: text,
+            Voice: voice,
+            LengthScale: lengthScale,
+            OutputFormat: "wav");
+
+        try
+        {
+            var http = httpClientFactory.CreateClient();
+            http.Timeout = TimeSpan.FromSeconds(Math.Clamp(ttsOptions.SelfHostTimeoutSeconds, 3, 120));
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("audio/wav"));
+            request.Content = JsonContent.Create(requestBody, options: JsonOptions);
+
+            using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                logger.LogWarning(
+                    "Self-host TTS request failed ({StatusCode}) {Endpoint}: {Body}",
+                    (int)response.StatusCode,
+                    endpoint,
+                    string.IsNullOrWhiteSpace(errorBody) ? "-" : errorBody);
+                return null;
+            }
+
+            var audioBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+            if (audioBytes.Length == 0)
+            {
+                logger.LogWarning("Self-host TTS returned empty audio content from {Endpoint}.", endpoint);
+                return null;
+            }
+
+            return audioBytes;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            logger.LogWarning(ex, "Self-host TTS synthesis failed via {Endpoint}.", endpoint);
+            return null;
+        }
+    }
+
+    private static string ResolveLanguageCode(TeacherTtsCommandDto command, StudentTeacherTtsOptions ttsOptions)
+    {
+        var languageCode = string.IsNullOrWhiteSpace(command.LanguageCode) ? ttsOptions.LanguageCode : command.LanguageCode.Trim();
+        return string.IsNullOrWhiteSpace(languageCode) ? "ru-RU" : languageCode;
+    }
+
+    private static Uri? BuildSelfHostEndpoint(StudentTeacherTtsOptions ttsOptions)
+    {
+        var baseUrl = (ttsOptions.SelfHostBaseUrl ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(baseUrl))
+        {
+            return null;
+        }
+
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri))
+        {
+            return null;
+        }
+
+        var path = string.IsNullOrWhiteSpace(ttsOptions.SelfHostTtsPath) ? "/v1/tts/synthesize" : ttsOptions.SelfHostTtsPath.Trim();
+        if (!path.StartsWith('/'))
+        {
+            path = "/" + path;
+        }
+
+        return new Uri(baseUri, path);
+    }
+
+    private static string? ResolveSelfHostVoice(
+        TeacherTtsCommandDto command,
+        StudentTeacherTtsOptions ttsOptions,
+        string languageCode)
+    {
+        var explicitVoice = SanitizePiperVoiceName(command.VoiceName);
+        if (!string.IsNullOrWhiteSpace(explicitVoice))
+        {
+            return explicitVoice;
+        }
+
+        var normalizedLang = languageCode.Trim().ToLowerInvariant();
+        var mappedVoice = normalizedLang.StartsWith("kk") || normalizedLang.StartsWith("kz")
+            ? ttsOptions.SelfHostKazakhVoice
+            : normalizedLang.StartsWith("ru")
+                ? ttsOptions.SelfHostRussianVoice
+                : normalizedLang.StartsWith("en")
+                    ? ttsOptions.SelfHostEnglishVoice
+                    : null;
+
+        return SanitizePiperVoiceName(mappedVoice)
+            ?? SanitizePiperVoiceName(ttsOptions.SelfHostDefaultVoice)
+            ?? SanitizePiperVoiceName(ttsOptions.VoiceName);
+    }
+
+    private static string? SanitizePiperVoiceName(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        var value = raw.Trim();
+        if (value.EndsWith(".onnx", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value[..^5];
+        }
+
+        if (value.Contains("/") || value.Contains("\\") || value.Contains("..", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        // Piper voice basenames usually contain locale prefix like ru_RU-... ; ignore cloud voice ids (ru-RU-Wavenet-A).
+        if (!value.Contains('_'))
+        {
+            return null;
+        }
+
+        return value;
+    }
+
+    private static double? ToPiperLengthScale(double speakingRate)
+    {
+        var normalized = Math.Clamp(speakingRate, 0.25, 4.0);
+        if (Math.Abs(normalized - 1.0) < 0.001)
+        {
+            return null;
+        }
+
+        // Piper uses lower length_scale for faster speech, inverse of "rate" slider semantics.
+        return Math.Clamp(1.0 / normalized, 0.35, 2.5);
+    }
+
     private sealed record GoogleTtsRequest(GoogleTtsInput Input, GoogleTtsVoice Voice, GoogleTtsAudioConfig AudioConfig);
     private sealed record GoogleTtsInput(string Text);
     private sealed record GoogleTtsVoice(string LanguageCode, string? Name);
     private sealed record GoogleTtsAudioConfig(string AudioEncoding, double SpeakingRate, double Pitch);
     private sealed record GoogleTtsResponse(string? AudioContent);
+
+    private sealed record SelfHostTtsRequest(
+        string Text,
+        string? Voice,
+        [property: JsonPropertyName("length_scale")] double? LengthScale,
+        [property: JsonPropertyName("output_format")] string OutputFormat);
 }
 
 internal sealed class TeacherTtsPlaybackService(ILogger<TeacherTtsPlaybackService> logger) : BackgroundService, ITeacherTtsPlaybackQueue

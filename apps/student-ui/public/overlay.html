@@ -46,7 +46,7 @@
         width: 100%;
         height: 100%;
         display: grid;
-        grid-template-rows: auto auto 1fr auto;
+        grid-template-rows: auto auto auto 1fr auto;
         gap: 0.55rem;
         padding: 0.6rem;
         border: 1px solid var(--border);
@@ -57,6 +57,73 @@
           linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)),
           var(--bg);
         box-shadow: var(--shadow);
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+      }
+
+      body.collapsed-overlay #app {
+        grid-template-rows: auto auto auto;
+        gap: 0.45rem;
+      }
+
+      #app,
+      .messages,
+      #chatInput {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(109, 198, 255, 0.52) rgba(255, 255, 255, 0.04);
+      }
+
+      #app::-webkit-scrollbar,
+      .messages::-webkit-scrollbar,
+      #chatInput::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      #app::-webkit-scrollbar-track,
+      .messages::-webkit-scrollbar-track,
+      #chatInput::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 999px;
+      }
+
+      #app::-webkit-scrollbar-thumb,
+      .messages::-webkit-scrollbar-thumb,
+      #chatInput::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        border: 2px solid transparent;
+        background:
+          linear-gradient(180deg, rgba(141,216,255,0.88), rgba(71,167,255,0.82)) padding-box;
+        background-clip: padding-box;
+      }
+
+      .drag-grip {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        min-height: 1.35rem;
+        border-radius: 0.75rem;
+        border: 1px dashed rgba(255,255,255,0.14);
+        background: rgba(255,255,255,0.02);
+        color: var(--muted);
+        cursor: grab;
+        user-select: none;
+        font-size: 0.72rem;
+      }
+
+      .drag-grip:active {
+        cursor: grabbing;
+      }
+
+      .drag-dots {
+        width: 1.4rem;
+        height: 0.28rem;
+        border-radius: 999px;
+        background:
+          radial-gradient(circle, rgba(176,183,200,0.95) 35%, transparent 38%) 0 0 / 0.34rem 0.28rem repeat-x;
       }
 
       .sr-only {
@@ -80,6 +147,63 @@
         border-radius: 0.85rem;
         border: 1px solid var(--border);
         background: var(--panel);
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .lang-switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        padding: 0.15rem;
+        border-radius: 0.65rem;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.02);
+      }
+
+      .lang-btn {
+        min-width: 2rem;
+        height: 1.85rem;
+        border-radius: 0.5rem;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .lang-btn[aria-pressed="true"] {
+        color: var(--text);
+        border-color: rgba(71,167,255,0.35);
+        background: rgba(71,167,255,0.12);
+      }
+
+      .icon-btn {
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.04);
+        color: var(--text);
+        border-radius: 0.65rem;
+        min-width: 2.1rem;
+        height: 2.1rem;
+        padding: 0 0.5rem;
+        font: inherit;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .icon-btn:hover {
+        border-color: rgba(71,167,255,0.35);
+        background: rgba(71,167,255,0.08);
       }
 
       .title-wrap h1 {
@@ -176,9 +300,50 @@
         gap: 0.4rem;
       }
 
+      .font-hint {
+        font-size: 0.68rem;
+        color: var(--muted);
+      }
+
       .font-panel input[type="range"] {
         width: 100%;
-        accent-color: var(--accent);
+        appearance: none;
+        -webkit-appearance: none;
+        background: transparent;
+      }
+
+      .font-panel input[type="range"]::-webkit-slider-runnable-track {
+        height: 0.42rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: linear-gradient(90deg, rgba(71,167,255,0.24), rgba(109,198,255,0.38));
+      }
+
+      .font-panel input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 0.95rem;
+        height: 0.95rem;
+        margin-top: -0.33rem;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.28);
+        background: radial-gradient(circle at 28% 28%, #ffffff, #8fd8ff 66%, #47a7ff);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+      }
+
+      .font-panel input[type="range"]::-moz-range-track {
+        height: 0.42rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: linear-gradient(90deg, rgba(71,167,255,0.24), rgba(109,198,255,0.38));
+      }
+
+      .font-panel input[type="range"]::-moz-range-thumb {
+        width: 0.95rem;
+        height: 0.95rem;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.28);
+        background: radial-gradient(circle at 28% 28%, #ffffff, #8fd8ff 66%, #47a7ff);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.25);
       }
 
       .chat-panel {
@@ -189,6 +354,69 @@
         border: 1px solid var(--border);
         background: var(--panel-2);
         overflow: hidden;
+      }
+
+      body:not(.collapsed-overlay) .chat-panel {
+        min-height: 8.5rem;
+      }
+
+      body.collapsed-overlay .chat-panel,
+      body.collapsed-overlay .composer,
+      body.collapsed-overlay .status-bar,
+      body.collapsed-overlay .font-panel,
+      body.collapsed-overlay .font-panel .font-hint {
+        display: none;
+      }
+
+      body.collapsed-overlay .raise-button {
+        min-height: 2.65rem;
+        padding-top: 0.55rem;
+        padding-bottom: 0.55rem;
+      }
+
+      body.collapsed-overlay .raise-button small {
+        display: none;
+      }
+
+      body.collapsed-overlay .title-wrap p {
+        display: none;
+      }
+
+      body.collapsed-overlay .header {
+        align-items: center;
+        padding-top: 0.55rem;
+        padding-bottom: 0.55rem;
+      }
+
+      body.collapsed-overlay .title-wrap {
+        min-width: 0;
+      }
+
+      body.collapsed-overlay .title-wrap h1 {
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      body.collapsed-overlay .lang-switch {
+        display: none;
+      }
+
+      body.collapsed-overlay #teacherStatusText {
+        display: none;
+      }
+
+      body.collapsed-overlay .pill {
+        padding-inline: 0.35rem;
+      }
+
+      body.collapsed-overlay #dragGrip {
+        min-height: 1rem;
+      }
+
+      body.collapsed-overlay #dragGripText {
+        display: none;
       }
 
       .chat-panel-header {
@@ -411,14 +639,26 @@
   </head>
   <body class="focus-strong">
     <div id="app" aria-live="off">
+      <div id="dragGrip" class="drag-grip" role="button" tabindex="0" aria-label="Drag overlay">
+        <span class="drag-dots" aria-hidden="true"></span>
+        <span id="dragGripText">Drag overlay</span>
+      </div>
       <div class="header" role="region" aria-label="Статус оверлея">
         <div class="title-wrap">
           <h1>Помощь и чат с учителем</h1>
           <p>Быстрый вызов учителя и сообщения поверх экрана</p>
         </div>
-        <div class="pill" id="teacherStatusPill">
-          <span class="dot" aria-hidden="true"></span>
-          <span id="teacherStatusText">Подключение…</span>
+        <div class="header-actions">
+          <div id="langSwitch" class="lang-switch" role="group" aria-label="Overlay language">
+            <button class="lang-btn focus-strong" type="button" data-lang="ru" aria-pressed="false">RU</button>
+            <button class="lang-btn focus-strong" type="button" data-lang="en" aria-pressed="false">EN</button>
+            <button class="lang-btn focus-strong" type="button" data-lang="kz" aria-pressed="false">KZ</button>
+          </div>
+          <button id="toggleCollapseBtn" class="icon-btn focus-strong" type="button" aria-expanded="false" aria-controls="chatPanel composer statusBar">+</button>
+          <div class="pill" id="teacherStatusPill">
+            <span class="dot" aria-hidden="true"></span>
+            <span id="teacherStatusText">Connecting...</span>
+          </div>
         </div>
       </div>
 
@@ -433,11 +673,12 @@
             <span>Размер текста</span>
             <strong id="fontScaleValue">100%</strong>
           </label>
+          <div class="font-hint">Chat UI</div>
           <input id="fontScaleRange" type="range" min="80" max="220" step="5" value="100" />
         </div>
       </div>
 
-      <section class="chat-panel" aria-labelledby="chatPanelTitle">
+      <section id="chatPanel" class="chat-panel" aria-labelledby="chatPanelTitle">
         <div class="chat-panel-header">
           <strong id="chatPanelTitle">Чат с учителем</strong>
           <div class="chat-status" id="chatPanelStatus">Загрузка сообщений…</div>
@@ -467,6 +708,158 @@
 
     <script>
       (() => {
+        const LANG_STORAGE_KEY = "controledu.student.lang";
+        const COLLAPSE_STORAGE_KEY = "controledu.student.overlay.collapsed";
+        const I18N = {
+          ru: {
+            overlayRegion: "Статус оверлея",
+            dragOverlay: "Переместить оверлей",
+            headerTitle: "Помощь и чат с учителем",
+            headerSubtitle: "Быстрый вызов учителя и сообщения поверх экрана",
+            raiseHand: "Поднять руку",
+            raiseHelp: "Запросить помощь у учителя",
+            textSize: "Размер текста",
+            chatUi: "Чат",
+            chatTitle: "Чат с учителем",
+            loadingMessages: "Загрузка сообщений...",
+            noMessagesYet: "Сообщений пока нет. Напишите учителю или используйте кнопку \"Поднять руку\".",
+            noMessages: "Нет сообщений",
+            messageToTeacher: "Сообщение учителю",
+            messagePlaceholder: "Напишите вопрос учителю... (Enter для отправки, Shift+Enter — новая строка)",
+            profilePrefix: "Профиль",
+            send: "Отправить",
+            sending: "Отправка...",
+            overlayStarting: "Оверлей запускается...",
+            preparingOverlay: "Подготовка оверлея...",
+            overlayReadyConnecting: "Оверлей готов. Подключаем чат...",
+            sessionError: "Ошибка сессии: {error}",
+            overlayStartError: "Ошибка запуска оверлея: {error}",
+            tokenError: "Не удалось получить локальный токен сессии.",
+            teacherOnline: "Учитель на связи",
+            teacherOffline: "Нет связи",
+            connecting: "Подключение...",
+            loadError: "Ошибка загрузки",
+            chatUnavailable: "Чат недоступен: {error}",
+            messagesSummary: "Сообщений: {count} · последнее {time}",
+            teacher: "Учитель",
+            you: "Вы",
+            messageQueued: "Сообщение отправлено в очередь доставки.",
+            sendMessageError: "Не удалось отправить сообщение: {error}",
+            sendingSignal: "Отправка сигнала...",
+            signalSent: "Сигнал учителю отправлен.",
+            signalNotSent: "Сигнал не отправлен.",
+            retryIn: "Повтор через {seconds}с",
+            sendSignalError: "Не удалось отправить сигнал: {error}",
+            saveTextSizeError: "Не удалось сохранить размер текста: {error}",
+            collapseOverlay: "Свернуть оверлей",
+            expandOverlay: "Развернуть оверлей",
+            profileDefault: "стандарт",
+            profileVision: "зрение",
+            profileHearing: "слух",
+            profileMotor: "моторика",
+            profileDyslexia: "дислексия/СДВГ",
+            profileCustom: "пользовательский",
+          },
+          en: {
+            overlayRegion: "Overlay status",
+            dragOverlay: "Drag overlay",
+            headerTitle: "Help and chat with teacher",
+            headerSubtitle: "Quick teacher call and messages over the screen",
+            raiseHand: "Raise hand",
+            raiseHelp: "Request help from teacher",
+            textSize: "Text size",
+            chatUi: "Chat",
+            chatTitle: "Chat with teacher",
+            loadingMessages: "Loading messages...",
+            noMessagesYet: "No messages yet. Write to the teacher or use the \"Raise hand\" button.",
+            noMessages: "No messages",
+            messageToTeacher: "Message to teacher",
+            messagePlaceholder: "Write a question to the teacher... (Enter to send, Shift+Enter for a new line)",
+            profilePrefix: "Profile",
+            send: "Send",
+            sending: "Sending...",
+            overlayStarting: "Overlay is starting...",
+            preparingOverlay: "Preparing overlay...",
+            overlayReadyConnecting: "Overlay ready. Connecting chat...",
+            sessionError: "Session error: {error}",
+            overlayStartError: "Overlay startup error: {error}",
+            tokenError: "Failed to get local session token.",
+            teacherOnline: "Teacher online",
+            teacherOffline: "Offline",
+            connecting: "Connecting...",
+            loadError: "Load error",
+            chatUnavailable: "Chat unavailable: {error}",
+            messagesSummary: "Messages: {count} · latest {time}",
+            teacher: "Teacher",
+            you: "You",
+            messageQueued: "Message queued for delivery.",
+            sendMessageError: "Failed to send message: {error}",
+            sendingSignal: "Sending signal...",
+            signalSent: "Signal sent to teacher.",
+            signalNotSent: "Signal was not sent.",
+            retryIn: "Retry in {seconds}s",
+            sendSignalError: "Failed to send signal: {error}",
+            saveTextSizeError: "Failed to save text size: {error}",
+            collapseOverlay: "Collapse overlay",
+            expandOverlay: "Expand overlay",
+            profileDefault: "standard",
+            profileVision: "vision",
+            profileHearing: "hearing",
+            profileMotor: "motor",
+            profileDyslexia: "dyslexia/ADHD",
+            profileCustom: "custom",
+          },
+          kz: {
+            overlayRegion: "Оверлей күйі",
+            dragOverlay: "Оверлейді жылжыту",
+            headerTitle: "Мұғаліммен көмек және чат",
+            headerSubtitle: "Мұғалімді тез шақыру және экран үстіндегі хабарламалар",
+            raiseHand: "Қол көтеру",
+            raiseHelp: "Мұғалімнен көмек сұрау",
+            textSize: "Мәтін өлшемі",
+            chatUi: "Чат",
+            chatTitle: "Мұғаліммен чат",
+            loadingMessages: "Хабарламалар жүктелуде...",
+            noMessagesYet: "Әзірге хабарлама жоқ. Мұғалімге жазыңыз немесе \"Қол көтеру\" батырмасын пайдаланыңыз.",
+            noMessages: "Хабар жоқ",
+            messageToTeacher: "Мұғалімге хабарлама",
+            messagePlaceholder: "Мұғалімге сұрақ жазыңыз... (Жіберу үшін Enter, жаңа жол үшін Shift+Enter)",
+            profilePrefix: "Профиль",
+            send: "Жіберу",
+            sending: "Жіберілуде...",
+            overlayStarting: "Оверлей іске қосылуда...",
+            preparingOverlay: "Оверлей дайындалуда...",
+            overlayReadyConnecting: "Оверлей дайын. Чат қосылуда...",
+            sessionError: "Сессия қатесі: {error}",
+            overlayStartError: "Оверлейді іске қосу қатесі: {error}",
+            tokenError: "Жергілікті сессия токенін алу мүмкін болмады.",
+            teacherOnline: "Мұғалім байланыста",
+            teacherOffline: "Байланыс жоқ",
+            connecting: "Қосылу...",
+            loadError: "Жүктеу қатесі",
+            chatUnavailable: "Чат қолжетімсіз: {error}",
+            messagesSummary: "Хабарламалар: {count} · соңғысы {time}",
+            teacher: "Мұғалім",
+            you: "Сіз",
+            messageQueued: "Хабарлама жеткізу кезегіне жіберілді.",
+            sendMessageError: "Хабарламаны жіберу мүмкін болмады: {error}",
+            sendingSignal: "Сигнал жіберілуде...",
+            signalSent: "Мұғалімге сигнал жіберілді.",
+            signalNotSent: "Сигнал жіберілмеді.",
+            retryIn: "{seconds}с кейін қайталау",
+            sendSignalError: "Сигнал жіберу мүмкін болмады: {error}",
+            saveTextSizeError: "Мәтін өлшемін сақтау мүмкін болмады: {error}",
+            collapseOverlay: "Оверлейді жинау",
+            expandOverlay: "Оверлейді ашу",
+            profileDefault: "стандарт",
+            profileVision: "көру",
+            profileHearing: "есту",
+            profileMotor: "моторика",
+            profileDyslexia: "дислексия/СДВГ",
+            profileCustom: "арнайы",
+          },
+        };
+
         const state = {
           token: null,
           clientId: "unpaired-endpoint",
@@ -480,40 +873,162 @@
           sending: false,
           raising: false,
           sessionReady: false,
+          isCollapsed: true,
+          lang: "ru",
         };
 
         const els = {
+          dragGrip: document.getElementById("dragGrip"),
+          dragGripText: document.getElementById("dragGripText"),
+          header: document.querySelector(".header"),
+          headerTitle: document.querySelector(".title-wrap h1"),
+          headerSubtitle: document.querySelector(".title-wrap p"),
           raiseBtn: document.getElementById("raiseHandBtn"),
+          raiseBtnLabel: document.querySelector("#raiseHandBtn > span"),
           raiseSub: document.getElementById("raiseHandSub"),
           teacherStatusText: document.getElementById("teacherStatusText"),
+          fontScaleLabelText: document.querySelector("#fontScaleLabel > span"),
           fontScaleRange: document.getElementById("fontScaleRange"),
           fontScaleValue: document.getElementById("fontScaleValue"),
+          fontHint: document.querySelector(".font-hint"),
           messages: document.getElementById("messages"),
+          chatPanelTitle: document.getElementById("chatPanelTitle"),
           chatPanelStatus: document.getElementById("chatPanelStatus"),
           composer: document.getElementById("composer"),
+          chatInputLabel: document.querySelector("label[for='chatInput']"),
           chatInput: document.getElementById("chatInput"),
           sendBtn: document.getElementById("sendBtn"),
           charCount: document.getElementById("charCount"),
           statusBar: document.getElementById("statusBar"),
           profileLabel: document.getElementById("profileLabel"),
+          toggleCollapseBtn: document.getElementById("toggleCollapseBtn"),
+          langButtons: Array.from(document.querySelectorAll("[data-lang]")),
         };
 
         const PROFILE_LABELS = {
-          default: "стандарт",
-          vision: "зрение",
-          hearing: "слух",
-          motor: "моторика",
-          dyslexia: "дислексия/СДВГ",
-          custom: "кастом",
+          default: { ru: "стандарт", en: "standard", kz: "стандарт" },
+          vision: { ru: "зрение", en: "vision", kz: "көру" },
+          hearing: { ru: "слух", en: "hearing", kz: "есту" },
+          motor: { ru: "моторика", en: "motor", kz: "моторика" },
+          dyslexia: { ru: "дислексия/СДВГ", en: "dyslexia/ADHD", kz: "дислексия/СДВГ" },
+          custom: { ru: "пользовательский", en: "custom", kz: "арнайы" },
         };
 
+        function t(key) {
+          return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key;
+        }
+
+        function fmt(key, values = {}) {
+          let result = t(key);
+          for (const [name, value] of Object.entries(values)) {
+            result = result.replaceAll(`{${name}}`, String(value));
+          }
+          return result;
+        }
+
+        function updateProfileLabel(preset) {
+          const key = String(preset || "default");
+          const label = (PROFILE_LABELS[key] && PROFILE_LABELS[key][state.lang]) || key;
+          els.profileLabel.textContent = `${t("profilePrefix")}: ${label}`;
+        }
+
+        function updateCollapseButtonCopy() {
+          els.toggleCollapseBtn.textContent = state.isCollapsed ? "▾" : "▴";
+          els.toggleCollapseBtn.setAttribute("aria-expanded", String(!state.isCollapsed));
+          els.toggleCollapseBtn.setAttribute("aria-label", state.isCollapsed ? t("expandOverlay") : t("collapseOverlay"));
+          els.toggleCollapseBtn.title = state.isCollapsed ? t("expandOverlay") : t("collapseOverlay");
+        }
+
+        function applyLanguage() {
+          document.documentElement.lang = state.lang;
+          if (els.header) {
+            els.header.setAttribute("aria-label", t("overlayRegion"));
+          }
+          if (els.dragGrip) {
+            els.dragGrip.setAttribute("aria-label", t("dragOverlay"));
+          }
+          if (els.dragGripText) els.dragGripText.textContent = t("dragOverlay");
+          if (els.headerTitle) els.headerTitle.textContent = t("headerTitle");
+          if (els.headerSubtitle) els.headerSubtitle.textContent = t("headerSubtitle");
+          if (els.raiseBtnLabel) els.raiseBtnLabel.textContent = t("raiseHand");
+          if (els.raiseSub && !state.raising) els.raiseSub.textContent = t("raiseHelp");
+          if (els.fontScaleLabelText) els.fontScaleLabelText.textContent = t("textSize");
+          if (els.fontHint) els.fontHint.textContent = t("chatUi");
+          if (els.chatPanelTitle) els.chatPanelTitle.textContent = t("chatTitle");
+          if (els.chatInputLabel) els.chatInputLabel.textContent = t("messageToTeacher");
+          if (els.chatInput) {
+            els.chatInput.placeholder = t("messagePlaceholder");
+            els.chatInput.setAttribute("aria-label", t("messageToTeacher"));
+          }
+          els.langButtons.forEach((button) => {
+            button.setAttribute("aria-pressed", String(button.getAttribute("data-lang") === state.lang));
+          });
+          updateCollapseButtonCopy();
+          const preset = String(state.accessibility?.activePreset || "default");
+          updateProfileLabel(preset);
+          if (els.teacherStatusText && !state.lastThreadFingerprint) {
+            els.teacherStatusText.textContent = t("connecting");
+          }
+          if (els.chatPanelStatus && !state.lastThreadFingerprint) {
+            els.chatPanelStatus.textContent = t("loadingMessages");
+          }
+          if (els.statusBar && !state.sessionReady && els.statusBar.getAttribute("data-tone") !== "error") {
+            els.statusBar.textContent = t("overlayStarting");
+          }
+          setSendBusy(state.sending);
+          if (!state.raising) {
+            setRaiseBusy(false);
+          }
+          renderMessages();
+        }
+
+        function setOverlayLanguage(lang, persist = true) {
+          state.lang = lang === "en" || lang === "kz" ? lang : "ru";
+          if (persist) {
+            try {
+              localStorage.setItem(LANG_STORAGE_KEY, state.lang);
+            } catch {
+              // Ignore localStorage write failures.
+            }
+          }
+          applyLanguage();
+        }
+
         function setStatus(text, tone = "neutral") {
+
           els.statusBar.textContent = text;
           els.statusBar.setAttribute("data-tone", tone);
         }
 
         function setTeacherStatus(text) {
           els.teacherStatusText.textContent = text;
+        }
+
+        function postHostMessage(payload) {
+          try {
+            const bridge = window.chrome && window.chrome.webview;
+            if (bridge && typeof bridge.postMessage === "function") {
+              bridge.postMessage(payload);
+            }
+          } catch {
+            // Ignore when not running in WebView2.
+          }
+        }
+
+        function applyCollapsedState(collapsed, persist = true) {
+          state.isCollapsed = !!collapsed;
+          document.body.classList.toggle("collapsed-overlay", state.isCollapsed);
+          updateCollapseButtonCopy();
+
+          if (persist) {
+            try {
+              localStorage.setItem(COLLAPSE_STORAGE_KEY, state.isCollapsed ? "1" : "0");
+            } catch {
+              // Ignore localStorage write failures.
+            }
+          }
+
+          postHostMessage({ type: "overlayLayout", collapsed: state.isCollapsed });
         }
 
         async function fetchJson(url, init = {}) {
@@ -534,7 +1049,7 @@
           const session = await fetchJson("/api/session");
           state.token = session?.token || null;
           if (!state.token) {
-            throw new Error("Не удалось получить локальный токен сессии.");
+            throw new Error(t("tokenError"));
           }
           state.sessionReady = true;
         }
@@ -558,14 +1073,14 @@
           document.documentElement.style.setProperty("--font-scale", String(combinedScale));
 
           const preset = String(profile?.activePreset || "default");
-          els.profileLabel.textContent = `Профиль: ${PROFILE_LABELS[preset] || preset}`;
+          updateProfileLabel(preset);
         }
 
         function renderMessages() {
           const list = state.messages || [];
           if (!list.length) {
-            els.messages.innerHTML = '<div class="empty-state">Сообщений пока нет. Напишите учителю или используйте кнопку “Поднять руку”.</div>';
-            els.chatPanelStatus.textContent = "Нет сообщений";
+            els.messages.innerHTML = `<div class="empty-state">${t("noMessagesYet")}</div>`;
+            els.chatPanelStatus.textContent = t("noMessages");
             return;
           }
 
@@ -581,7 +1096,7 @@
             meta.className = "bubble-meta";
             const author = document.createElement("span");
             author.className = "bubble-author";
-            author.textContent = message.senderDisplayName || (bubble.dataset.role === "teacher" ? "Учитель" : "Вы");
+            author.textContent = message.senderDisplayName || (bubble.dataset.role === "teacher" ? t("teacher") : t("you"));
             const time = document.createElement("time");
             const d = new Date(message.timestampUtc);
             time.dateTime = Number.isNaN(d.getTime()) ? "" : d.toISOString();
@@ -597,7 +1112,10 @@
           }
 
           const last = list[list.length - 1];
-          els.chatPanelStatus.textContent = `Сообщений: ${list.length} · последнее ${new Date(last.timestampUtc).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+          els.chatPanelStatus.textContent = fmt("messagesSummary", {
+            count: list.length,
+            time: new Date(last.timestampUtc).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          });
           if (wasNearBottom || list.length < 4) {
             els.messages.scrollTop = els.messages.scrollHeight;
           }
@@ -626,13 +1144,13 @@
         function setSendBusy(isBusy) {
           state.sending = isBusy;
           els.sendBtn.disabled = isBusy || !els.chatInput.value.trim();
-          els.sendBtn.textContent = isBusy ? "Отправка…" : "Отправить";
+          els.sendBtn.textContent = isBusy ? t("sending") : t("send");
         }
 
         function setRaiseBusy(isBusy, cooldownText = "") {
           state.raising = isBusy;
           els.raiseBtn.disabled = isBusy;
-          els.raiseSub.textContent = cooldownText || "Запросить помощь у учителя";
+          els.raiseSub.textContent = cooldownText || t("raiseHelp");
         }
 
         async function pollThread() {
@@ -656,11 +1174,11 @@
               flashMessagesIfTeacherAdded(previousTeacherId);
             }
 
-            setTeacherStatus("Учитель на связи");
+            setTeacherStatus(t("teacherOnline"));
           } catch (error) {
-            setTeacherStatus("Нет связи");
-            els.chatPanelStatus.textContent = "Ошибка загрузки";
-            setStatus(`Чат недоступен: ${error.message || error}`, "error");
+            setTeacherStatus(t("teacherOffline"));
+            els.chatPanelStatus.textContent = t("loadError");
+            setStatus(fmt("chatUnavailable", { error: error.message || error }), "error");
           }
         }
 
@@ -688,10 +1206,10 @@
             });
             els.chatInput.value = "";
             updateCharCount();
-            setStatus("Сообщение отправлено в очередь доставки.", "success");
+            setStatus(t("messageQueued"), "success");
             await pollThread();
           } catch (error) {
-            setStatus(`Не удалось отправить сообщение: ${error.message || error}`, "error");
+            setStatus(fmt("sendMessageError", { error: error.message || error }), "error");
           } finally {
             setSendBusy(false);
           }
@@ -699,17 +1217,17 @@
 
         async function sendRaiseHand() {
           if (state.raising) return;
-          setRaiseBusy(true, "Отправка сигнала…");
+          setRaiseBusy(true, t("sendingSignal"));
           try {
             await ensureSession();
             const result = await fetchJson("/api/signals/raise-hand", { method: "POST" });
             if (result?.ok) {
-              setStatus("Сигнал учителю отправлен.", "success");
-              setRaiseBusy(false, "Запросить помощь у учителя");
+              setStatus(t("signalSent"), "success");
+              setRaiseBusy(false);
               return;
             }
 
-            const message = result?.message || "Сигнал не отправлен.";
+            const message = result?.message || t("signalNotSent");
             setStatus(message, "warn");
             setRaiseBusy(true, message);
             const match = /(\d+)s/.exec(message);
@@ -719,14 +1237,14 @@
               left -= 1;
               if (left <= 0) {
                 clearInterval(timer);
-                setRaiseBusy(false, "Запросить помощь у учителя");
+                setRaiseBusy(false);
                 return;
               }
-              setRaiseBusy(true, `Повтор через ${left}с`);
+              setRaiseBusy(true, fmt("retryIn", { seconds: left }));
             }, 1000);
           } catch (error) {
-            setStatus(`Не удалось отправить сигнал: ${error.message || error}`, "error");
-            setRaiseBusy(false, "Запросить помощь у учителя");
+            setStatus(fmt("sendSignalError", { error: error.message || error }), "error");
+            setRaiseBusy(false);
           }
         }
 
@@ -745,19 +1263,33 @@
                 body: JSON.stringify({ fontScalePercent: value }),
               });
             } catch (error) {
-              setStatus(`Не удалось сохранить размер текста: ${error.message || error}`, "warn");
+              setStatus(fmt("saveTextSizeError", { error: error.message || error }), "warn");
             }
           }, 250);
         }
 
         async function start() {
+          try {
+            const storedLang = localStorage.getItem(LANG_STORAGE_KEY);
+            setOverlayLanguage(storedLang === "en" || storedLang === "kz" ? storedLang : "ru", false);
+          } catch {
+            setOverlayLanguage("ru", false);
+          }
+
+          try {
+            const storedCollapsed = localStorage.getItem(COLLAPSE_STORAGE_KEY);
+            applyCollapsedState(storedCollapsed !== "0", false);
+          } catch {
+            applyCollapsedState(true, false);
+          }
+
           updateCharCount();
-          setStatus("Подготовка overlay…", "neutral");
+          setStatus(t("preparingOverlay"), "neutral");
           try {
             await ensureSession();
-            setStatus("Overlay готов. Подключаем чат…", "success");
+            setStatus(t("overlayReadyConnecting"), "success");
           } catch (error) {
-            setStatus(`Ошибка сессии: ${error.message || error}`, "error");
+            setStatus(fmt("sessionError", { error: error.message || error }), "error");
             return;
           }
 
@@ -784,6 +1316,20 @@
         });
 
         els.raiseBtn.addEventListener("click", () => void sendRaiseHand());
+        els.toggleCollapseBtn.addEventListener("click", () => applyCollapsedState(!state.isCollapsed));
+        els.langButtons.forEach((button) => {
+          button.addEventListener("click", () => setOverlayLanguage(button.getAttribute("data-lang") || "ru"));
+        });
+        if (els.dragGrip) {
+          const startDrag = (event) => {
+            if ((event.type === "pointerdown" && event.button !== 0)) return;
+            if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            postHostMessage({ type: "overlayDragStart" });
+          };
+          els.dragGrip.addEventListener("pointerdown", startDrag);
+          els.dragGrip.addEventListener("keydown", startDrag);
+        }
 
         els.fontScaleRange.addEventListener("input", () => {
           const value = Number(els.fontScaleRange.value);
@@ -799,10 +1345,12 @@
         });
 
         start().catch((error) => {
-          setStatus(`Ошибка запуска overlay: ${error.message || error}`, "error");
+          setStatus(fmt("overlayStartError", { error: error.message || error }), "error");
         });
       })();
     </script>
   </body>
 </html>
+
+
 

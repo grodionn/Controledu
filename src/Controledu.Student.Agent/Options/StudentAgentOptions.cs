@@ -106,7 +106,7 @@ public sealed class StudentTeacherTtsOptions
     public bool Enabled { get; set; }
 
     /// <summary>
-    /// Provider id: "google" or "disabled".
+    /// Provider id: "google", "selfhost" or "disabled".
     /// </summary>
     public string Provider { get; set; } = "google";
 
@@ -114,6 +114,46 @@ public sealed class StudentTeacherTtsOptions
     /// Google Cloud API key used for text:synthesize REST calls.
     /// </summary>
     public string? GoogleApiKey { get; set; }
+
+    /// <summary>
+    /// Base URL of self-host speech API (for example https://tts.kilocraft.org).
+    /// </summary>
+    public string? SelfHostBaseUrl { get; set; }
+
+    /// <summary>
+    /// Bearer token for self-host speech API.
+    /// </summary>
+    public string? SelfHostApiToken { get; set; }
+
+    /// <summary>
+    /// TTS synth endpoint path on self-host API.
+    /// </summary>
+    public string SelfHostTtsPath { get; set; } = "/v1/tts/synthesize";
+
+    /// <summary>
+    /// Request timeout for self-host TTS endpoint in seconds.
+    /// </summary>
+    public int SelfHostTimeoutSeconds { get; set; } = 20;
+
+    /// <summary>
+    /// Optional default Piper voice basename for self-host TTS (for example ru_RU-ruslan-medium).
+    /// </summary>
+    public string? SelfHostDefaultVoice { get; set; }
+
+    /// <summary>
+    /// Optional Piper voice override used when language starts with ru.
+    /// </summary>
+    public string? SelfHostRussianVoice { get; set; }
+
+    /// <summary>
+    /// Optional Piper voice override used when language starts with kk.
+    /// </summary>
+    public string? SelfHostKazakhVoice { get; set; }
+
+    /// <summary>
+    /// Optional Piper voice override used when language starts with en.
+    /// </summary>
+    public string? SelfHostEnglishVoice { get; set; }
 
     /// <summary>
     /// Default BCP-47 language code.

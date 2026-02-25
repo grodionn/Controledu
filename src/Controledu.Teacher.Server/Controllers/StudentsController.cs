@@ -6,6 +6,9 @@ using Controledu.Storage.Stores;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 namespace Controledu.Teacher.Server.Controllers;
 
 /// <summary>
@@ -19,7 +22,8 @@ public sealed class StudentsController(
     IStudentChatService studentChatService,
     IAuditService auditService,
     IHubContext<StudentHub> studentHub,
-    IHubContext<TeacherHub> teacherHub) : ControllerBase
+    IHubContext<TeacherHub> teacherHub,
+    IHttpClientFactory httpClientFactory) : ControllerBase
 {
     /// <summary>
     /// Returns recent chat messages for one student conversation.
@@ -108,6 +112,25 @@ public sealed class StudentsController(
             return NotFound("Student is offline or not connected.");
         }
 
+        var requestId = Guid.NewGuid().ToString("N");
+        string? audioWavBase64 = null;
+        var usedServerProxy = false;
+
+        if (!string.IsNullOrWhiteSpace(request.SelfHostApiToken))
+        {
+            var selfHostResult = await TrySynthesizeSelfHostTtsAsync(request, cancellationToken);
+            if (!selfHostResult.Ok)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway, selfHostResult.ErrorMessage ?? "Self-host TTS synthesis failed.");
+            }
+
+            if (selfHostResult.AudioBytes is { Length: > 0 })
+            {
+                audioWavBase64 = Convert.ToBase64String(selfHostResult.AudioBytes);
+                usedServerProxy = true;
+            }
+        }
+
         var command = new TeacherTtsCommandDto(
             ClientId: clientId.Trim(),
             MessageText: request.MessageText.Trim(),
@@ -116,12 +139,13 @@ public sealed class StudentsController(
             VoiceName: string.IsNullOrWhiteSpace(request.VoiceName) ? null : request.VoiceName.Trim(),
             SpeakingRate: request.SpeakingRate,
             Pitch: request.Pitch,
-            RequestId: Guid.NewGuid().ToString("N"));
+            AudioWavBase64: audioWavBase64,
+            RequestId: requestId);
 
         await studentHub.Clients.Client(connectionId).SendAsync(HubMethods.TeacherTtsRequested, command, cancellationToken);
-        await auditService.RecordAsync("teacher_tts_sent", "operator", $"{clientId} len={command.MessageText.Length}", cancellationToken);
+        await auditService.RecordAsync("teacher_tts_sent", "operator", $"{clientId} len={command.MessageText.Length} proxy={(usedServerProxy ? 1 : 0)}", cancellationToken);
 
-        return Ok(new { ok = true, message = "Teacher TTS command dispatched." });
+        return Ok(new { ok = true, message = usedServerProxy ? "Teacher TTS audio dispatched (server proxy)." : "Teacher TTS command dispatched." });
     }
 
     /// <summary>
@@ -168,6 +192,90 @@ public sealed class StudentsController(
             cancellationToken);
 
         return Ok(new { ok = true, message = "Accessibility profile command dispatched." });
+    }
+
+    private async Task<SelfHostTtsProxyResult> TrySynthesizeSelfHostTtsAsync(TeacherTtsRequest request, CancellationToken cancellationToken)
+    {
+        var baseUrl = (request.SelfHostBaseUrl ?? "https://tts.kilocraft.org").Trim();
+        var token = (request.SelfHostApiToken ?? string.Empty).Trim();
+        var path = string.IsNullOrWhiteSpace(request.SelfHostTtsPath) ? "/v1/tts/synthesize" : request.SelfHostTtsPath.Trim();
+
+        if (string.IsNullOrWhiteSpace(baseUrl) || string.IsNullOrWhiteSpace(token))
+        {
+            return new SelfHostTtsProxyResult(false, null, "Self-host TTS token is missing.");
+        }
+
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri))
+        {
+            return new SelfHostTtsProxyResult(false, null, "Self-host TTS URL is invalid.");
+        }
+
+        if (!path.StartsWith('/'))
+        {
+            path = "/" + path;
+        }
+
+        var endpoint = new Uri(baseUri, path);
+        var text = request.MessageText.Trim();
+        var voice = SanitizePiperVoiceName(request.VoiceName);
+        var speakingRate = Math.Clamp(request.SpeakingRate ?? 1.0, 0.25, 4.0);
+        var lengthScale = Math.Abs(speakingRate - 1.0) < 0.001 ? (double?)null : Math.Clamp(1.0 / speakingRate, 0.35, 2.5);
+
+        var http = httpClientFactory.CreateClient();
+        http.Timeout = TimeSpan.FromSeconds(20);
+
+        using var message = new HttpRequestMessage(HttpMethod.Post, endpoint);
+        message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("audio/wav"));
+        message.Content = JsonContent.Create(new SelfHostTtsProxyRequest(
+            Text: text,
+            Voice: voice,
+            LengthScale: lengthScale,
+            OutputFormat: "wav"));
+
+        try
+        {
+            using var response = await http.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                var detail = string.IsNullOrWhiteSpace(errorBody) ? $"HTTP {(int)response.StatusCode}" : errorBody;
+                return new SelfHostTtsProxyResult(false, null, $"Self-host TTS failed: {detail}");
+            }
+
+            var audioBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+            if (audioBytes.Length == 0)
+            {
+                return new SelfHostTtsProxyResult(false, null, "Self-host TTS returned empty audio.");
+            }
+
+            return new SelfHostTtsProxyResult(true, audioBytes, null);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            return new SelfHostTtsProxyResult(false, null, $"Self-host TTS request error: {ex.Message}");
+        }
+    }
+
+    private static string? SanitizePiperVoiceName(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        var value = raw.Trim();
+        if (value.EndsWith(".onnx", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value[..^5];
+        }
+
+        if (value.Contains('/') || value.Contains('\\') || value.Contains("..", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return value.Contains('_') ? value : null;
     }
 
     /// <summary>
@@ -221,7 +329,10 @@ public sealed record TeacherTtsRequest(
     string? LanguageCode = null,
     string? VoiceName = null,
     double? SpeakingRate = null,
-    double? Pitch = null);
+    double? Pitch = null,
+    string? SelfHostBaseUrl = null,
+    string? SelfHostApiToken = null,
+    string? SelfHostTtsPath = null);
 
 /// <summary>
 /// Teacher API payload for sending text chat to one student.
@@ -232,3 +343,11 @@ public sealed record TeacherChatMessageRequest(string Text, string? TeacherDispl
 /// Teacher API response with recent student conversation history.
 /// </summary>
 public sealed record StudentChatHistoryResponse(IReadOnlyList<StudentTeacherChatMessageDto> Messages);
+
+internal sealed record SelfHostTtsProxyRequest(
+    string Text,
+    string? Voice,
+    [property: JsonPropertyName("length_scale")] double? LengthScale,
+    [property: JsonPropertyName("output_format")] string OutputFormat);
+
+internal sealed record SelfHostTtsProxyResult(bool Ok, byte[]? AudioBytes, string? ErrorMessage);

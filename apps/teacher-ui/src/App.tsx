@@ -36,6 +36,8 @@ const AI_WARNINGS_KEY = "controledu.teacher.ai-warnings-enabled";
 const DESKTOP_NOTIFICATIONS_KEY = "controledu.teacher.desktop-notifications-enabled";
 const SOUND_NOTIFICATIONS_KEY = "controledu.teacher.sound-notifications-enabled";
 const NOTIFICATION_VOLUME_KEY = "controledu.teacher.notification-volume";
+const SELFHOST_TTS_URL_KEY = "controledu.teacher.selfhost-tts-url";
+const SELFHOST_TTS_TOKEN_KEY = "controledu.teacher.selfhost-tts-token";
 const THUMBNAIL_FRAME_INTERVAL_MS = 200;
 
 type Theme = "light" | "dark";
@@ -58,10 +60,11 @@ type ProgressPayload = {
 
 type UiToast = {
   id: string;
-  kind: "handRaise" | "aiDetected";
+  kind: "handRaise" | "aiDetected" | "chatMessage";
   studentName: string;
   detectionClass?: string;
   confidence?: number;
+  messageText?: string;
   createdAtMs: number;
 };
 
@@ -94,6 +97,51 @@ async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promi
   }
 
   return JSON.parse(bodyText) as T;
+}
+
+const fileLikeExtensions = new Set([
+  "exe",
+  "dll",
+  "msi",
+  "json",
+  "txt",
+  "log",
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+  "zip",
+  "7z",
+  "rar",
+  "pdf",
+  "doc",
+  "docx",
+  "xls",
+  "xlsx",
+]);
+
+function humanizeProgramNames(raw: string): string {
+  return raw.replace(/\b[A-Za-z][A-Za-z0-9_-]*(?:\.[A-Za-z][A-Za-z0-9_-]*)+\b/g, (token) => {
+    if (/^\d+(?:\.\d+)+$/.test(token)) {
+      return token;
+    }
+
+    const parts = token.split(".");
+    const last = parts[parts.length - 1]?.toLowerCase() ?? "";
+    if (fileLikeExtensions.has(last)) {
+      return token;
+    }
+
+    const looksLikeDomain = parts.length <= 2 && parts.every((part) => part === part.toLowerCase());
+    if (looksLikeDomain) {
+      return token;
+    }
+
+    return parts
+      .map((part) => part.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2"))
+      .join(" ");
+  });
 }
 
 type IconProps = SVGProps<SVGSVGElement>;
@@ -184,11 +232,12 @@ function App() {
   const [teacherTtsStatus, setTeacherTtsStatus] = useState<{ tone: "neutral" | "success" | "error"; text: string } | null>(null);
   const [teacherChatStatus, setTeacherChatStatus] = useState<{ tone: "neutral" | "success" | "error"; text: string } | null>(null);
   const [chatByStudent, setChatByStudent] = useState<Record<string, TeacherStudentChatMessage[]>>({});
+  const [chatUnreadByStudent, setChatUnreadByStudent] = useState<Record<string, number>>({});
   const [chatHistoryLoadingFor, setChatHistoryLoadingFor] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [onlyOnline, setOnlyOnline] = useState(true);
   const [connectionState, setConnectionState] = useState<"connected" | "disconnected">("disconnected");
-  const [activeView, setActiveView] = useState<"monitoring" | "detection" | "settings">("monitoring");
+  const [activeView, setActiveView] = useState<"monitoring" | "chats" | "detection" | "settings">("monitoring");
   const [aiAlerts, setAiAlerts] = useState<AlertItem[]>([]);
   const [detectionPolicy, setDetectionPolicy] = useState<DetectionPolicy | null>(null);
   const [aiFilterStudent, setAiFilterStudent] = useState("all");
@@ -205,6 +254,8 @@ function App() {
 
     return Math.min(100, Math.max(0, Math.round(stored)));
   });
+  const [selfHostTtsUrl, setSelfHostTtsUrl] = useState(() => (localStorage.getItem(SELFHOST_TTS_URL_KEY) ?? "https://tts.kilocraft.org").trim() || "https://tts.kilocraft.org");
+  const [selfHostTtsToken, setSelfHostTtsToken] = useState(() => localStorage.getItem(SELFHOST_TTS_TOKEN_KEY) ?? "");
   const [handRaisedUntil, setHandRaisedUntil] = useState<Record<string, number>>({});
   const [uiClock, setUiClock] = useState(() => Date.now());
   const [isLogsOpen, setIsLogsOpen] = useState(false);
@@ -216,6 +267,7 @@ function App() {
   const [toasts, setToasts] = useState<UiToast[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const selectedStudentIdRef = useRef<string | null>(null);
+  const activeViewRef = useRef(activeView);
   const frameUpdateGateRef = useRef<Record<string, number>>({});
   const handSignalLogRef = useRef<Record<string, number>>({});
   const toastDedupRef = useRef<Record<string, number>>({});
@@ -248,6 +300,22 @@ function App() {
         .sort((a, b) => new Date(a.timestampUtc).getTime() - new Date(b.timestampUtc).getTime())
         .slice(-300);
       return { ...current, [key]: next };
+    });
+  };
+
+  const markChatRead = (clientId: string | null) => {
+    if (!clientId) {
+      return;
+    }
+
+    setChatUnreadByStudent((current) => {
+      if (!current[clientId]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[clientId];
+      return next;
     });
   };
 
@@ -338,7 +406,7 @@ function App() {
     void audio.play().catch(() => undefined);
   };
 
-  const sendDesktopNotification = async (title: string, message: string, kind: "ai" | "signal") => {
+  const sendDesktopNotification = async (title: string, message: string, kind: "ai" | "signal" | "chat") => {
     if (!desktopNotificationsEnabledRef.current) {
       return;
     }
@@ -394,6 +462,14 @@ function App() {
   }, [notificationVolume]);
 
   useEffect(() => {
+    localStorage.setItem(SELFHOST_TTS_URL_KEY, selfHostTtsUrl.trim() || "https://tts.kilocraft.org");
+  }, [selfHostTtsUrl]);
+
+  useEffect(() => {
+    localStorage.setItem(SELFHOST_TTS_TOKEN_KEY, selfHostTtsToken);
+  }, [selfHostTtsToken]);
+
+  useEffect(() => {
     const audio = new Audio("/notification.mp3");
     audio.preload = "auto";
     audio.volume = Math.min(1, Math.max(0, notificationVolume / 100));
@@ -408,6 +484,16 @@ function App() {
   useEffect(() => {
     selectedStudentIdRef.current = selectedStudentId;
   }, [selectedStudentId]);
+
+  useEffect(() => {
+    activeViewRef.current = activeView;
+  }, [activeView]);
+
+  useEffect(() => {
+    if (activeView === "chats" && selectedStudentId) {
+      markChatRead(selectedStudentId);
+    }
+  }, [activeView, selectedStudentId]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setUiClock(Date.now()), 1000);
@@ -568,6 +654,39 @@ function App() {
         appendChatMessage(message);
         const author = message.senderDisplayName || (String(message.senderRole).toLowerCase() === "teacher" ? "Teacher" : message.clientId);
         appendEvent(`[${new Date(message.timestampUtc).toLocaleTimeString()}] CHAT ${message.clientId} ${author}: ${message.text.slice(0, 80)}`);
+
+        const isStudentMessage = String(message.senderRole).toLowerCase() === "student";
+        if (!isStudentMessage) {
+          return;
+        }
+
+        const isVisibleInChats =
+          activeViewRef.current === "chats" && selectedStudentIdRef.current === message.clientId;
+        if (!isVisibleInChats) {
+          setChatUnreadByStudent((current) => ({
+            ...current,
+            [message.clientId]: (current[message.clientId] ?? 0) + 1,
+          }));
+        }
+
+        const preview = message.text.trim().replace(/\s+/g, " ").slice(0, 90);
+        const studentName = message.senderDisplayName || message.clientId;
+        const shown = pushToast(
+          {
+            kind: "chatMessage",
+            studentName,
+            messageText: preview,
+          },
+          `chat:${message.clientId}:${preview.slice(0, 32)}`,
+          3000,
+        );
+
+        if (shown) {
+          const title = t("toastChatTitle");
+          const text = interpolate(t("toastChatReceived"), { name: studentName, text: preview || "..." });
+          playNotificationSound();
+          void sendDesktopNotification(title, text, "chat");
+        }
       });
 
       connection.on("DetectionPolicyUpdated", (policy: DetectionPolicy) => {
@@ -861,11 +980,15 @@ function App() {
           voiceName: draft.voiceName,
           speakingRate: draft.speakingRate,
           pitch: draft.pitch,
+          selfHostBaseUrl: selfHostTtsUrl.trim() || undefined,
+          selfHostApiToken: selfHostTtsToken.trim() || undefined,
+          selfHostTtsPath: "/v1/tts/synthesize",
         }),
       });
     },
-    onSuccess: (_, vars) => {
-      const message = `Teacher TTS sent to ${vars.clientId}`;
+    onSuccess: (result, vars) => {
+      const base = result.message?.trim() ? result.message : "Teacher TTS sent";
+      const message = `${base} (${vars.clientId})`;
       setTeacherTtsStatus({ tone: "success", text: message });
       appendEvent(`${message}: ${vars.draft.messageText.slice(0, 60)}`);
     },
@@ -935,10 +1058,29 @@ function App() {
   const selectedTargetCount = selectedTargets.size || (selectedStudentId ? 1 : 0);
   const canOpenRemoteView = Boolean(selectedStudent);
   const selectedChatMessages = selectedStudentId ? (chatByStudent[selectedStudentId] ?? []) : [];
+  const unreadChatTotal = Object.values(chatUnreadByStudent).reduce((sum, count) => sum + count, 0);
   const selectedRemoteControlSession = selectedStudentId ? remoteControlSessions[selectedStudentId] : undefined;
   const isRemoteControlApproved = selectedRemoteControlSession?.state === "Approved";
   const isRemoteControlPending =
     remoteControlRequestPending || selectedRemoteControlSession?.state === "PendingApproval";
+
+  useEffect(() => {
+    if (activeView !== "chats") {
+      return;
+    }
+
+    if (selectedStudentId && students[selectedStudentId]) {
+      return;
+    }
+
+    const firstAvailable = sortedStudents.find((student) => student.isOnline) ?? sortedStudents[0];
+    if (!firstAvailable) {
+      return;
+    }
+
+    setSelectedStudentId(firstAvailable.clientId);
+    markChatRead(firstAvailable.clientId);
+  }, [activeView, selectedStudentId, sortedStudents, students]);
 
   const requestRemoteControlSession = async () => {
     if (!selectedStudentId || !teacherHubRef.current) {
@@ -1111,6 +1253,7 @@ function App() {
       void sendRemoteControlInput({
         kind: "KeyDown",
         key: event.key,
+        code: event.code,
         ctrl: event.ctrlKey,
         alt: event.altKey,
         shift: event.shiftKey,
@@ -1128,6 +1271,7 @@ function App() {
       void sendRemoteControlInput({
         kind: "KeyUp",
         key: event.key,
+        code: event.code,
         ctrl: event.ctrlKey,
         alt: event.altKey,
         shift: event.shiftKey,
@@ -1152,16 +1296,16 @@ function App() {
   }, [isRemoteViewOpen, isRemoteControlApproved, selectedStudentId, selectedRemoteControlSession?.sessionId]);
 
   return (
-    <div className="h-screen min-w-0 overflow-hidden px-2 py-2 sm:px-3 sm:py-3 lg:px-5 lg:py-4">
-      <div className="mx-auto flex h-full max-w-[1880px] min-w-0 flex-col gap-3">
+    <div className="box-border min-h-screen min-w-0 overflow-x-hidden px-2 py-2 sm:px-3 sm:py-3 lg:px-5 lg:py-4">
+      <div className="mx-auto flex max-w-[1880px] min-w-0 flex-col gap-3">
         <header className="px-1 py-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-0.5">
               <h1 className="text-xl font-semibold tracking-tight lg:text-2xl">{t("appTitle")}</h1>
               <p className="text-xs text-muted-foreground">{t("headerHint")}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="hidden items-center gap-1 rounded-md border border-border bg-card/50 p-0.5 md:flex">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <div className="flex max-w-full flex-wrap items-center gap-1 rounded-md border border-border bg-card/50 p-0.5">
                 <Button
                   variant={activeView === "monitoring" ? "default" : "ghost"}
                   size="sm"
@@ -1169,6 +1313,21 @@ function App() {
                   onClick={() => setActiveView("monitoring")}
                 >
                   {t("monitoringTitle")}
+                </Button>
+                <Button
+                  variant={activeView === "chats" ? "default" : "ghost"}
+                  size="sm"
+                  className="h-7 px-2 text-[11px]"
+                  onClick={() => setActiveView("chats")}
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <span>{t("chatsTab")}</span>
+                    {unreadChatTotal > 0 ? (
+                      <span className="inline-flex min-w-4 items-center justify-center rounded-full border border-amber-500/35 bg-amber-500/15 px-1 text-[10px] leading-4 text-amber-300">
+                        {unreadChatTotal > 99 ? "99+" : unreadChatTotal}
+                      </span>
+                    ) : null}
+                  </span>
                 </Button>
                 <Button
                   variant={activeView === "detection" ? "default" : "ghost"}
@@ -1209,11 +1368,11 @@ function App() {
         </header>
 
         {activeView === "monitoring" ? (
-        <div className="mt-1 grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_290px] 2xl:grid-cols-[minmax(0,1fr)_308px]">
-          <Card className="min-h-0 overflow-hidden">
-            <CardContent className="grid h-full min-h-0 gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="flex min-h-0 flex-col gap-3">
-                <section className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-background/75 p-3">
+        <div className="mt-1 grid gap-3 lg:grid-cols-[minmax(0,1fr)_290px] 2xl:grid-cols-[minmax(0,1fr)_308px]">
+          <Card className="overflow-visible">
+            <CardContent className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="flex flex-col gap-3">
+                <section className="flex flex-col rounded-xl border border-border bg-background/75 p-3">
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-medium">{t("focusedView")}</p>
                     {selectedStudent ? (
@@ -1334,9 +1493,26 @@ function App() {
                     sendTeacherChat.mutate({ clientId: selectedStudentId, text });
                   }}
                 />
+
+                <TeacherTtsCard
+                  lang={lang}
+                  selectedStudent={selectedStudent}
+                  isPending={sendTeacherTts.isPending}
+                  statusText={teacherTtsStatus?.text}
+                  statusTone={teacherTtsStatus?.tone}
+                  onSend={(draft) => {
+                    if (!selectedStudentId) {
+                      setTeacherTtsStatus({ tone: "error", text: "Select a device first." });
+                      return;
+                    }
+
+                    setTeacherTtsStatus({ tone: "neutral", text: `Dispatching TTS to ${selectedStudentId}...` });
+                    sendTeacherTts.mutate({ clientId: selectedStudentId, draft });
+                  }}
+                />
               </div>
 
-              <aside className="flex min-h-0 flex-col rounded-xl border border-border bg-background/75 p-3">
+              <aside className="sticky top-3 flex min-h-0 self-start flex-col rounded-xl border border-border bg-background/75 p-3 max-h-[calc(100vh-7.5rem)]">
                 <div className="mb-2 space-y-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -1359,13 +1535,14 @@ function App() {
                   </div>
                 </div>
 
-                <ScrollArea.Root className="min-h-0 flex-1 overflow-hidden">
+                <ScrollArea.Root className="mt-2 min-h-0 flex-1 overflow-hidden max-h-[calc(100vh-18rem)]">
                   <ScrollArea.Viewport className="h-full pr-2">
                     <div className="grid grid-cols-1 gap-2">
                       {sortedStudents.map((student) => {
                         const frame = frames[student.clientId];
                         const isFocused = selectedStudentId === student.clientId;
                         const isTarget = selectedTargets.has(student.clientId);
+                        const unreadCount = chatUnreadByStudent[student.clientId] ?? 0;
 
                         return (
                           <button
@@ -1375,6 +1552,7 @@ function App() {
                             className={cn(
                               "rounded-md border p-2 text-left transition hover:bg-accent/60",
                               isFocused ? "border-primary bg-primary/10" : "border-border",
+                              unreadCount > 0 && !isFocused && "border-sky-500/40 bg-sky-500/5",
                             )}
                           >
                             <div className="mb-1.5 h-20 overflow-hidden rounded border border-border bg-muted/40">
@@ -1387,6 +1565,11 @@ function App() {
                             <div className="mb-1 flex items-center justify-between gap-1">
                               <div className="flex min-w-0 items-center gap-1">
                                 <p className="truncate text-xs font-medium">{student.hostName}</p>
+                                {unreadCount > 0 ? (
+                                  <Badge variant="outline" className="h-4 border-sky-500/40 bg-sky-500/10 px-1 text-[9px] text-sky-300">
+                                    {t("chatsTab")}: {unreadCount}
+                                  </Badge>
+                                ) : null}
                                 {(handRaisedUntil[student.clientId] ?? 0) > uiClock ? (
                                   <Badge variant="warning" className="h-4 px-1 text-[9px]">
                                     {t("handRaised")}
@@ -1453,7 +1636,7 @@ function App() {
             </CardContent>
           </Card>
 
-          <Card className="min-h-0 overflow-hidden">
+          <Card className="overflow-visible">
             <CardHeader className="pb-2">
               <CardTitle>{t("controlPanel")}</CardTitle>
               <CardDescription>{t("logsHint")}</CardDescription>
@@ -1507,38 +1690,112 @@ function App() {
                 }}
               />
 
-              <TeacherTtsCard
-                lang={lang}
-                selectedStudent={selectedStudent}
-                isPending={sendTeacherTts.isPending}
-                statusText={teacherTtsStatus?.text}
-                statusTone={teacherTtsStatus?.tone}
-                onSend={(draft) => {
-                  if (!selectedStudentId) {
-                    setTeacherTtsStatus({ tone: "error", text: "Select a device first." });
-                    return;
-                  }
-
-                  setTeacherTtsStatus({ tone: "neutral", text: `Dispatching TTS to ${selectedStudentId}...` });
-                  sendTeacherTts.mutate({ clientId: selectedStudentId, draft });
-                }}
-              />
-
               <div className="mt-auto space-y-2">
-                <Button
-                  className="h-auto w-auto self-start p-0 text-xs font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
-                  variant="ghost"
-                  onClick={() => setIsLogsOpen(true)}
-                >
-                  {t("alertsAudit")}
-                </Button>
-                <p className="line-clamp-3 text-xs text-muted-foreground">
-                  {events.length === 0 ? t("noEvents") : `${t("lastEventPrefix")}: ${events[0]}`}
-                </p>
+                <div className="rounded-md border border-border/80 bg-muted/20 px-2.5 py-2">
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{t("lastEventPrefix")}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsLogsOpen(true)}
+                      className="h-6 px-2 text-[10px]"
+                    >
+                      <IconList className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                  <p className="line-clamp-3 text-xs text-muted-foreground">
+                    {events.length === 0 ? t("noEvents") : humanizeProgramNames(events[0])}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
+        ) : activeView === "chats" ? (
+          <Card className="mt-1 min-h-0 flex-1 overflow-hidden">
+            <CardHeader className="pb-2">
+              <CardTitle>{t("chatsTitle")}</CardTitle>
+              <CardDescription>{t("chatsDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid h-full min-h-0 gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="min-h-0">
+              </div>
+
+              <aside className="sticky top-3 flex min-h-0 self-start flex-col rounded-xl border border-border bg-background/75 p-3 max-h-[calc(100vh-7.5rem)]">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium">{t("students")}</p>
+                    <Badge variant="secondary">{sortedStudents.length}</Badge>
+                  </div>
+                  <Badge variant={unreadChatTotal > 0 ? "warning" : "outline"}>{t("unreadMessages")}: {unreadChatTotal}</Badge>
+                </div>
+                <p className="mb-2 text-xs text-muted-foreground">{t("studentsHint")}</p>
+                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t("searchPlaceholder")} />
+                <div className="mt-2 flex gap-2">
+                  <Button size="sm" variant={onlyOnline ? "default" : "outline"} onClick={() => setOnlyOnline(true)}>
+                    {t("online")}
+                  </Button>
+                  <Button size="sm" variant={!onlyOnline ? "default" : "outline"} onClick={() => setOnlyOnline(false)}>
+                    {t("all")}
+                  </Button>
+                </div>
+
+                <ScrollArea.Root className="mt-3 min-h-0 flex-1 overflow-hidden max-h-[calc(100vh-18rem)]">
+                  <ScrollArea.Viewport className="h-full pr-2">
+                    <div className="space-y-2">
+                      {sortedStudents.map((student) => {
+                        const isSelected = selectedStudentId === student.clientId;
+                        const unreadCount = chatUnreadByStudent[student.clientId] ?? 0;
+                        const studentMessages = chatByStudent[student.clientId] ?? [];
+                        const lastMessage = studentMessages.length > 0 ? studentMessages[studentMessages.length - 1] : null;
+
+                        return (
+                          <button
+                            key={student.clientId}
+                            type="button"
+                            onClick={() => {
+                              setSelectedStudentId(student.clientId);
+                              markChatRead(student.clientId);
+                            }}
+                            className={cn(
+                              "w-full rounded-md border p-2 text-left transition hover:bg-accent/60",
+                              isSelected ? "border-primary bg-primary/10" : "border-border",
+                            )}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">{student.hostName}</p>
+                                <p className="truncate text-[11px] text-muted-foreground">{student.userName}</p>
+                              </div>
+                              <div className="flex shrink-0 items-center gap-1">
+                                {unreadCount > 0 ? (
+                                  <Badge variant="warning" className="px-1.5 text-[10px]">
+                                    {unreadCount}
+                                  </Badge>
+                                ) : null}
+                                <Badge variant={student.isOnline ? "success" : "outline"} className="text-[10px]">
+                                  {student.isOnline ? t("online") : t("offline")}
+                                </Badge>
+                              </div>
+                            </div>
+                            <p className="mt-1 truncate text-[11px] text-muted-foreground">
+                              {lastMessage?.text?.trim()
+                                ? lastMessage.text.trim().replace(/\s+/g, " ").slice(0, 80)
+                                : t("noEvents")}
+                            </p>
+                          </button>
+                        );
+                      })}
+                      {sortedStudents.length === 0 ? <p className="text-sm text-muted-foreground">{t("noMatches")}</p> : null}
+                    </div>
+                  </ScrollArea.Viewport>
+                  <ScrollArea.Scrollbar className="w-2" orientation="vertical">
+                    <ScrollArea.Thumb className="rounded bg-muted-foreground/30" />
+                  </ScrollArea.Scrollbar>
+                </ScrollArea.Root>
+              </aside>
+            </CardContent>
+          </Card>
         ) : activeView === "detection" ? (
           <Card className="mt-1 min-h-0 flex-1 overflow-hidden">
             <CardHeader className="pb-2">
@@ -1625,7 +1882,7 @@ function App() {
                           <p className="mt-1 text-muted-foreground">
                             {new Date(alert.timestampUtc).toLocaleString()} | {t("detectionConfidence")}: {alert.confidence.toFixed(2)} | {t("detectionSource")}: {localizeStageSource(alert.stageSource)}
                           </p>
-                          <p className="mt-1">{alert.reason}</p>
+                          <p className="mt-1">{humanizeProgramNames(alert.reason)}</p>
                         </div>
                       ))}
                     </div>
@@ -1693,7 +1950,7 @@ function App() {
                     <span className="rounded border border-border/70 bg-muted/25 px-1.5 py-0.5 text-xs font-semibold">{notificationVolume}%</span>
                   </div>
                   <input
-                    className="w-full accent-primary"
+                    className="slider-fancy w-full"
                     type="range"
                     min={0}
                     max={100}
@@ -1701,6 +1958,41 @@ function App() {
                     value={notificationVolume}
                     onChange={(event) => setNotificationVolume(Math.min(100, Math.max(0, Number(event.target.value))))}
                   />
+                </div>
+
+                <div className="rounded-lg border border-border/80 bg-muted/20 p-3 space-y-2">
+                  <div>
+                    <p className="text-sm font-medium">{t("settingsTtsProxyTitle")}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{t("settingsTtsProxyDesc")}</p>
+                  </div>
+
+                  <label className="block space-y-1">
+                    <span className="text-xs font-medium text-muted-foreground">{t("settingsTtsProxyUrl")}</span>
+                    <Input
+                      value={selfHostTtsUrl}
+                      onChange={(event) => setSelfHostTtsUrl(event.target.value)}
+                      placeholder="https://tts.kilocraft.org"
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                  </label>
+
+                  <label className="block space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-medium text-muted-foreground">{t("settingsTtsProxyToken")}</span>
+                      <span className="text-[10px] text-muted-foreground">{selfHostTtsToken.trim() ? "Configured" : t("disabled")}</span>
+                    </div>
+                    <Input
+                      type="password"
+                      value={selfHostTtsToken}
+                      onChange={(event) => setSelfHostTtsToken(event.target.value)}
+                      placeholder="Bearer token"
+                      autoComplete="off"
+                      spellCheck={false}
+                      className="font-mono text-xs"
+                    />
+                    <p className="text-[11px] text-muted-foreground">{t("settingsTtsProxyTokenHint")}</p>
+                  </label>
                 </div>
               </div>
             </CardContent>
@@ -1712,14 +2004,17 @@ function App() {
         <div className="pointer-events-none fixed left-1/2 top-4 z-[70] flex w-[min(92vw,560px)] -translate-x-1/2 flex-col gap-2">
           {toasts.map((toast) => {
             const isHandRaise = toast.kind === "handRaise";
-            const title = isHandRaise ? t("toastSignalTitle") : t("toastAlertTitle");
+            const isChatMessage = toast.kind === "chatMessage";
+            const title = isHandRaise ? t("toastSignalTitle") : isChatMessage ? t("toastChatTitle") : t("toastAlertTitle");
             const message = isHandRaise
               ? interpolate(t("toastHandRaise"), { name: toast.studentName })
-              : interpolate(t("toastAiDetected"), {
-                  name: toast.studentName,
-                  className: localizeDetectionClass(toast.detectionClass ?? "UnknownAi"),
-                  confidence: (toast.confidence ?? 0).toFixed(2),
-                });
+              : isChatMessage
+                ? interpolate(t("toastChatReceived"), { name: toast.studentName, text: toast.messageText ?? "..." })
+                : interpolate(t("toastAiDetected"), {
+                    name: toast.studentName,
+                    className: localizeDetectionClass(toast.detectionClass ?? "UnknownAi"),
+                    confidence: (toast.confidence ?? 0).toFixed(2),
+                  });
 
             return (
               <div
@@ -1728,7 +2023,9 @@ function App() {
                   "pointer-events-auto rounded-lg border px-3 py-2 shadow-lg backdrop-blur",
                   isHandRaise
                     ? "border-amber-500/50 bg-amber-500/12 text-foreground"
-                    : "border-rose-500/45 bg-rose-500/12 text-foreground",
+                    : isChatMessage
+                      ? "border-sky-500/45 bg-sky-500/12 text-foreground"
+                      : "border-rose-500/45 bg-rose-500/12 text-foreground",
                 )}
               >
                 <p className="text-[11px] font-semibold uppercase tracking-[0.12em] opacity-90">{title}</p>
@@ -1978,6 +2275,7 @@ function App() {
                       const isFocused = selectedStudentId === student.clientId;
                       const isTarget = selectedTargets.has(student.clientId);
                       const isHandRaised = (handRaisedUntil[student.clientId] ?? 0) > uiClock;
+                      const unreadCount = chatUnreadByStudent[student.clientId] ?? 0;
 
                       return (
                         <div
@@ -1985,6 +2283,7 @@ function App() {
                           className={cn(
                             "rounded-md border p-2 transition hover:bg-accent/60 cursor-pointer",
                             isFocused ? "border-primary bg-primary/10" : "border-border",
+                            unreadCount > 0 && !isFocused && "border-sky-500/40 bg-sky-500/5",
                           )}
                           onClick={() => setSelectedStudentId(student.clientId)}
                         >
@@ -1996,7 +2295,14 @@ function App() {
                             )}
                           </div>
                           <div className="flex items-center justify-between gap-2">
-                            <p className="truncate text-xs font-medium">{student.hostName}</p>
+                            <div className="flex min-w-0 items-center gap-1">
+                              <p className="truncate text-xs font-medium">{student.hostName}</p>
+                              {unreadCount > 0 ? (
+                                <Badge variant="outline" className="h-4 border-sky-500/40 bg-sky-500/10 px-1 text-[9px] text-sky-300">
+                                  {unreadCount}
+                                </Badge>
+                              ) : null}
+                            </div>
                             <Badge variant={student.isOnline ? "success" : "outline"} className="text-[10px]">
                               {student.isOnline ? t("online") : t("offline")}
                             </Badge>
@@ -2078,7 +2384,7 @@ function App() {
                         key={`${line}-${index}`}
                         className="rounded-md border border-border bg-background/80 px-3 py-2 text-xs leading-relaxed"
                       >
-                        {line}
+                        {humanizeProgramNames(line)}
                       </div>
                     ))}
                   </div>
@@ -2151,3 +2457,8 @@ function App() {
 }
 
 export default App;
+
+
+
+
+

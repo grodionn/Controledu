@@ -606,12 +606,6 @@ public sealed class Worker(
                 continue;
             }
 
-            if (!ttsOptions.Enabled)
-            {
-                await settingsStore.SetAsync(DetectionSettingKeys.LastAlert, "Teacher TTS command ignored: TTS disabled", cancellationToken);
-                continue;
-            }
-
             if (ttsOptions.RespectAccessibilityToggle)
             {
                 var ttsEnabledByProfile = await studentLocalHostClient.TryGetTeacherTtsEnabledAsync(cancellationToken);
@@ -623,11 +617,34 @@ public sealed class Worker(
                 }
             }
 
-            var audioBytes = await teacherTtsSynthesisService.TrySynthesizeAsync(command, cancellationToken);
-            if (audioBytes is null || audioBytes.Length == 0)
+            byte[]? audioBytes = null;
+            if (!string.IsNullOrWhiteSpace(command.AudioWavBase64))
             {
-                await settingsStore.SetAsync(DetectionSettingKeys.LastAlert, "Teacher TTS synthesis failed", cancellationToken);
-                continue;
+                try
+                {
+                    audioBytes = Convert.FromBase64String(command.AudioWavBase64);
+                }
+                catch (FormatException ex)
+                {
+                    logger.LogWarning(ex, "Teacher TTS command contained invalid pre-synthesized audio payload.");
+                    await settingsStore.SetAsync(DetectionSettingKeys.LastAlert, "Teacher TTS audio payload invalid", cancellationToken);
+                    continue;
+                }
+            }
+            else
+            {
+                if (!ttsOptions.Enabled)
+                {
+                    await settingsStore.SetAsync(DetectionSettingKeys.LastAlert, "Teacher TTS command ignored: TTS disabled", cancellationToken);
+                    continue;
+                }
+
+                audioBytes = await teacherTtsSynthesisService.TrySynthesizeAsync(command, cancellationToken);
+                if (audioBytes is null || audioBytes.Length == 0)
+                {
+                    await settingsStore.SetAsync(DetectionSettingKeys.LastAlert, "Teacher TTS synthesis failed", cancellationToken);
+                    continue;
+                }
             }
 
             var requestId = string.IsNullOrWhiteSpace(command.RequestId) ? Guid.NewGuid().ToString("N") : command.RequestId;

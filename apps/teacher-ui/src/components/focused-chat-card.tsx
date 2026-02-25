@@ -37,13 +37,23 @@ export function FocusedChatCard({
 
   const canSend = Boolean(selectedStudent?.isOnline) && draft.trim().length > 0 && !isSending;
 
+  const submit = () => {
+    const text = draft.trim();
+    if (!text || !canSend) {
+      return;
+    }
+
+    onSend(text);
+    setDraft("");
+  };
+
   return (
-    <section className="rounded-xl border border-border bg-background/75 p-3">
+    <section className="rounded-xl border border-border bg-background/75 p-3 shadow-sm">
       <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Teacher Chat</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Быстрый чат с выбранным учеником в focused view. Сообщения отображаются в student overlay.
+            Быстрый чат с выбранным учеником. Сообщения отображаются в overlay на устройстве ученика.
           </p>
         </div>
         {selectedStudent ? (
@@ -56,7 +66,7 @@ export function FocusedChatCard({
       <div className="grid gap-2">
         <div
           ref={scrollRef}
-          className="max-h-[240px] min-h-[180px] overflow-y-auto rounded-lg border border-border/80 bg-card/55 p-2"
+          className="max-h-[360px] min-h-[220px] overflow-y-auto rounded-lg border border-border/80 bg-card/55 p-2"
           role="log"
           aria-live="polite"
         >
@@ -104,24 +114,14 @@ export function FocusedChatCard({
           </label>
           <textarea
             id="teacher-focused-chat-input"
-            className="min-h-[78px] w-full resize-y rounded-md border border-input bg-background px-2.5 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary"
-            placeholder="Напишите сообщение ученику…"
+            className="min-h-[92px] w-full resize-y rounded-md border border-input bg-background px-2.5 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary"
+            placeholder="Напишите сообщение ученику..."
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
-                if (!canSend) {
-                  return;
-                }
-
-                const text = draft.trim();
-                if (!text) {
-                  return;
-                }
-
-                onSend(text);
-                setDraft("");
+                submit();
               }
             }}
             maxLength={2000}
@@ -129,19 +129,7 @@ export function FocusedChatCard({
           />
           <div className="mt-2 flex items-center justify-between gap-2">
             <div className="text-[11px] text-muted-foreground">{draft.length}/2000 • Enter = send</div>
-            <Button
-              size="sm"
-              disabled={!canSend}
-              onClick={() => {
-                const text = draft.trim();
-                if (!text) {
-                  return;
-                }
-
-                onSend(text);
-                setDraft("");
-              }}
-            >
+            <Button size="sm" disabled={!canSend} onClick={submit}>
               {isSending ? "Sending..." : "Send"}
             </Button>
           </div>
@@ -163,4 +151,3 @@ export function FocusedChatCard({
     </section>
   );
 }
-

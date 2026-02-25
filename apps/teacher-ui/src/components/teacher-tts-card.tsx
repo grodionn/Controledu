@@ -160,7 +160,7 @@ export function TeacherTtsCard({
               <span>{speakingRate.toFixed(2)}</span>
             </div>
             <input
-              className="w-full accent-primary"
+              className="slider-fancy w-full"
               type="range"
               min={0.5}
               max={1.5}
@@ -177,7 +177,7 @@ export function TeacherTtsCard({
               <span>{pitch.toFixed(1)}</span>
             </div>
             <input
-              className="w-full accent-primary"
+              className="slider-fancy w-full"
               type="range"
               min={-6}
               max={6}
@@ -222,4 +222,5 @@ export function TeacherTtsCard({
     </div>
   );
 }
+
 

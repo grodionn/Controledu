@@ -67,12 +67,18 @@ class PiperTtsService:
             )
 
         with tempfile.TemporaryDirectory(prefix="controledu-piper-") as temp_dir:
-            output_file = Path(temp_dir) / "tts.wav"
+            temp_dir_path = Path(temp_dir)
+            output_file = temp_dir_path / "tts.wav"
+            input_file = temp_dir_path / "input.txt"
+            input_file.write_text(request.text, encoding="utf-8")
+
             command = [
                 str(self._settings.piper_bin_path),
-                "--model",
+                "-m",
                 str(model_path),
-                "--output_file",
+                "-i",
+                str(input_file),
+                "-f",
                 str(output_file),
             ]
 
@@ -82,11 +88,11 @@ class PiperTtsService:
 
             length_scale = request.length_scale if request.length_scale is not None else self._settings.piper_default_length_scale
             if length_scale and length_scale > 0:
-                command.extend(["--length_scale", str(length_scale)])
+                command.extend(["--length-scale", str(length_scale)])
 
             noise_scale = request.noise_scale if request.noise_scale is not None else self._settings.piper_default_noise_scale
             if noise_scale is not None:
-                command.extend(["--noise_scale", str(noise_scale)])
+                command.extend(["--noise-scale", str(noise_scale)])
 
             noise_w = request.noise_w if request.noise_w is not None else self._settings.piper_default_noise_w
             if noise_w is not None:
@@ -98,12 +104,11 @@ class PiperTtsService:
                 else self._settings.piper_default_sentence_silence
             )
             if sentence_silence is not None:
-                command.extend(["--sentence_silence", str(sentence_silence)])
+                command.extend(["--sentence-silence", str(sentence_silence)])
 
             try:
                 process = await asyncio.create_subprocess_exec(
                     *command,
-                    stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                 )
@@ -115,7 +120,7 @@ class PiperTtsService:
 
             try:
                 stdout, stderr = await asyncio.wait_for(
-                    process.communicate(request.text.encode("utf-8")),
+                    process.communicate(),
                     timeout=self._settings.piper_timeout_seconds,
                 )
             except TimeoutError as exc:

@@ -11,5 +11,6 @@ public sealed record TeacherTtsCommandDto(
     string? VoiceName = null,
     double? SpeakingRate = null,
     double? Pitch = null,
+    string? AudioWavBase64 = null,
     string? RequestId = null);
 

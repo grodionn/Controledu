@@ -33,6 +33,15 @@ if (!(Test-Path $studentInstallerSource)) { throw "Missing $studentInstallerSour
 
 $normalizedBaseUrl = $BaseUrl.TrimEnd("/")
 
+function Get-SafeVersionSegment {
+    param([string]$Value)
+    $safe = ($Value -replace '[^A-Za-z0-9._-]', '-').Trim('-')
+    if ([string]::IsNullOrWhiteSpace($safe)) {
+        throw "Version '$Value' cannot be converted to a safe file name segment."
+    }
+    return $safe
+}
+
 function New-Manifest {
     param(
         [string]$ProductKey,
@@ -44,9 +53,17 @@ function New-Manifest {
     $targetDir = Join-Path $updatesRoot $ProductKey
     New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
 
-    $fileName = "{0}.exe" -f $PublicFilePrefix
+    $safeVersion = Get-SafeVersionSegment -Value $Version
+    $fileName = "{0}-{1}.exe" -f $PublicFilePrefix, $safeVersion
     $targetInstallerPath = Join-Path $targetDir $fileName
     Copy-Item -Force -Path $SourceInstallerPath -Destination $targetInstallerPath
+
+    Get-ChildItem -Path $targetDir -File -Filter "$PublicFilePrefix*.exe" |
+        Where-Object { $_.Name -ne $fileName } |
+        ForEach-Object {
+            Remove-Item -Force -Path $_.FullName
+            Write-Host "[updates] removed stale local installer $($_.Name)"
+        }
 
     $hash = (Get-FileHash -Algorithm SHA256 -Path $targetInstallerPath).Hash.ToLowerInvariant()
     $size = (Get-Item $targetInstallerPath).Length
@@ -65,7 +82,7 @@ function New-Manifest {
     $manifestPath = Join-Path $targetDir "manifest.json"
     $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8
 
-    Write-Host "[updates] $ProductKey -> $manifestPath"
+    Write-Host "[updates] $ProductKey -> $manifestPath ($fileName)"
 }
 
 New-Manifest -ProductKey "teacher" -ProductName "teacher-host" -SourceInstallerPath $teacherInstallerSource -PublicFilePrefix "TeacherInstaller"

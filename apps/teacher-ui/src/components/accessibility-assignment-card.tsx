@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UiLanguage } from "../i18n";
 import {
   AccessibilityContrastMode,
@@ -22,6 +22,7 @@ type Props = {
 };
 
 const presetOrder: AccessibilityPresetId[] = ["default", "vision", "hearing", "motor", "dyslexia", "custom"];
+const PER_DEVICE_DRAFT_KEY_PREFIX = "controledu.teacher.a11y-profile.";
 
 const copy: Record<UiLanguage, Record<string, string>> = {
   ru: {
@@ -45,7 +46,7 @@ const copy: Record<UiLanguage, Record<string, string>> = {
     tts: "TTS сообщений",
     voiceCmd: "Голосовые команды",
     teacherOverride: "Разрешить последующие teacher overrides",
-    apply: "Применить профайл",
+    apply: "Применить профиль",
     applying: "Отправка...",
     standard: "Стандарт",
     vision: "Зрение",
@@ -272,6 +273,44 @@ export function AccessibilityAssignmentCard({
   onAssign,
 }: Props) {
   const [draft, setDraft] = useState<AccessibilityProfileUpdateDto>(() => createPreset("default"));
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const selectedClientId = selectedStudent?.clientId?.trim() ?? "";
+
+  useEffect(() => {
+    if (!selectedClientId) {
+      return;
+    }
+
+    try {
+      const raw = localStorage.getItem(`${PER_DEVICE_DRAFT_KEY_PREFIX}${selectedClientId}`);
+      if (!raw) {
+        setDraft(createPreset("default"));
+        return;
+      }
+
+      const parsed = JSON.parse(raw) as AccessibilityProfileUpdateDto;
+      if (!parsed || typeof parsed !== "object") {
+        setDraft(createPreset("default"));
+        return;
+      }
+
+      setDraft(parsed);
+    } catch {
+      setDraft(createPreset("default"));
+    }
+  }, [selectedClientId]);
+
+  useEffect(() => {
+    if (!selectedClientId) {
+      return;
+    }
+
+    try {
+      localStorage.setItem(`${PER_DEVICE_DRAFT_KEY_PREFIX}${selectedClientId}`, JSON.stringify(draft));
+    } catch {
+      // Ignore localStorage write failures.
+    }
+  }, [draft, selectedClientId]);
 
   const applyPreset = (preset: AccessibilityPresetId) => {
     setDraft(createPreset(preset));
@@ -318,6 +357,11 @@ export function AccessibilityAssignmentCard({
       </div>
 
       <div className="space-y-2">
+        {selectedStudent ? (
+          <div className="rounded-md border border-border/80 bg-muted/20 px-2 py-1.5 text-[11px] text-muted-foreground">
+            Draft is remembered for this specific device.
+          </div>
+        ) : null}
         <div>
           <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{t(lang, "presets")}</p>
           <div className="grid grid-cols-2 gap-1.5">
@@ -336,91 +380,116 @@ export function AccessibilityAssignmentCard({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <label className="space-y-1">
-            <span className="text-[11px] text-muted-foreground">{t(lang, "scale")}</span>
-            <div className="rounded border border-border bg-background/60 px-2 py-1.5">
-              <div className="mb-1 flex items-center justify-between text-[11px]">
-                <span>{draft.ui.scalePercent}%</span>
-              </div>
-              <input
-                type="range"
-                min={100}
-                max={300}
-                step={5}
-                className="w-full accent-primary"
-                value={draft.ui.scalePercent}
-                onChange={(event) => patchUi({ scalePercent: Number(event.target.value) })}
-                disabled={isPending}
-              />
+        <div className="rounded-md border border-border/80 bg-muted/20 px-2.5 py-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-[11px] text-muted-foreground">
+              <span className="font-medium">{showAdvanced ? "Advanced settings are visible" : "Advanced settings are hidden"}</span>
+              <span className="ml-1">
+                ({t(lang, "scale")}: {draft.ui.scalePercent}% • {t(lang, "contrast")}: {t(lang, draft.ui.contrastMode === "standard" ? "contrastStandard" : draft.ui.contrastMode === "aa" ? "contrastAa" : "contrastAaa")})
+              </span>
             </div>
-          </label>
-
-          <label className="space-y-1">
-            <span className="text-[11px] text-muted-foreground">{t(lang, "contrast")}</span>
-            <select
-              className="h-[56px] w-full rounded-md border border-input bg-background px-2 text-xs"
-              value={draft.ui.contrastMode}
-              onChange={(event) => patchUi({ contrastMode: event.target.value as AccessibilityContrastMode })}
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 text-[11px]"
+              onClick={() => setShowAdvanced((current) => !current)}
               disabled={isPending}
             >
-              <option value="standard">{t(lang, "contrastStandard")}</option>
-              <option value="aa">{t(lang, "contrastAa")}</option>
-              <option value="aaa">{t(lang, "contrastAaa")}</option>
-            </select>
-          </label>
-        </div>
-
-        <div className="grid gap-1.5">
-          <SwitchRow
-            label={t(lang, "teacherOverride")}
-            checked={draft.allowTeacherOverride}
-            disabled={isPending}
-            onChange={(checked) => patchDraft({ allowTeacherOverride: checked })}
-          />
-          <div className="grid grid-cols-2 gap-1.5">
-            <SwitchRow
-              compact
-              label={t(lang, "invert")}
-              checked={draft.ui.invertColors}
-              disabled={isPending}
-              onChange={(checked) => patchUi({ invertColors: checked })}
-            />
-            <SwitchRow
-              compact
-              label={t(lang, "dyslexiaFont")}
-              checked={draft.ui.dyslexiaFontEnabled}
-              disabled={isPending}
-              onChange={(checked) => patchUi({ dyslexiaFontEnabled: checked })}
-            />
-            <SwitchRow
-              compact
-              label={t(lang, "cursor")}
-              checked={draft.ui.largeCursorEnabled}
-              disabled={isPending}
-              onChange={(checked) => patchUi({ largeCursorEnabled: checked })}
-            />
-            <SwitchRow
-              compact
-              label={t(lang, "focus")}
-              checked={draft.ui.highlightFocusEnabled}
-              disabled={isPending}
-              onChange={(checked) => patchUi({ highlightFocusEnabled: checked })}
-            />
+              {showAdvanced ? "Hide advanced" : "Show advanced"}
+            </Button>
           </div>
         </div>
 
-        <div>
-          <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{t(lang, "lesson")}</p>
-          <div className="grid grid-cols-2 gap-1.5">
-            <SwitchRow compact label={t(lang, "visualAlerts")} checked={draft.features.visualAlertsEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ visualAlertsEnabled: checked })} />
-            <SwitchRow compact label={t(lang, "largeButtons")} checked={draft.features.largeActionButtonsEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ largeActionButtonsEnabled: checked })} />
-            <SwitchRow compact label={t(lang, "simpleNav")} checked={draft.features.simplifiedNavigationEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ simplifiedNavigationEnabled: checked })} />
-            <SwitchRow compact label={t(lang, "captions")} checked={draft.features.liveCaptionsEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ liveCaptionsEnabled: checked })} />
-            <SwitchRow compact label={t(lang, "tts")} checked={draft.features.ttsTeacherMessagesEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ ttsTeacherMessagesEnabled: checked })} />
-            <SwitchRow compact label={t(lang, "voiceCmd")} checked={draft.features.voiceCommandsEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ voiceCommandsEnabled: checked })} />
-          </div>
-        </div>
+        {showAdvanced ? (
+          <>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="space-y-1">
+                <span className="text-[11px] text-muted-foreground">{t(lang, "scale")}</span>
+                <div className="rounded border border-border bg-background/60 px-2 py-1.5">
+                  <div className="mb-1 flex items-center justify-between text-[11px]">
+                    <span>{draft.ui.scalePercent}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={100}
+                    max={300}
+                    step={5}
+                    className="slider-fancy w-full"
+                    value={draft.ui.scalePercent}
+                    onChange={(event) => patchUi({ scalePercent: Number(event.target.value) })}
+                    disabled={isPending}
+                  />
+                </div>
+              </label>
+
+              <label className="space-y-1">
+                <span className="text-[11px] text-muted-foreground">{t(lang, "contrast")}</span>
+                <select
+                  className="h-[56px] w-full rounded-md border border-input bg-background px-2 text-xs"
+                  value={draft.ui.contrastMode}
+                  onChange={(event) => patchUi({ contrastMode: event.target.value as AccessibilityContrastMode })}
+                  disabled={isPending}
+                >
+                  <option value="standard">{t(lang, "contrastStandard")}</option>
+                  <option value="aa">{t(lang, "contrastAa")}</option>
+                  <option value="aaa">{t(lang, "contrastAaa")}</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="grid gap-1.5">
+              <SwitchRow
+                label={t(lang, "teacherOverride")}
+                checked={draft.allowTeacherOverride}
+                disabled={isPending}
+                onChange={(checked) => patchDraft({ allowTeacherOverride: checked })}
+              />
+              <div className="grid grid-cols-2 gap-1.5">
+                <SwitchRow
+                  compact
+                  label={t(lang, "invert")}
+                  checked={draft.ui.invertColors}
+                  disabled={isPending}
+                  onChange={(checked) => patchUi({ invertColors: checked })}
+                />
+                <SwitchRow
+                  compact
+                  label={t(lang, "dyslexiaFont")}
+                  checked={draft.ui.dyslexiaFontEnabled}
+                  disabled={isPending}
+                  onChange={(checked) => patchUi({ dyslexiaFontEnabled: checked })}
+                />
+                <SwitchRow
+                  compact
+                  label={t(lang, "cursor")}
+                  checked={draft.ui.largeCursorEnabled}
+                  disabled={isPending}
+                  onChange={(checked) => patchUi({ largeCursorEnabled: checked })}
+                />
+                <SwitchRow
+                  compact
+                  label={t(lang, "focus")}
+                  checked={draft.ui.highlightFocusEnabled}
+                  disabled={isPending}
+                  onChange={(checked) => patchUi({ highlightFocusEnabled: checked })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{t(lang, "lesson")}</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                <SwitchRow compact label={t(lang, "visualAlerts")} checked={draft.features.visualAlertsEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ visualAlertsEnabled: checked })} />
+                <SwitchRow compact label={t(lang, "largeButtons")} checked={draft.features.largeActionButtonsEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ largeActionButtonsEnabled: checked })} />
+                <SwitchRow compact label={t(lang, "simpleNav")} checked={draft.features.simplifiedNavigationEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ simplifiedNavigationEnabled: checked })} />
+                <SwitchRow compact label={t(lang, "captions")} checked={draft.features.liveCaptionsEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ liveCaptionsEnabled: checked })} />
+                <SwitchRow compact label={t(lang, "tts")} checked={draft.features.ttsTeacherMessagesEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ ttsTeacherMessagesEnabled: checked })} />
+                <SwitchRow compact label={t(lang, "voiceCmd")} checked={draft.features.voiceCommandsEnabled} disabled={isPending} onChange={(checked) => patchFeatures({ voiceCommandsEnabled: checked })} />
+              </div>
+            </div>
+          </>
+        ) : null}
 
         {statusText ? (
           <div
@@ -475,4 +544,5 @@ function SwitchRow({ label, checked, disabled, compact = false, onChange }: Swit
     </label>
   );
 }
+
 

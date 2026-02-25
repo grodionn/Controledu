@@ -130,6 +130,7 @@ export type RemoteControlInputCommand = {
   button?: "None" | "Left" | "Right" | "Middle";
   wheelDelta?: number;
   key?: string | null;
+  code?: string | null;
   ctrl?: boolean;
   alt?: boolean;
   shift?: boolean;

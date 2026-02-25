@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -38,6 +38,16 @@
       <Link>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>
   </ItemGroup>
+  <Target Name="RestoreStudentUiAssetsAfterPublish" AfterTargets="Publish" Condition="Exists('..\..\apps\student-ui\dist') and '$(PublishDir)' != ''">
+    <ItemGroup>
+      <StudentUiDistFiles Include="..\..\apps\student-ui\dist\**\*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(StudentUiDistFiles)"
+      DestinationFiles="@(StudentUiDistFiles->'$(PublishDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+  </Target>
 </Project>

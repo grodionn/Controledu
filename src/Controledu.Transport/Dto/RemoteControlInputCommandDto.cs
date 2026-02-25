@@ -13,6 +13,7 @@ public sealed record RemoteControlInputCommandDto(
     RemoteMouseButton Button = RemoteMouseButton.None,
     int WheelDelta = 0,
     string? Key = null,
+    string? Code = null,
     bool Ctrl = false,
     bool Alt = false,
     bool Shift = false);

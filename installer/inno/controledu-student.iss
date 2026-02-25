@@ -77,8 +77,8 @@ Name: "desktopicon"; Description: "{cm:TaskDesktopIcon}"; GroupDescription: "{cm
 Name: "agentservice"; Description: "{cm:TaskAgentService}"; GroupDescription: "{cm:GroupAgentStartup}"
 
 [Files]
-Source: "{#SourceHostDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#SourceAgentDir}\*"; DestDir: "{app}\StudentAgent"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#SourceHostDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.xml,appsettings.Development.json"
+Source: "{#SourceAgentDir}\*"; DestDir: "{app}\StudentAgent"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.xml,appsettings.Development.json"
 
 [Icons]
 Name: "{autoprograms}\Controledu Student"; Filename: "{app}\{#MyAppExeName}"
