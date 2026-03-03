@@ -14,6 +14,8 @@ const HEADER = "X-Controledu-LocalToken";
 const THEME_KEY = "controledu.student.theme";
 const LANG_KEY = "controledu.student.lang";
 const AUTO_LOCK_TIMEOUT_MS = 5 * 60 * 1000;
+const LIVE_DISCOVERY_INTERVAL_MS = 4000;
+const TOP_TOAST_TTL_MS = 2800;
 const MAIN_CONTENT_ID = "student-main-content";
 const LOCK_DIALOG_TITLE_ID = "student-lock-dialog-title";
 const LOCK_DIALOG_DESC_ID = "student-lock-dialog-desc";
@@ -43,6 +45,9 @@ function App() {
   const [selectedServer, setSelectedServer] = useState("");
   const [servers, setServers] = useState<DiscoveredServer[]>([]);
   const [showManualAddress, setShowManualAddress] = useState(false);
+  const [isDiscovering, setIsDiscovering] = useState(false);
+  const [isAccessibilityExpanded, setIsAccessibilityExpanded] = useState(false);
+  const [topToast, setTopToast] = useState<{ text: string; tone: MessageTone } | null>(null);
 
   const [unpairPassword, setUnpairPassword] = useState("");
   const [autoStart, setAutoStart] = useState(false);
@@ -56,12 +61,36 @@ function App() {
   const [detectionAdminPassword, setDetectionAdminPassword] = useState("");
   const [diagnosticsArchivePath, setDiagnosticsArchivePath] = useState("");
   const lastActivityAtRef = useRef(Date.now());
+  const topToastTimerRef = useRef<number | null>(null);
+  const discoveryInFlightRef = useRef(false);
+  const discoveryFingerprintRef = useRef("");
 
   const t = useCallback((key: string) => studentDictionary[lang][key] ?? key, [lang]);
-  const setStatusMessage = (text: string, tone: MessageTone = "neutral") => {
+  const tf = useCallback(
+    (key: string, values: Record<string, string | number>) => {
+      let text = t(key);
+      for (const [name, value] of Object.entries(values)) {
+        text = text.replaceAll(`{${name}}`, String(value));
+      }
+      return text;
+    },
+    [t],
+  );
+  const setStatusMessage = useCallback((text: string, tone: MessageTone = "neutral") => {
     setMessage(text);
     setMessageTone(tone);
-  };
+  }, []);
+
+  const showTopToast = useCallback((text: string, tone: MessageTone = "success") => {
+    setTopToast({ text, tone });
+    if (topToastTimerRef.current) {
+      window.clearTimeout(topToastTimerRef.current);
+    }
+    topToastTimerRef.current = window.setTimeout(() => {
+      setTopToast(null);
+      topToastTimerRef.current = null;
+    }, TOP_TOAST_TTL_MS);
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
@@ -71,6 +100,14 @@ function App() {
   useEffect(() => {
     localStorage.setItem(LANG_KEY, lang);
   }, [lang]);
+
+  useEffect(() => {
+    return () => {
+      if (topToastTimerRef.current) {
+        window.clearTimeout(topToastTimerRef.current);
+      }
+    };
+  }, []);
 
   const api = useMemo<ApiFn>(() => {
     return async <T,>(path: string, init?: RequestInit): Promise<T> => {
@@ -193,6 +230,59 @@ function App() {
     };
   }, [isUnlocked, status?.hasAdminPassword]);
 
+  const discoverServers = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (!token || discoveryInFlightRef.current) {
+        return;
+      }
+
+      discoveryInFlightRef.current = true;
+      setIsDiscovering(true);
+      try {
+        const list = await api<DiscoveredServer[]>("/api/discovery", { method: "POST", body: JSON.stringify({}) });
+        const fingerprint = list.map((server) => `${server.baseUrl}:${server.isRecommended ? 1 : 0}`).join("|");
+        const changed = fingerprint !== discoveryFingerprintRef.current;
+        discoveryFingerprintRef.current = fingerprint;
+
+        setServers(list);
+        const manualOverride = manualAddress.trim().length > 0;
+
+        if (list.length === 0) {
+          if (!manualOverride) {
+            setSelectedServer("");
+          }
+          if (!options?.silent && changed) {
+            setStatusMessage("No servers found. Use manual address.", "neutral");
+          }
+          return;
+        }
+
+        const recommended = list.find((server) => server.isRecommended) ?? list[0];
+        if (!manualOverride) {
+          setSelectedServer((current) => {
+            if (current && list.some((server) => server.baseUrl === current)) {
+              return current;
+            }
+            return recommended.baseUrl;
+          });
+          setManualAddress("");
+        }
+
+        if (changed) {
+          showTopToast(tf("onboardingAutoSelectNotice", { count: list.length }), "success");
+        }
+      } catch (error) {
+        if (!options?.silent) {
+          setStatusMessage(String(error), "error");
+        }
+      } finally {
+        discoveryInFlightRef.current = false;
+        setIsDiscovering(false);
+      }
+    },
+    [api, manualAddress, setStatusMessage, showTopToast, tf, token],
+  );
+
   const setPassword = useMutation({
     mutationFn: async () => {
       await api<{ ok: boolean; message?: string }>("/api/setup/admin-password", {
@@ -211,24 +301,7 @@ function App() {
       lastActivityAtRef.current = Date.now();
       setStatusMessage("Admin password configured.", "success");
       await refreshStatus();
-    },
-    onError: (error) => setStatusMessage(String(error), "error"),
-  });
-
-  const discover = useMutation({
-    mutationFn: async () => api<DiscoveredServer[]>("/api/discovery", { method: "POST", body: JSON.stringify({}) }),
-    onSuccess: (list) => {
-      setServers(list);
-      if (list.length > 0) {
-        const recommended = list.find((server) => server.isRecommended) ?? list[0];
-        setSelectedServer(recommended.baseUrl);
-        setManualAddress("");
-        setStatusMessage(`Found ${list.length} server node(s). Recommended target selected automatically.`, "success");
-        return;
-      }
-
-      setSelectedServer("");
-      setStatusMessage("No servers found. Use manual address.", "success");
+      void discoverServers({ silent: false });
     },
     onError: (error) => setStatusMessage(String(error), "error"),
   });
@@ -435,11 +508,55 @@ function App() {
   const statusMessageRole = messageTone === "error" ? "alert" : "status";
   const statusMessageLive = messageTone === "error" ? "assertive" : "polite";
 
+  useEffect(() => {
+    if (!token || !showPairing) {
+      return;
+    }
+
+    void discoverServers({ silent: true });
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void discoverServers({ silent: true });
+      }
+    };
+
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "hidden") {
+        return;
+      }
+      void discoverServers({ silent: true });
+    }, LIVE_DISCOVERY_INTERVAL_MS);
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [discoverServers, showPairing, token]);
+
   return (
     <div className="min-h-screen px-2.5 py-3 sm:px-4 sm:py-4 lg:px-5 lg:py-5">
       <a href={`#${MAIN_CONTENT_ID}`} className="skip-link">
         Skip to main content
       </a>
+      {topToast ? (
+        <div className="pointer-events-none fixed inset-x-0 top-3 z-50 flex justify-center px-3">
+          <div
+            className={cn(
+              "max-w-2xl rounded-full border px-5 py-2 text-center text-sm shadow-lg backdrop-blur-md",
+              topToast.tone === "error" && "border-destructive/60 bg-destructive/20 text-destructive",
+              topToast.tone === "success" && "border-emerald-500/55 bg-emerald-500/20 text-emerald-900 dark:text-emerald-200",
+              topToast.tone === "neutral" && "border-border/80 bg-card/90 text-foreground",
+            )}
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {topToast.text}
+          </div>
+        </div>
+      ) : null}
       <main
         id={MAIN_CONTENT_ID}
         aria-hidden={isLocked || undefined}
@@ -587,15 +704,13 @@ function App() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                      <Button onClick={() => discover.mutate()} disabled={discover.isPending}>
+                      <Button onClick={() => void discoverServers({ silent: false })} disabled={isDiscovering}>
                         {t("discoverTeachers")}
-                      </Button>
-                      <Button variant="outline" onClick={() => refreshStatus().catch((error) => setStatusMessage(String(error), "error"))}>
-                        {t("refreshStatus")}
                       </Button>
                       <Badge variant={servers.length > 0 ? "success" : "warning"}>
                         {t("onboardingFoundServers")}: {servers.length}
                       </Badge>
+                      <span className="text-xs text-muted-foreground">{t("onboardingLiveDiscovery")}</span>
                     </div>
 
                     <p className="text-xs text-muted-foreground">{t("onboardingSelectTargetHint")}</p>
@@ -643,9 +758,9 @@ function App() {
                           )}
                         </div>
 
-                        <div className="rounded-lg border border-border/70 bg-muted/35 p-3">
-                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{t("onboardingSelectedTarget")}</p>
-                          <p className="mt-1 break-all text-sm font-medium">{selectedEndpoint || t("selectDiscovered")}</p>
+                        <div className="rounded-md border border-border/45 bg-background/35 p-2.5">
+                          <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground/90">{t("onboardingSelectedTarget")}</p>
+                          <p className="mt-1 break-all text-sm text-foreground/85">{selectedEndpoint || t("selectDiscovered")}</p>
                           {selectedServerInfo ? (
                             <p className="mt-1 text-xs text-muted-foreground">
                               {selectedServerInfo.serverName} ({selectedServerInfo.host})
@@ -847,12 +962,29 @@ function App() {
         )}
 
         {status && (
-          <AccessibilitySettingsPanel
-            api={api}
-            lang={lang}
-            disabled={isLocked}
-            onStatusMessage={setStatusMessage}
-          />
+          <div className="space-y-2">
+            <Card className="border-border/80 bg-card/90">
+              <CardContent className="flex flex-wrap items-center justify-between gap-2 py-3">
+                <p className="text-sm font-medium">{t("accessibilityPanelTitle")}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsAccessibilityExpanded((current) => !current)}
+                  aria-expanded={isAccessibilityExpanded}
+                >
+                  {isAccessibilityExpanded ? t("collapseSection") : t("expandSection")}
+                </Button>
+              </CardContent>
+            </Card>
+            {isAccessibilityExpanded ? (
+              <AccessibilitySettingsPanel
+                api={api}
+                lang={lang}
+                disabled={isLocked}
+                onStatusMessage={setStatusMessage}
+              />
+            ) : null}
+          </div>
         )}
 
         <Card className={cn(

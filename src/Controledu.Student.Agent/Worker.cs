@@ -692,14 +692,26 @@ public sealed class Worker(
         ISettingsStore settingsStore,
         CancellationToken cancellationToken)
     {
-        _ = localDefaults;
-        _ = hubClient;
+        var effectivePolicy = localDefaults;
+        if (hubClient.TryGetLatestDetectionPolicy(out var hubPolicy) && hubPolicy is not null)
+        {
+            effectivePolicy = hubPolicy;
+        }
+
         var localOverrideRaw = await settingsStore.GetAsync(DetectionSettingKeys.LocalPolicyJson, cancellationToken);
         if (!string.IsNullOrWhiteSpace(localOverrideRaw))
         {
             try
             {
-                _ = JsonSerializer.Deserialize<DetectionPolicyDto>(localOverrideRaw, JsonOptions);
+                var localOverride = JsonSerializer.Deserialize<DetectionPolicyDto>(localOverrideRaw, JsonOptions);
+                if (localOverride is not null)
+                {
+                    // Local endpoint override is intentionally limited to enable/disable only.
+                    effectivePolicy = effectivePolicy with
+                    {
+                        Enabled = localOverride.Enabled,
+                    };
+                }
             }
             catch (Exception ex)
             {
@@ -707,7 +719,7 @@ public sealed class Worker(
             }
         }
 
-        return DetectionPolicyFactory.CreateProductionPolicy(enabled: true);
+        return effectivePolicy;
     }
 
     private async Task HandleForcedUnpairAsync(string reason, IStudentBindingStore studentBindingStore, CancellationToken cancellationToken)

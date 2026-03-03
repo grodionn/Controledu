@@ -6,9 +6,11 @@
   <ItemGroup>
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\ml\artifacts\ai-ui-binary.onnx" Link="models\ai-ui-binary.onnx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-    <Content Include="..\..\ml\artifacts\ai-ui-multiclass.onnx" Link="models\ai-ui-multiclass.onnx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-    <Content Include="..\..\ml\artifacts\labels.txt" Link="models\labels.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\ml\artifacts\ai-ui-binary.onnx" Link="models\ai-ui-binary.onnx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <Content Include="..\..\ml\artifacts\ai-ui-binary.onnx.data" Link="models\ai-ui-binary.onnx.data" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <Content Include="..\..\ml\artifacts\ai-ui-multiclass.onnx" Link="models\ai-ui-multiclass.onnx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <Content Include="..\..\ml\artifacts\ai-ui-multiclass.onnx.data" Link="models\ai-ui-multiclass.onnx.data" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <Content Include="..\..\ml\artifacts\labels.txt" Link="models\labels.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />

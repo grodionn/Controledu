@@ -13,15 +13,17 @@ namespace Controledu.Student.Host;
 public sealed class StudentOverlayWebViewForm : Form
 {
     private const int OverlayWidth = 520;
-    private const int CollapsedOverlayWidth = 280;
+    private const int CollapsedOverlayWidth = 238;
     private const int OverlayHeight = 520;
-    private const int CollapsedOverlayHeight = 166;
+    private const int CollapsedOverlayHeight = 92;
     private const int MinOverlayWidth = 380;
     private const int MinOverlayHeight = 300;
+    private const int MaxOverlayWidth = 600;
+    private const int MaxOverlayHeight = 640;
     private const int TopMargin = 10;
     private const int RightMargin = 10;
     private const int CornerRadius = 18;
-    private const int ResizeBorder = 8;
+    private const int ResizeBorder = 16;
 
     private readonly string _overlayUrl;
     private readonly string _webViewUserDataPath;
@@ -58,6 +60,7 @@ public sealed class StudentOverlayWebViewForm : Form
         Width = OverlayWidth;
         Height = OverlayHeight;
         MinimumSize = new Size(MinOverlayWidth, MinOverlayHeight);
+        MaximumSize = new Size(MaxOverlayWidth, MaxOverlayHeight);
         BackColor = Color.FromArgb(18, 18, 18);
         Padding = new Padding(1);
         DoubleBuffered = true;
@@ -74,8 +77,17 @@ public sealed class StudentOverlayWebViewForm : Form
         Shown += OnShownAsync;
         SizeChanged += (_, _) =>
         {
-            if (!_isCollapsed && Width >= MinOverlayWidth && Height >= MinOverlayHeight)
+            if (!_isCollapsed)
             {
+                var bounded = new Size(
+                    Math.Clamp(Width, MinOverlayWidth, MaxOverlayWidth),
+                    Math.Clamp(Height, MinOverlayHeight, MaxOverlayHeight));
+                if (Size != bounded)
+                {
+                    Size = bounded;
+                    return;
+                }
+
                 _expandedSize = Size;
             }
 
@@ -241,11 +253,22 @@ public sealed class StudentOverlayWebViewForm : Form
         }
 
         _isCollapsed = collapsed;
+        if (collapsed)
+        {
+            MinimumSize = new Size(CollapsedOverlayWidth, CollapsedOverlayHeight);
+            MaximumSize = new Size(CollapsedOverlayWidth, CollapsedOverlayHeight);
+        }
+        else
+        {
+            MinimumSize = new Size(MinOverlayWidth, MinOverlayHeight);
+            MaximumSize = new Size(MaxOverlayWidth, MaxOverlayHeight);
+        }
+
         var nextSize = collapsed
             ? new Size(CollapsedOverlayWidth, CollapsedOverlayHeight)
             : new Size(
-                Math.Max(MinOverlayWidth, _expandedSize.Width),
-                Math.Max(MinOverlayHeight, _expandedSize.Height));
+                Math.Clamp(_expandedSize.Width, MinOverlayWidth, MaxOverlayWidth),
+                Math.Clamp(_expandedSize.Height, MinOverlayHeight, MaxOverlayHeight));
 
         if (Size != nextSize)
         {

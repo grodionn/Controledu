@@ -80,6 +80,97 @@ public sealed class DetectionPipelineTests
         Assert.Contains("reused previous detection", second.Result.Reason, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public async Task AnalyzeAsync_FusedWithMetadataSpecificClass_PrefersSpecificClassOverUnknownAi()
+    {
+        var pipeline = CreatePipelineWithDetectors(
+            new StubDetector(
+                "stub-binary",
+                new DetectionResult(
+                    true,
+                    0.96,
+                    DetectionClass.UnknownAi,
+                    DetectionStageSource.OnnxBinary,
+                    "ONNX binary classifier inference",
+                    "ai-ui-binary.onnx",
+                    null,
+                    false)));
+
+        var settings = new DetectionSettings
+        {
+            Enabled = true,
+            MetadataConfidenceThreshold = 0.64,
+            MlConfidenceThreshold = 0.72,
+            TemporalWindowSize = 1,
+            TemporalRequiredVotes = 1,
+        };
+
+        var decision = await pipeline.AnalyzeAsync(
+            new DetectionObservation
+            {
+                StudentId = "student-001",
+                TimestampUtc = DateTimeOffset.UtcNow,
+                ActiveWindowTitle = "DeepSeek Assistant",
+                ActiveProcessName = "deepseek-desktop",
+            },
+            settings);
+
+        Assert.True(decision.Result.IsAiUiDetected);
+        Assert.Equal(DetectionClass.DeepSeek, decision.Result.Class);
+        Assert.Equal(DetectionStageSource.Fused, decision.Result.StageSource);
+        Assert.Contains("class from MetadataRule", decision.Result.Reason, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AnalyzeAsync_UnknownAiPositiveWithStrongNotAiMulticlass_SuppressesAlert()
+    {
+        var pipeline = CreatePipelineWithDetectors(
+            new StubDetector(
+                "stub-binary",
+                new DetectionResult(
+                    true,
+                    0.96,
+                    DetectionClass.UnknownAi,
+                    DetectionStageSource.OnnxBinary,
+                    "ONNX binary classifier inference",
+                    "ai-ui-binary.onnx",
+                    null,
+                    false)),
+            new StubDetector(
+                "stub-multiclass",
+                new DetectionResult(
+                    false,
+                    0.95,
+                    DetectionClass.None,
+                    DetectionStageSource.OnnxMulticlass,
+                    "ONNX multiclass label: not_ai_ui",
+                    "ai-ui-multiclass.onnx",
+                    ["not_ai_ui"],
+                    false)));
+
+        var settings = new DetectionSettings
+        {
+            Enabled = true,
+            MetadataConfidenceThreshold = 0.64,
+            MlConfidenceThreshold = 0.72,
+            TemporalWindowSize = 1,
+            TemporalRequiredVotes = 1,
+        };
+
+        var decision = await pipeline.AnalyzeAsync(
+            new DetectionObservation
+            {
+                StudentId = "student-001",
+                TimestampUtc = DateTimeOffset.UtcNow,
+            },
+            settings);
+
+        Assert.False(decision.Result.IsAiUiDetected);
+        Assert.Equal(DetectionClass.None, decision.Result.Class);
+        Assert.Equal(DetectionStageSource.OnnxMulticlass, decision.Result.StageSource);
+        Assert.Contains("Suppressed by ONNX multiclass", decision.Result.Reason, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static DetectionPipeline CreatePipelineWithMissingOnnxModel()
     {
         var onnxConfig = new OnnxModelConfig
@@ -98,5 +189,29 @@ public sealed class DetectionPipelineTests
             [onnxDetector],
             new TemporalVotingSmoother(),
             NullLogger<DetectionPipeline>.Instance);
+    }
+
+    private static DetectionPipeline CreatePipelineWithDetectors(params IAiUiDetector[] detectors)
+    {
+        return new DetectionPipeline(
+            new AlwaysAnalyzeFrameChangeFilter(),
+            new WindowMetadataDetector(),
+            detectors,
+            new TemporalVotingSmoother(),
+            NullLogger<DetectionPipeline>.Instance);
+    }
+
+    private sealed class AlwaysAnalyzeFrameChangeFilter : IFrameChangeFilter
+    {
+        public FrameChangeFilterResult Evaluate(DetectionObservation observation, DetectionSettings settings) =>
+            new("stub-hash", true, true);
+    }
+
+    private sealed class StubDetector(string name, DetectionResult? result) : IAiUiDetector
+    {
+        public string Name { get; } = name;
+
+        public Task<DetectionResult?> AnalyzeAsync(DetectionObservation observation, DetectionSettings settings, CancellationToken cancellationToken = default) =>
+            Task.FromResult(result);
     }
 }

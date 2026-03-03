@@ -65,7 +65,7 @@ public sealed class OnnxBinaryAiDetector : IAiUiDetector, IDisposable
                 confidence = probabilities.Length > 1 ? probabilities[1] : probabilities[0];
             }
 
-            var isPositive = confidence >= _config.BinaryThreshold;
+            var isPositive = confidence >= 0.5d;
             var detection = new DetectionResult(
                 isPositive,
                 Math.Clamp(confidence, 0, 1),

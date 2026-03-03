@@ -170,3 +170,25 @@ Fuse OCR with your ONNX model later:
 ```bash
 python ml/generate_realtime_text_dataset.py --dataset-root dataset --preview --onnx-model ml/artifacts/ai-ui-binary.onnx --onnx-labels ml/artifacts/binary-labels.json --text-weight 0.65 --model-weight 0.35
 ```
+
+## Manual fixed-label frame generator
+
+When you want a clean `not_ai_ui` session (or any single class), use manual capture:
+
+```bash
+# capture only non-AI interfaces, all frames labeled as not_ai_ui
+python ml/generate_manual_frame_labels.py --dataset-root dataset --label not_ai_ui --preview --fps 2 --min-hash-distance 10
+```
+
+Useful options:
+
+```bash
+# run exactly 15 minutes
+python ml/generate_manual_frame_labels.py --dataset-root dataset --label not_ai_ui --duration-seconds 900
+
+# capture a fixed region (faster and cleaner)
+python ml/generate_manual_frame_labels.py --dataset-root dataset --label not_ai_ui --capture-left 0 --capture-top 0 --capture-width 1920 --capture-height 1080
+
+# lower duplicate filtering if pages change slowly
+python ml/generate_manual_frame_labels.py --dataset-root dataset --label not_ai_ui --min-hash-distance 6
+```

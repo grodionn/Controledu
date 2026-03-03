@@ -93,6 +93,11 @@ public sealed class DetectionPipeline(
             return DetectionResult.None();
         }
 
+        var strongestNegative = candidates
+            .Where(static candidate => !candidate.IsAiUiDetected)
+            .OrderByDescending(static candidate => candidate.Confidence)
+            .FirstOrDefault();
+
         var accepted = candidates
             .Where(candidate =>
                 candidate.IsAiUiDetected
@@ -103,25 +108,72 @@ public sealed class DetectionPipeline(
 
         if (accepted.Length == 0)
         {
-            var strongestNegative = candidates.OrderByDescending(static candidate => candidate.Confidence).First();
-            return strongestNegative with { IsAiUiDetected = false, Class = DetectionClass.None, IsStable = false };
-        }
+            if (strongestNegative is not null)
+            {
+                return strongestNegative with { IsAiUiDetected = false, Class = DetectionClass.None, IsStable = false };
+            }
 
-        if (accepted.Length == 1)
-        {
-            return accepted[0] with { IsStable = false };
+            return DetectionResult.None();
         }
 
         var best = accepted[0];
+        var hasOnlyUnknownPositives = accepted.All(static candidate => candidate.Class == DetectionClass.UnknownAi);
+        var strongNotAiMulticlass = candidates
+            .Where(candidate =>
+                !candidate.IsAiUiDetected
+                && candidate.StageSource == DetectionStageSource.OnnxMulticlass
+                && candidate.Class == DetectionClass.None
+                && candidate.Confidence >= settings.MlConfidenceThreshold)
+            .OrderByDescending(static candidate => candidate.Confidence)
+            .FirstOrDefault();
+
+        if (hasOnlyUnknownPositives
+            && strongNotAiMulticlass is not null
+            && strongNotAiMulticlass.Confidence + 0.03 >= best.Confidence)
+        {
+            return strongNotAiMulticlass with
+            {
+                IsAiUiDetected = false,
+                Class = DetectionClass.None,
+                Reason = "Suppressed by ONNX multiclass not_ai_ui signal.",
+                IsStable = false,
+            };
+        }
+
+        var strongestSpecific = accepted
+            .Where(static candidate => candidate.Class != DetectionClass.None && candidate.Class != DetectionClass.UnknownAi)
+            .OrderByDescending(static candidate => candidate.Confidence)
+            .FirstOrDefault();
+        var resolvedClass = strongestSpecific?.Class ?? best.Class;
+        var classResolvedByAnotherStage = strongestSpecific is not null && strongestSpecific.Class != best.Class;
+
+        if (accepted.Length == 1)
+        {
+            var singleReason = classResolvedByAnotherStage
+                ? $"{best.Reason} | class from {strongestSpecific!.StageSource}"
+                : best.Reason;
+            return best with
+            {
+                Class = resolvedClass,
+                Reason = singleReason,
+                IsStable = false,
+            };
+        }
+
         var mergedKeywords = accepted
             .SelectMany(static result => result.TriggeredKeywords ?? Array.Empty<string>())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
         var reason = string.Join(" + ", accepted.Select(static result => result.StageSource.ToString()));
+        if (classResolvedByAnotherStage)
+        {
+            reason = $"{reason} | class from {strongestSpecific!.StageSource}";
+        }
 
         return best with
         {
+            Class = resolvedClass,
             StageSource = DetectionStageSource.Fused,
             Reason = $"Fused: {reason}",
             TriggeredKeywords = mergedKeywords,

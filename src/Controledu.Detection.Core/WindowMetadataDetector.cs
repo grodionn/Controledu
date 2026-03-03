@@ -1,4 +1,4 @@
-﻿using Controledu.Detection.Abstractions;
+using Controledu.Detection.Abstractions;
 
 namespace Controledu.Detection.Core;
 
@@ -26,6 +26,20 @@ public sealed class WindowMetadataDetector : IAiUiDetector
         ["meta.ai"] = DetectionClass.MetaAi,
     };
 
+    private static readonly HashSet<string> BrowserProcessNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "chrome",
+        "msedge",
+        "firefox",
+        "opera",
+        "opera_gx",
+        "brave",
+        "vivaldi",
+        "yandexbrowser",
+        "chromium",
+        "iexplore",
+    };
+
     /// <inheritdoc />
     public string Name => nameof(WindowMetadataDetector);
 
@@ -35,63 +49,102 @@ public sealed class WindowMetadataDetector : IAiUiDetector
         ArgumentNullException.ThrowIfNull(observation);
         ArgumentNullException.ThrowIfNull(settings);
 
-        var title = observation.ActiveWindowTitle;
-        var process = observation.ActiveProcessName;
-        var url = observation.BrowserHintUrl;
+        var title = observation.ActiveWindowTitle?.Trim();
+        var process = observation.ActiveProcessName?.Trim();
+        var url = observation.BrowserHintUrl?.Trim();
 
         if (string.IsNullOrWhiteSpace(title) && string.IsNullOrWhiteSpace(process) && string.IsNullOrWhiteSpace(url))
         {
             return Task.FromResult<DetectionResult?>(null);
         }
 
-        var combined = string.Join(
-            " ",
-            new[] { title, process, url }
-                .Where(static x => !string.IsNullOrWhiteSpace(x))
-                .Select(static x => x!.ToLowerInvariant()));
+        var normalizedTitle = title?.ToLowerInvariant() ?? string.Empty;
+        var normalizedProcess = process?.ToLowerInvariant() ?? string.Empty;
+        var normalizedUrl = url?.ToLowerInvariant() ?? string.Empty;
 
-        foreach (var safePattern in settings.WhitelistKeywords)
+        var whitelistMatch = FindWhitelistMatch(settings.WhitelistKeywords, normalizedTitle, normalizedProcess, normalizedUrl);
+        if (whitelistMatch is not null)
         {
-            if (!string.IsNullOrWhiteSpace(safePattern) && combined.Contains(safePattern.Trim(), StringComparison.OrdinalIgnoreCase))
-            {
-                return Task.FromResult<DetectionResult?>(
-                    new DetectionResult(
-                        false,
-                        0,
-                        DetectionClass.None,
-                        DetectionStageSource.MetadataRule,
-                        $"Whitelist match: {safePattern}",
-                        null,
-                        [safePattern],
-                        false));
-            }
+            return Task.FromResult<DetectionResult?>(
+                new DetectionResult(
+                    false,
+                    0,
+                    DetectionClass.None,
+                    DetectionStageSource.MetadataRule,
+                    $"Whitelist match: {whitelistMatch}",
+                    null,
+                    [whitelistMatch],
+                    false));
         }
 
-        var matched = new List<string>();
+        var matchedKeywords = new List<string>();
         var detectedClass = DetectionClass.None;
+        var titleHits = 0;
+        var processHits = 0;
+        var urlHits = 0;
 
-        foreach (var keyword in settings.Keywords)
+        foreach (var keywordRaw in settings.Keywords)
         {
+            var keyword = keywordRaw?.Trim();
             if (string.IsNullOrWhiteSpace(keyword))
             {
                 continue;
             }
 
-            if (!combined.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+            var normalizedKeyword = keyword.ToLowerInvariant();
+            var inTitle = ContainsPattern(normalizedTitle, normalizedKeyword);
+            var inProcess = ContainsPattern(normalizedProcess, normalizedKeyword);
+            var inUrl = ContainsPattern(normalizedUrl, normalizedKeyword);
+            if (!inTitle && !inProcess && !inUrl)
             {
                 continue;
             }
 
-            matched.Add(keyword);
-            if (detectedClass == DetectionClass.None && ClassMap.TryGetValue(keyword.Trim(), out var mappedClass))
+            matchedKeywords.Add(keyword);
+            if (inTitle)
+            {
+                titleHits++;
+            }
+
+            if (inProcess)
+            {
+                processHits++;
+            }
+
+            if (inUrl)
+            {
+                urlHits++;
+            }
+
+            if (detectedClass == DetectionClass.None && ClassMap.TryGetValue(normalizedKeyword, out var mappedClass))
             {
                 detectedClass = mappedClass;
             }
         }
 
-        if (matched.Count == 0)
+        if (matchedKeywords.Count == 0)
         {
             return Task.FromResult<DetectionResult?>(null);
+        }
+
+        var isBrowser = BrowserProcessNames.Contains(normalizedProcess);
+        var hasUrlEvidence = urlHits > 0;
+        var hasStrongProcessEvidence = processHits > 0 && !isBrowser;
+        var hasMultiKeywordEvidence = matchedKeywords.Count >= 2;
+        var hasCrossFieldEvidence = titleHits > 0 && processHits > 0;
+
+        if (!hasUrlEvidence && !hasStrongProcessEvidence && !hasMultiKeywordEvidence && !hasCrossFieldEvidence)
+        {
+            return Task.FromResult<DetectionResult?>(
+                new DetectionResult(
+                    false,
+                    0,
+                    DetectionClass.None,
+                    DetectionStageSource.MetadataRule,
+                    "Metadata keyword match ignored: insufficient evidence.",
+                    null,
+                    matchedKeywords,
+                    false));
         }
 
         if (detectedClass == DetectionClass.None)
@@ -99,11 +152,18 @@ public sealed class WindowMetadataDetector : IAiUiDetector
             detectedClass = DetectionClass.UnknownAi;
         }
 
-        var confidence = 0.62 + Math.Min(0.30, matched.Count * 0.08);
-        if (!string.IsNullOrWhiteSpace(url))
+        var confidence = 0.58 + Math.Min(0.24, matchedKeywords.Count * 0.07);
+        if (processHits > 0)
         {
-            confidence = Math.Min(0.98, confidence + 0.08);
+            confidence += 0.06;
         }
+
+        if (hasUrlEvidence)
+        {
+            confidence += 0.12;
+        }
+
+        confidence = Math.Clamp(confidence, 0, 0.98);
 
         return Task.FromResult<DetectionResult?>(
             new DetectionResult(
@@ -113,7 +173,106 @@ public sealed class WindowMetadataDetector : IAiUiDetector
                 DetectionStageSource.MetadataRule,
                 "Metadata keyword rule matched",
                 null,
-                matched,
+                matchedKeywords,
                 false));
+    }
+
+    private static string? FindWhitelistMatch(IEnumerable<string> whitelist, string title, string process, string url)
+    {
+        foreach (var raw in whitelist)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                continue;
+            }
+
+            var pattern = raw.Trim().ToLowerInvariant();
+            foreach (var candidate in ExpandWhitelistCandidates(pattern))
+            {
+                if (ContainsPattern(title, candidate)
+                    || ContainsPattern(process, candidate)
+                    || ContainsPattern(url, candidate))
+                {
+                    return raw.Trim();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> ExpandWhitelistCandidates(string pattern)
+    {
+        yield return pattern;
+
+        var withoutScheme = pattern;
+        if (withoutScheme.Contains("://", StringComparison.Ordinal))
+        {
+            var separatorIndex = withoutScheme.IndexOf("://", StringComparison.Ordinal);
+            withoutScheme = separatorIndex >= 0 ? withoutScheme[(separatorIndex + 3)..] : withoutScheme;
+        }
+
+        var slashIndex = withoutScheme.IndexOf('/');
+        if (slashIndex >= 0)
+        {
+            withoutScheme = withoutScheme[..slashIndex];
+        }
+
+        if (string.IsNullOrWhiteSpace(withoutScheme))
+        {
+            yield break;
+        }
+
+        var host = withoutScheme.Trim();
+        if (!string.Equals(host, pattern, StringComparison.Ordinal))
+        {
+            yield return host;
+        }
+
+        if (host.StartsWith("www.", StringComparison.Ordinal))
+        {
+            var withoutWww = host[4..];
+            if (!string.IsNullOrWhiteSpace(withoutWww))
+            {
+                yield return withoutWww;
+                host = withoutWww;
+            }
+        }
+
+        var labels = host.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (labels.Length == 2 && labels[0].Length >= 8)
+        {
+            yield return labels[0];
+        }
+    }
+
+    private static bool ContainsPattern(string source, string pattern)
+    {
+        if (string.IsNullOrWhiteSpace(source) || string.IsNullOrWhiteSpace(pattern))
+        {
+            return false;
+        }
+
+        var startIndex = 0;
+        while (startIndex < source.Length)
+        {
+            var index = source.IndexOf(pattern, startIndex, StringComparison.OrdinalIgnoreCase);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            var beforeOk = index == 0 || !char.IsLetterOrDigit(source[index - 1]);
+            var end = index + pattern.Length;
+            var afterOk = end >= source.Length || !char.IsLetterOrDigit(source[end]);
+            if (beforeOk && afterOk)
+            {
+                return true;
+            }
+
+            startIndex = index + 1;
+        }
+
+        return false;
     }
 }

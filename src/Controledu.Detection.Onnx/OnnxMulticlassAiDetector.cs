@@ -61,7 +61,7 @@ public sealed class OnnxMulticlassAiDetector : IAiUiDetector, IDisposable
             var confidence = probabilities[bestIndex];
             var label = bestIndex >= 0 && bestIndex < _labels.Length ? _labels[bestIndex] : "unknown_ai";
             var mappedClass = MapLabel(label);
-            var isPositive = mappedClass != DetectionClass.None && confidence >= _config.MulticlassThreshold;
+            var isPositive = mappedClass != DetectionClass.None;
 
             var result = new DetectionResult(
                 isPositive,

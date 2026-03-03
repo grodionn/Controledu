@@ -64,4 +64,49 @@ public sealed class WindowMetadataDetectorTests
 
         Assert.Null(result);
     }
+
+    [Fact]
+    public async Task AnalyzeAsync_WithSingleBrowserTitleKeyword_ReturnsNegative()
+    {
+        var detector = new WindowMetadataDetector();
+        var settings = new DetectionSettings();
+
+        var result = await detector.AnalyzeAsync(
+            new DetectionObservation
+            {
+                StudentId = "student-001",
+                ActiveWindowTitle = "DeepSeek",
+                ActiveProcessName = "msedge",
+            },
+            settings);
+
+        Assert.NotNull(result);
+        Assert.False(result.IsAiUiDetected);
+        Assert.Equal(DetectionClass.None, result.Class);
+        Assert.Contains("insufficient evidence", result.Reason, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AnalyzeAsync_WithWikipediaTitleAndWhitelistDomain_ReturnsNegative()
+    {
+        var detector = new WindowMetadataDetector();
+        var settings = new DetectionSettings
+        {
+            WhitelistKeywords = ["wikipedia.org"],
+        };
+
+        var result = await detector.AnalyzeAsync(
+            new DetectionObservation
+            {
+                StudentId = "student-001",
+                ActiveWindowTitle = "DeepSeek - Wikipedia",
+                ActiveProcessName = "msedge",
+            },
+            settings);
+
+        Assert.NotNull(result);
+        Assert.False(result.IsAiUiDetected);
+        Assert.Equal(DetectionClass.None, result.Class);
+        Assert.Contains("Whitelist match", result.Reason, StringComparison.OrdinalIgnoreCase);
+    }
 }

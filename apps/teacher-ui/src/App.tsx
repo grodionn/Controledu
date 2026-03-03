@@ -2591,12 +2591,12 @@ function App() {
                 </div>
               </div>
 
-              <div className="min-h-0 rounded-lg border border-border bg-background/70 p-3">
+              <div className="min-h-0 flex flex-col rounded-lg border border-border bg-background/70 p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <p className="text-sm font-medium">{t("detectionLiveAlerts")}</p>
                   <Badge variant="secondary">{filteredAiAlerts.length}</Badge>
                 </div>
-                <ScrollArea.Root className="h-full overflow-hidden">
+                <ScrollArea.Root className="min-h-0 flex-1 overflow-hidden">
                   <ScrollArea.Viewport className="h-full pr-2">
                     <div className="space-y-2">
                       {filteredAiAlerts.length === 0 ? (
@@ -2629,7 +2629,7 @@ function App() {
               <CardTitle>{t("settingsTitle")}</CardTitle>
               <CardDescription>{t("settingsDesc")}</CardDescription>
             </CardHeader>
-            <CardContent className="min-h-0 h-full">
+            <CardContent className="min-h-0 h-full overflow-y-auto pr-1">
               <div className="rounded-lg border border-border bg-background/70 p-3 space-y-3">
                 <label className="flex items-start gap-2 text-sm">
                   <input
