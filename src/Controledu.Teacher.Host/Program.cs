@@ -49,11 +49,17 @@ internal static class Program
                 : hostOptions.UiUrl;
 
             var desktopNotificationService = serverApp.Services.GetRequiredService<IDesktopNotificationService>();
-            using var form = new Form1(uiUrl!, hostOptions, autoUpdateOptions, desktopNotificationService);
+            var hostControlService = serverApp.Services.GetRequiredService<IHostControlService>();
+            using var form = new Form1(uiUrl!, hostOptions, autoUpdateOptions, desktopNotificationService, hostControlService);
             Application.Run(form);
         }
         catch (Exception ex)
         {
+            if (TryActivateExistingInstance(args))
+            {
+                return;
+            }
+
             MessageBox.Show(
                 $"Console host failed to start.\n\n{ex}",
                 "Controledu Console",
@@ -80,4 +86,45 @@ internal static class Program
 
     [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern int SetCurrentProcessExplicitAppUserModelID(string appID);
+
+    private static bool TryActivateExistingInstance(string[] args)
+    {
+        try
+        {
+            var options = LoadTeacherServerOptions(args);
+            using var http = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(2),
+            };
+
+            var response = http.PostAsync($"http://127.0.0.1:{options.HttpPort}/api/window/show", content: null)
+                .GetAwaiter()
+                .GetResult();
+
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static TeacherServerOptions LoadTeacherServerOptions(string[] args)
+    {
+        var environmentName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+            ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+            ?? "Production";
+
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("hostsettings.json", optional: true, reloadOnChange: false)
+            .AddJsonFile($"hostsettings.{environmentName}.json", optional: true, reloadOnChange: false)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+            .AddJsonFile($"appsettings.{environmentName}.json", optional: true, reloadOnChange: false)
+            .AddEnvironmentVariables()
+            .AddCommandLine(args)
+            .Build();
+
+        return configuration.GetSection(TeacherServerOptions.SectionName).Get<TeacherServerOptions>() ?? new TeacherServerOptions();
+    }
 }

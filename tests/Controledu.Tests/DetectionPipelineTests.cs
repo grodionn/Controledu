@@ -122,7 +122,7 @@ public sealed class DetectionPipelineTests
     }
 
     [Fact]
-    public async Task AnalyzeAsync_UnknownAiPositiveWithStrongNotAiMulticlass_SuppressesAlert()
+    public async Task AnalyzeAsync_UnknownAiPositiveWithStrongNotAiMulticlass_RequiresMetadataSignature()
     {
         var pipeline = CreatePipelineWithDetectors(
             new StubDetector(
@@ -168,7 +168,86 @@ public sealed class DetectionPipelineTests
         Assert.False(decision.Result.IsAiUiDetected);
         Assert.Equal(DetectionClass.None, decision.Result.Class);
         Assert.Equal(DetectionStageSource.OnnxMulticlass, decision.Result.StageSource);
-        Assert.Contains("Suppressed by ONNX multiclass", decision.Result.Reason, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("metadata signature required", decision.Result.Reason, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AnalyzeAsync_MlOnlyPositiveWithoutMetadata_ReturnsNegative()
+    {
+        var pipeline = CreatePipelineWithDetectors(
+            new StubDetector(
+                "stub-binary",
+                new DetectionResult(
+                    true,
+                    0.96,
+                    DetectionClass.UnknownAi,
+                    DetectionStageSource.OnnxBinary,
+                    "ONNX binary classifier inference",
+                    "ai-ui-binary.onnx",
+                    null,
+                    false)));
+
+        var settings = new DetectionSettings
+        {
+            Enabled = true,
+            MetadataConfidenceThreshold = 0.64,
+            MlConfidenceThreshold = 0.72,
+            TemporalWindowSize = 1,
+            TemporalRequiredVotes = 1,
+        };
+
+        var decision = await pipeline.AnalyzeAsync(
+            new DetectionObservation
+            {
+                StudentId = "student-001",
+                TimestampUtc = DateTimeOffset.UtcNow,
+            },
+            settings);
+
+        Assert.False(decision.Result.IsAiUiDetected);
+        Assert.Equal(DetectionClass.None, decision.Result.Class);
+        Assert.Equal(DetectionStageSource.None, decision.Result.StageSource);
+        Assert.Contains("metadata signature required", decision.Result.Reason, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AnalyzeAsync_MlPositiveWithWeakMetadataSignature_IsAllowed()
+    {
+        var pipeline = CreatePipelineWithDetectors(
+            new StubDetector(
+                "stub-binary",
+                new DetectionResult(
+                    true,
+                    0.94,
+                    DetectionClass.UnknownAi,
+                    DetectionStageSource.OnnxBinary,
+                    "ONNX binary classifier inference",
+                    "ai-ui-binary.onnx",
+                    null,
+                    false)));
+
+        var settings = new DetectionSettings
+        {
+            Enabled = true,
+            MetadataConfidenceThreshold = 0.64,
+            MlConfidenceThreshold = 0.72,
+            TemporalWindowSize = 1,
+            TemporalRequiredVotes = 1,
+        };
+
+        var decision = await pipeline.AnalyzeAsync(
+            new DetectionObservation
+            {
+                StudentId = "student-001",
+                TimestampUtc = DateTimeOffset.UtcNow,
+                ActiveWindowTitle = "chatgpt",
+                ActiveProcessName = "chrome",
+            },
+            settings);
+
+        Assert.True(decision.Result.IsAiUiDetected);
+        Assert.Equal(DetectionClass.UnknownAi, decision.Result.Class);
+        Assert.Equal(DetectionStageSource.OnnxBinary, decision.Result.StageSource);
     }
 
     private static DetectionPipeline CreatePipelineWithMissingOnnxModel()

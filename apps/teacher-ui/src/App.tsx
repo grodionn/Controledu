@@ -1209,8 +1209,17 @@ function App() {
 
         setFrames((current) => {
           const previous = current[frame.clientId];
-          if (previous && previous.sequence >= frame.sequence) {
-            return current;
+          if (previous) {
+            const previousCapturedAtMs = Date.parse(previous.capturedAtUtc);
+            const incomingCapturedAtMs = Date.parse(frame.capturedAtUtc);
+            const incomingIsNewerBySequence = frame.sequence > previous.sequence;
+            const incomingIsNewerByTimestamp =
+              Number.isFinite(incomingCapturedAtMs)
+              && (!Number.isFinite(previousCapturedAtMs) || incomingCapturedAtMs > previousCapturedAtMs);
+
+            if (!incomingIsNewerBySequence && !incomingIsNewerByTimestamp) {
+              return current;
+            }
           }
 
           return {
@@ -1974,6 +1983,7 @@ function App() {
             <div className="space-y-0.5">
               <h1 className="text-xl font-semibold tracking-tight lg:text-2xl">{t("appTitle")}</h1>
               <p className="text-xs text-muted-foreground">{t("headerHint")}</p>
+              <p className="text-[10px] text-muted-foreground/80">{t("checkingUpdatesHint")}</p>
             </div>
             <div className="flex flex-wrap items-center justify-end gap-2">
               <div className="flex max-w-full flex-wrap items-center gap-1 rounded-md border border-border bg-card/50 p-0.5">
@@ -2448,6 +2458,15 @@ function App() {
             </CardHeader>
             <CardContent className="grid h-full min-h-0 gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
               <div className="min-h-0">
+                <FocusedChatCard
+                  selectedStudent={selectedStudent}
+                  messages={selectedChatMessages}
+                  isLoadingHistory={chatHistoryLoadingFor === selectedStudentId}
+                  isSending={sendTeacherChat.isPending}
+                  statusText={teacherChatStatus?.text}
+                  statusTone={teacherChatStatus?.tone}
+                  onSend={handleFocusedTeacherChatSend}
+                />
               </div>
 
               <aside className="sticky top-3 flex min-h-0 self-start flex-col rounded-xl border border-border bg-background/75 p-3 max-h-[calc(100vh-7.5rem)]">

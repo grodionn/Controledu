@@ -22,6 +22,8 @@ public sealed class DetectionPipeline(
     ITemporalSmoother temporalSmoother,
     ILogger<DetectionPipeline> logger)
 {
+    private const double MlMetadataGateThresholdFloor = 0.35;
+    private const double WeakMetadataSignatureConfidence = 0.40;
     private DetectionResult? _lastRawResult;
 
     /// <summary>
@@ -116,6 +118,31 @@ public sealed class DetectionPipeline(
             return DetectionResult.None();
         }
 
+        var mlMetadataGateThreshold = Math.Min(settings.MetadataConfidenceThreshold, MlMetadataGateThresholdFloor);
+        var strongestMetadataSignal = candidates
+            .Where(static candidate => candidate.StageSource == DetectionStageSource.MetadataRule)
+            .Select(GetMetadataSignalStrength)
+            .DefaultIfEmpty(0d)
+            .Max();
+        var hasAcceptedMlPositive = accepted.Any(candidate =>
+            candidate.StageSource is DetectionStageSource.OnnxBinary or DetectionStageSource.OnnxMulticlass);
+
+        if (hasAcceptedMlPositive && strongestMetadataSignal < mlMetadataGateThreshold)
+        {
+            if (strongestNegative is not null)
+            {
+                return strongestNegative with
+                {
+                    IsAiUiDetected = false,
+                    Class = DetectionClass.None,
+                    Reason = "Suppressed: metadata signature required for ML verdict.",
+                    IsStable = false,
+                };
+            }
+
+            return DetectionResult.None("Suppressed: metadata signature required for ML verdict.");
+        }
+
         var best = accepted[0];
         var hasOnlyUnknownPositives = accepted.All(static candidate => candidate.Class == DetectionClass.UnknownAi);
         var strongNotAiMulticlass = candidates
@@ -179,6 +206,23 @@ public sealed class DetectionPipeline(
             TriggeredKeywords = mergedKeywords,
             IsStable = false,
         };
+    }
+
+    private static double GetMetadataSignalStrength(DetectionResult candidate)
+    {
+        if (candidate.IsAiUiDetected)
+        {
+            return candidate.Confidence;
+        }
+
+        // Weak metadata signature: keyword matched in one field only.
+        if (candidate.TriggeredKeywords is { Count: > 0 }
+            && candidate.Reason.Contains("insufficient evidence", StringComparison.OrdinalIgnoreCase))
+        {
+            return WeakMetadataSignatureConfidence;
+        }
+
+        return 0;
     }
 }
 

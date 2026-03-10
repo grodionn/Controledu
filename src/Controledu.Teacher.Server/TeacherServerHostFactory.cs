@@ -7,6 +7,7 @@ using Controledu.Teacher.Server.Options;
 using Controledu.Teacher.Server.Services;
 using Serilog;
 using System.Globalization;
+using System.Net;
 using System.Text.Json.Serialization;
 
 namespace Controledu.Teacher.Server;
@@ -78,6 +79,7 @@ public static class TeacherServerHostFactory
         builder.Services.AddSingleton<IStudentSignalGate, StudentSignalGate>();
         builder.Services.AddSingleton<IStudentChatService, StudentChatService>();
         builder.Services.AddSingleton<IRemoteControlSessionService, RemoteControlSessionService>();
+        builder.Services.AddSingleton<IHostControlService, HostControlService>();
         builder.Services.AddHostedService<UdpDiscoveryResponderService>();
 
         builder.WebHost.ConfigureKestrel((context, kestrel) =>
@@ -108,6 +110,16 @@ public static class TeacherServerHostFactory
         app.UseStaticFiles();
 
         app.MapControllers();
+        app.MapPost("/api/window/show", (HttpContext context, IHostControlService hostControlService) =>
+        {
+            if (context.Connection.RemoteIpAddress is not null && !IPAddress.IsLoopback(context.Connection.RemoteIpAddress))
+            {
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            }
+
+            hostControlService.RequestShow();
+            return Results.Ok(new { ok = true, message = "Show requested." });
+        });
         app.MapHub<StudentHub>(HubRoutes.StudentHub);
         app.MapHub<TeacherHub>(HubRoutes.TeacherHub);
         app.MapFallbackToFile("index.html");

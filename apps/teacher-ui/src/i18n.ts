@@ -4,6 +4,7 @@ export const teacherDictionary: Record<UiLanguage, Record<string, string>> = {
   ru: {
     appTitle: "Controledu",
     headerHint: "Единая панель управления устройствами.",
+    checkingUpdatesHint: "Проверка обновлений...",
     teacherConsole: "Console",
     classroomMonitoring: "Мониторинг устройств",
     classroomDesc: "Просмотр устройств, безопасное подключение и централизованная передача файлов.",
@@ -169,6 +170,7 @@ export const teacherDictionary: Record<UiLanguage, Record<string, string>> = {
   en: {
     appTitle: "Controledu",
     headerHint: "Unified device operations panel.",
+    checkingUpdatesHint: "Checking for updates...",
     teacherConsole: "Console",
     classroomMonitoring: "Device Monitoring",
     classroomDesc: "Live device visibility, secure onboarding and controlled file dispatch.",
@@ -334,6 +336,7 @@ export const teacherDictionary: Record<UiLanguage, Record<string, string>> = {
   kz: {
     appTitle: "Controledu",
     headerHint: "Құрылғыларды басқаруға арналған бірыңғай панель.",
+    checkingUpdatesHint: "Жаңартуларды тексеру...",
     teacherConsole: "Console",
     classroomMonitoring: "Құрылғылар мониторингі",
     classroomDesc: "Құрылғыларды көру, қауіпсіз қосу және файлдарды орталықтан тарату.",

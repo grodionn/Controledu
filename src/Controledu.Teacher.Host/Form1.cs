@@ -36,6 +36,7 @@ public partial class Form1 : Form
     private readonly Icon _applicationIcon;
     private readonly NotifyIcon _notifyIcon;
     private readonly IDesktopNotificationService _desktopNotificationService;
+    private readonly IHostControlService _hostControlService;
     private readonly AutoUpdateOptions _autoUpdateOptions;
     private readonly HttpClient? _autoUpdateHttpClient;
     private readonly AutoUpdateClient? _autoUpdateClient;
@@ -50,15 +51,22 @@ public partial class Form1 : Form
     private string? _autoUpdateApprovalVersion;
     private string? _autoUpdateDeferredVersion;
 
-    public Form1(string uiUrl, TeacherHostOptions options, AutoUpdateOptions autoUpdateOptions, IDesktopNotificationService desktopNotificationService)
+    public Form1(
+        string uiUrl,
+        TeacherHostOptions options,
+        AutoUpdateOptions autoUpdateOptions,
+        IDesktopNotificationService desktopNotificationService,
+        IHostControlService hostControlService)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(uiUrl);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(autoUpdateOptions);
         ArgumentNullException.ThrowIfNull(desktopNotificationService);
+        ArgumentNullException.ThrowIfNull(hostControlService);
 
         _uiUrl = uiUrl;
         _desktopNotificationService = desktopNotificationService;
+        _hostControlService = hostControlService;
         _autoUpdateOptions = autoUpdateOptions;
         _webViewUserDataPath = Path.Combine(AppPaths.GetBasePath(), "webview2", "teacher-host");
         Directory.CreateDirectory(_webViewUserDataPath);
@@ -84,6 +92,7 @@ public partial class Form1 : Form
             Text = "Controledu",
         };
         _desktopNotificationService.Published += OnDesktopNotificationPublished;
+        _hostControlService.ShowRequested += OnShowRequested;
         Icon = _applicationIcon;
 
         Text = options.WindowTitle;
@@ -166,6 +175,7 @@ public partial class Form1 : Form
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
         _desktopNotificationService.Published -= OnDesktopNotificationPublished;
+        _hostControlService.ShowRequested -= OnShowRequested;
         _autoUpdateTimer?.Stop();
         _autoUpdateTimer?.Dispose();
         _autoUpdateClient?.Dispose();
@@ -210,6 +220,38 @@ public partial class Form1 : Form
         _notifyIcon.BalloonTipText = text;
         _notifyIcon.BalloonTipIcon = tooltipIcon;
         _notifyIcon.ShowBalloonTip(3500);
+    }
+
+    private void OnShowRequested()
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        if (InvokeRequired)
+        {
+            BeginInvoke((Action)OnShowRequested);
+            return;
+        }
+
+        RestoreAndActivateWindow();
+    }
+
+    private void RestoreAndActivateWindow()
+    {
+        if (WindowState == FormWindowState.Minimized)
+        {
+            WindowState = FormWindowState.Normal;
+        }
+
+        Show();
+        BringToFront();
+        Activate();
+
+        // Nudge the shell to ensure z-order activation when app was backgrounded.
+        TopMost = true;
+        TopMost = false;
     }
 
     private static void ConfigureWebViewSettings(CoreWebView2 coreWebView2)
