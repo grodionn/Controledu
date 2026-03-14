@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState, type SVGProps } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { useMutation } from "@tanstack/react-query";
 import * as ScrollArea from "@radix-ui/react-scroll-area";
@@ -18,7 +18,7 @@ import {
   TeacherStudentChatMessage,
   UploadInitResponse,
 } from "./lib/types";
-import { interpolate, teacherDictionary, UiLanguage } from "./i18n";
+import { interpolate, UiLanguage } from "./i18n";
 import { cn, sha256Hex, toDataUrl } from "./lib/utils";
 import { AccessibilityAssignmentCard } from "./components/accessibility-assignment-card";
 import { TeacherTtsCard, type TeacherTtsDraft } from "./components/teacher-tts-card";
@@ -28,266 +28,47 @@ import { Badge } from "./components/ui/badge";
 import { Button } from "./components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
 import { Input } from "./components/ui/input";
-
-const CHUNK_SIZE = 256 * 1024;
-const THEME_KEY = "controledu.teacher.theme";
-const LANG_KEY = "controledu.teacher.lang";
-const AI_WARNINGS_KEY = "controledu.teacher.ai-warnings-enabled";
-const DESKTOP_NOTIFICATIONS_KEY = "controledu.teacher.desktop-notifications-enabled";
-const SOUND_NOTIFICATIONS_KEY = "controledu.teacher.sound-notifications-enabled";
-const NOTIFICATION_VOLUME_KEY = "controledu.teacher.notification-volume";
-const SELFHOST_TTS_URL_KEY = "controledu.teacher.selfhost-tts-url";
-const SELFHOST_TTS_TOKEN_KEY = "controledu.teacher.selfhost-tts-token";
-const STT_MIC_DEVICE_ID_KEY = "controledu.teacher.stt-microphone-device-id";
-const STT_LANGUAGE_KEY = "controledu.teacher.stt-language";
-const THUMBNAIL_FRAME_INTERVAL_MS = 200;
-const STT_RECORDER_SLICE_MS = 3600;
-const STT_CAPTION_SEND_MIN_INTERVAL_MS = 900;
-
-type Theme = "light" | "dark";
-
-type FrameState = {
-  url: string;
-  sequence: number;
-  capturedAtUtc: string;
-  width: number;
-  height: number;
-};
-
-type ProgressPayload = {
-  clientId: string;
-  error?: string | null;
-  completed: boolean;
-  completedChunks: number;
-  totalChunks: number;
-};
-
-type UiToast = {
-  id: string;
-  kind: "handRaise" | "aiDetected" | "chatMessage";
-  studentName: string;
-  detectionClass?: string;
-  confidence?: number;
-  messageText?: string;
-  createdAtMs: number;
-};
-
-type RemoteControlUiSession = {
-  sessionId: string;
-  state: string;
-  message?: string | null;
-  updatedAtMs: number;
-};
-
-type TeacherSttTranscribeResponse = {
-  ok: boolean;
-  text: string;
-  language?: string | null;
-  task?: string | null;
-  duration?: number | null;
-  durationAfterVad?: number | null;
-};
-
-type TeacherLiveCaptionRequestDto = {
-  text: string;
-  isFinal?: boolean;
-  clear?: boolean;
-  captionId?: string;
-  sequence?: number;
-  ttlMs?: number;
-  languageCode?: string;
-  teacherDisplayName?: string;
-};
-
-type AudioInputDevice = {
-  deviceId: string;
-  label: string;
-};
-
-async function readResponseText(response: Response): Promise<string> {
-  try {
-    return await response.text();
-  } catch {
-    return "";
-  }
-}
-
-async function fetchJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, init);
-  const bodyText = await readResponseText(response);
-
-  if (!response.ok) {
-    throw new Error(bodyText || `Request failed (${response.status}).`);
-  }
-
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) {
-    throw new Error("Endpoint returned non-JSON response.");
-  }
-
-  return JSON.parse(bodyText) as T;
-}
-
-const fileLikeExtensions = new Set([
-  "exe",
-  "dll",
-  "msi",
-  "json",
-  "txt",
-  "log",
-  "png",
-  "jpg",
-  "jpeg",
-  "gif",
-  "webp",
-  "zip",
-  "7z",
-  "rar",
-  "pdf",
-  "doc",
-  "docx",
-  "xls",
-  "xlsx",
-]);
-
-function humanizeProgramNames(raw: string): string {
-  return raw.replace(/\b[A-Za-z][A-Za-z0-9_-]*(?:\.[A-Za-z][A-Za-z0-9_-]*)+\b/g, (token) => {
-    if (/^\d+(?:\.\d+)+$/.test(token)) {
-      return token;
-    }
-
-    const parts = token.split(".");
-    const last = parts[parts.length - 1]?.toLowerCase() ?? "";
-    if (fileLikeExtensions.has(last)) {
-      return token;
-    }
-
-    const looksLikeDomain = parts.length <= 2 && parts.every((part) => part === part.toLowerCase());
-    if (looksLikeDomain) {
-      return token;
-    }
-
-    return parts
-      .map((part) => part.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2"))
-      .join(" ");
-  });
-}
-
-type IconProps = SVGProps<SVGSVGElement>;
-
-function IconMonitor(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <rect x="3" y="4" width="18" height="12" rx="2" />
-      <path d="M8 20h8" />
-      <path d="M12 16v4" />
-    </svg>
-  );
-}
-
-function IconUpload(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M12 16V6" />
-      <path d="m8.5 9.5 3.5-3.5 3.5 3.5" />
-      <path d="M4 16.5v1A2.5 2.5 0 0 0 6.5 20h11a2.5 2.5 0 0 0 2.5-2.5v-1" />
-    </svg>
-  );
-}
-
-function IconGrid(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <rect x="3" y="3" width="8" height="8" rx="1.5" />
-      <rect x="13" y="3" width="8" height="8" rx="1.5" />
-      <rect x="3" y="13" width="8" height="8" rx="1.5" />
-      <rect x="13" y="13" width="8" height="8" rx="1.5" />
-    </svg>
-  );
-}
-
-function IconList(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M9 6h11" />
-      <path d="M9 12h11" />
-      <path d="M9 18h11" />
-      <circle cx="4.5" cy="6" r="1" fill="currentColor" stroke="none" />
-      <circle cx="4.5" cy="12" r="1" fill="currentColor" stroke="none" />
-      <circle cx="4.5" cy="18" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function IconMic(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Z" />
-      <path d="M19 11.5a7 7 0 0 1-14 0" />
-      <path d="M12 18.5V21" />
-      <path d="M8.5 21h7" />
-    </svg>
-  );
-}
-
-function IconMicOff(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="m3 3 18 18" />
-      <path d="M9.2 9.2V12a2.8 2.8 0 0 0 4.73 2.01" />
-      <path d="M15 8v4" />
-      <path d="M19 11.5a7 7 0 0 1-1.56 4.42" />
-      <path d="M5 11.5a7 7 0 0 0 10.08 6.34" />
-      <path d="M12 18.5V21" />
-      <path d="M8.5 21h7" />
-      <path d="M12 4a3 3 0 0 1 2.63 1.56" />
-    </svg>
-  );
-}
-
-function IconChat(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M7 18 3.5 20v-4.2A8 8 0 1 1 7 18Z" />
-      <path d="M8 10h8" />
-      <path d="M8 14h5" />
-    </svg>
-  );
-}
-
-function IconVolume(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M11 5 6 9H3v6h3l5 4V5Z" />
-      <path d="M15.5 9.5a4 4 0 0 1 0 5" />
-      <path d="M18.5 7a8 8 0 0 1 0 10" />
-    </svg>
-  );
-}
-
-function IconExpand(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M8 3H3v5" />
-      <path d="M16 3h5v5" />
-      <path d="M8 21H3v-5" />
-      <path d="M16 21h5v-5" />
-      <path d="M3 8l5-5" />
-      <path d="M21 8l-5-5" />
-      <path d="M3 16l5 5" />
-      <path d="M21 16l-5 5" />
-    </svg>
-  );
-}
-
-function IconClose(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
-  );
-}
+import { teacherApiClient } from "./api/teacher-api-client";
+import {
+  AI_WARNINGS_KEY,
+  CHUNK_SIZE,
+  DESKTOP_NOTIFICATIONS_KEY,
+  LANG_KEY,
+  NOTIFICATION_VOLUME_KEY,
+  SELFHOST_TTS_TOKEN_KEY,
+  SELFHOST_TTS_URL_KEY,
+  SOUND_NOTIFICATIONS_KEY,
+  STT_CAPTION_SEND_MIN_INTERVAL_MS,
+  STT_LANGUAGE_KEY,
+  STT_MIC_DEVICE_ID_KEY,
+  STT_RECORDER_SLICE_MS,
+  THEME_KEY,
+  THUMBNAIL_FRAME_INTERVAL_MS,
+} from "./features/app/constants";
+import {
+  type AudioInputDevice,
+  type FrameState,
+  type ProgressPayload,
+  type RemoteControlUiSession,
+  type TeacherLiveCaptionRequestDto,
+  type TeacherSttTranscribeResponse,
+  type Theme,
+  type UiToast,
+} from "./features/app/types";
+import { humanizeProgramNames } from "./features/logs/humanize-program-names";
+import { useTeacherTranslation } from "./hooks/use-teacher-translation";
+import {
+  IconChat,
+  IconClose,
+  IconExpand,
+  IconGrid,
+  IconList,
+  IconMic,
+  IconMicOff,
+  IconMonitor,
+  IconUpload,
+  IconVolume,
+} from "./components/icons";
 
 function App() {
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark"));
@@ -365,6 +146,7 @@ function App() {
   const toastTimersRef = useRef<number[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const teacherHubRef = useRef<HubConnection | null>(null);
+  const teacherApiTokenRef = useRef("");
   const remoteViewportRef = useRef<HTMLDivElement | null>(null);
   const remoteLastPointerSendAtRef = useRef(0);
   const remotePressedKeysRef = useRef<Set<string>>(new Set());
@@ -385,7 +167,7 @@ function App() {
   const sttCaptionSegmentsRef = useRef<string[]>([]);
   const sttLastCaptionSentAtRef = useRef(0);
 
-  const t = (key: string) => teacherDictionary[lang][key] ?? key;
+  const { t, localizeDetectionClass, localizeStageSource } = useTeacherTranslation(lang);
 
   const appendEvent = (line: string) => {
     setEvents((current) => [line, ...current].slice(0, 400));
@@ -420,54 +202,6 @@ function App() {
       delete next[clientId];
       return next;
     });
-  };
-
-  const localizeDetectionClass = (value: string): string => {
-    switch (value) {
-      case "ChatGpt":
-        return t("detectionClassChatGpt");
-      case "Claude":
-        return t("detectionClassClaude");
-      case "Gemini":
-        return t("detectionClassGemini");
-      case "Copilot":
-        return t("detectionClassCopilot");
-      case "Perplexity":
-        return t("detectionClassPerplexity");
-      case "DeepSeek":
-        return t("detectionClassDeepSeek");
-      case "Poe":
-        return t("detectionClassPoe");
-      case "Grok":
-        return t("detectionClassGrok");
-      case "Qwen":
-        return t("detectionClassQwen");
-      case "Mistral":
-        return t("detectionClassMistral");
-      case "MetaAi":
-        return t("detectionClassMetaAi");
-      case "UnknownAi":
-        return t("detectionClassUnknownAi");
-      case "None":
-        return t("detectionClassNone");
-      default:
-        return value;
-    }
-  };
-
-  const localizeStageSource = (value: string): string => {
-    switch (value) {
-      case "MetadataRule":
-        return t("stageMetadataRule");
-      case "OnnxBinary":
-        return t("stageOnnxBinary");
-      case "OnnxMulticlass":
-        return t("stageOnnxMulticlass");
-      case "Fused":
-        return t("stageFused");
-      default:
-        return t("stageUnknown");
-    }
   };
 
   const pushToast = (
@@ -523,11 +257,7 @@ function App() {
     }
 
     try {
-      await fetch("/api/desktop/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, message, kind }),
-      });
+      await teacherApiClient.postDesktopNotification(title, message, kind);
     } catch {
       // Ignore host notification bridge failures.
     }
@@ -684,17 +414,13 @@ function App() {
 
     if (clearCaption && targetClientId) {
       try {
-        await fetchJson<{ ok: boolean; message?: string }>(`/api/students/${encodeURIComponent(targetClientId)}/live-caption`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text: "",
-            clear: true,
-            isFinal: true,
-            ttlMs: 1000,
-            teacherDisplayName: "Teacher Console",
-          } satisfies TeacherLiveCaptionRequestDto),
-        });
+        await teacherApiClient.sendLiveCaption(targetClientId, {
+          text: "",
+          clear: true,
+          isFinal: true,
+          ttlMs: 1000,
+          teacherDisplayName: "Teacher Console",
+        } satisfies TeacherLiveCaptionRequestDto);
       } catch {
         // Ignore clear failures during shutdown.
       }
@@ -748,11 +474,7 @@ function App() {
   };
 
   const sendLiveCaptionToStudent = async (clientId: string, payload: TeacherLiveCaptionRequestDto) => {
-    return fetchJson<{ ok: boolean; message?: string }>(`/api/students/${encodeURIComponent(clientId)}/live-caption`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    return teacherApiClient.sendLiveCaption(clientId, payload);
   };
 
   const transcribeMicrophoneChunk = async (audioBlob: Blob): Promise<TeacherSttTranscribeResponse> => {
@@ -766,10 +488,7 @@ function App() {
     formData.append("SelfHostApiToken", selfHostTtsToken.trim());
     formData.append("SelfHostSttPath", "/v1/stt/transcribe");
 
-    return fetchJson<TeacherSttTranscribeResponse>("/api/speech/stt/transcribe", {
-      method: "POST",
-      body: formData,
-    });
+    return teacherApiClient.transcribeMicrophoneChunk(formData);
   };
 
   const processLiveSttQueue = async () => {
@@ -1152,8 +871,13 @@ function App() {
     let cancelled = false;
 
     const setup = async () => {
+      const token = await teacherApiClient.bootstrapSessionToken();
+      teacherApiTokenRef.current = token;
+
       connection = new HubConnectionBuilder()
-        .withUrl("/hubs/teacher")
+        .withUrl("/hubs/teacher", {
+          accessTokenFactory: () => teacherApiTokenRef.current,
+        })
         .withAutomaticReconnect([0, 1000, 3000, 7000, 15000])
         .configureLogging(LogLevel.Warning)
         .build();
@@ -1374,9 +1098,9 @@ function App() {
       setConnectionState("connected");
 
       try {
-        const audit = await fetchJson<AuditItem[]>("/api/audit/latest?take=120");
-        const detectionEvents = await fetchJson<AlertItem[]>("/api/detection/events?take=200");
-        const policy = await fetchJson<DetectionPolicy>("/api/detection/settings");
+        const audit = await teacherApiClient.getAuditLatest(120);
+        const detectionEvents = await teacherApiClient.getDetectionEvents(200);
+        const policy = await teacherApiClient.getDetectionPolicy();
         if (!cancelled) {
           setAiAlerts(detectionEvents);
           setDetectionPolicy(policy);
@@ -1398,6 +1122,8 @@ function App() {
     return () => {
       cancelled = true;
       teacherHubRef.current = null;
+      teacherApiTokenRef.current = "";
+      teacherApiClient.clearToken();
       if (connection) {
         connection.stop().catch(() => undefined);
       }
@@ -1443,7 +1169,7 @@ function App() {
     let cancelled = false;
     setChatHistoryLoadingFor(selectedStudentId);
 
-    fetchJson<StudentChatHistoryResponse>(`/api/students/${encodeURIComponent(selectedStudentId)}/chat?take=120`)
+    teacherApiClient.getStudentChatHistory(selectedStudentId, 120)
       .then((response) => {
         if (cancelled) {
           return;
@@ -1501,7 +1227,7 @@ function App() {
   }, [aiAlerts, aiFilterStudent, aiFilterClass, aiFilterTime]);
 
   const generatePin = useMutation({
-    mutationFn: async (): Promise<PairPinResponse> => fetchJson<PairPinResponse>("/api/pairing/pin", { method: "POST" }),
+    mutationFn: async (): Promise<PairPinResponse> => teacherApiClient.generatePairingPin(),
     onSuccess: (value) => {
       setPin(value);
       appendEvent(`New pairing PIN generated until ${new Date(value.expiresAtUtc).toLocaleTimeString()}`);
@@ -1523,47 +1249,24 @@ function App() {
       const bytes = new Uint8Array(await file.arrayBuffer());
       const fileHash = await sha256Hex(bytes);
 
-      const init = await fetchJson<UploadInitResponse>("/api/files/upload/init", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: file.name,
-          fileSize: file.size,
-          sha256: fileHash,
-          chunkSize: CHUNK_SIZE,
-          uploadedBy: "teacher-ui",
-        }),
+      const init = await teacherApiClient.initFileUpload({
+        fileName: file.name,
+        fileSize: file.size,
+        sha256: fileHash,
+        chunkSize: CHUNK_SIZE,
+        uploadedBy: "teacher-ui",
       });
 
       for (let index = 0; index < init.totalChunks; index++) {
         const chunk = bytes.slice(index * CHUNK_SIZE, Math.min((index + 1) * CHUNK_SIZE, bytes.length));
         const chunkHash = await sha256Hex(chunk);
 
-        const uploadChunk = await fetch(`/api/files/upload/${init.transferId}/chunk/${index}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/octet-stream",
-            "X-Chunk-Sha256": chunkHash,
-          },
-          body: chunk,
-        });
-
-        if (!uploadChunk.ok) {
-          throw new Error(`Chunk ${index + 1} upload failed`);
-        }
+        await teacherApiClient.uploadFileChunk(init.transferId, index, chunk, chunkHash);
 
         setUploadStatus(`Uploaded ${index + 1}/${init.totalChunks} chunks`);
       }
 
-      const dispatchResponse = await fetch(`/api/files/${init.transferId}/dispatch`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transferId: init.transferId, targetClientIds: targets }),
-      });
-
-      if (!dispatchResponse.ok) {
-        throw new Error(await dispatchResponse.text());
-      }
+      await teacherApiClient.dispatchFileTransfer(init.transferId, targets);
 
       setUploadStatus(`Dispatch created for ${targets.length} device(s)`);
     },
@@ -1576,11 +1279,7 @@ function App() {
 
   const removeStudent = useMutation({
     mutationFn: async (clientId: string) => {
-      const response = await fetch(`/api/students/${encodeURIComponent(clientId)}`, { method: "DELETE" });
-      if (!response.ok) {
-        const body = await response.text();
-        throw new Error(body || "Failed to remove device.");
-      }
+      await teacherApiClient.removeStudent(clientId);
     },
     onSuccess: (_, clientId) => {
       appendEvent(`Device removed: ${clientId}`);
@@ -1596,14 +1295,7 @@ function App() {
 
   const assignAccessibilityProfile = useMutation({
     mutationFn: async ({ clientId, profile }: { clientId: string; profile: AccessibilityProfileUpdateDto }) => {
-      return fetchJson<{ ok: boolean; message?: string }>(`/api/students/${encodeURIComponent(clientId)}/accessibility-profile`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          teacherDisplayName: "Teacher Console",
-          profile,
-        }),
-      });
+      return teacherApiClient.assignAccessibilityProfile(clientId, profile);
     },
     onSuccess: (_, vars) => {
       const message = `Accessibility profile sent to ${vars.clientId} (${vars.profile.activePreset})`;
@@ -1619,20 +1311,15 @@ function App() {
 
   const sendTeacherTts = useMutation({
     mutationFn: async ({ clientId, draft }: { clientId: string; draft: TeacherTtsDraft }) => {
-      return fetchJson<{ ok: boolean; message?: string }>(`/api/students/${encodeURIComponent(clientId)}/tts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          teacherDisplayName: "Teacher Console",
-          messageText: draft.messageText,
-          languageCode: draft.languageCode,
-          voiceName: draft.voiceName,
-          speakingRate: draft.speakingRate,
-          pitch: draft.pitch,
-          selfHostBaseUrl: selfHostTtsUrl.trim() || undefined,
-          selfHostApiToken: selfHostTtsToken.trim() || undefined,
-          selfHostTtsPath: "/v1/tts/synthesize",
-        }),
+      return teacherApiClient.sendTeacherTts(clientId, {
+        messageText: draft.messageText,
+        languageCode: draft.languageCode,
+        voiceName: draft.voiceName,
+        speakingRate: draft.speakingRate,
+        pitch: draft.pitch,
+        selfHostBaseUrl: selfHostTtsUrl.trim() || undefined,
+        selfHostApiToken: selfHostTtsToken.trim() || undefined,
+        selfHostTtsPath: "/v1/tts/synthesize",
       });
     },
     onSuccess: (result, vars) => {
@@ -1650,14 +1337,7 @@ function App() {
 
   const sendTeacherChat = useMutation({
     mutationFn: async ({ clientId, text }: { clientId: string; text: string }) => {
-      return fetchJson<{ ok: boolean; message?: string; chat?: TeacherStudentChatMessage }>(`/api/students/${encodeURIComponent(clientId)}/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          teacherDisplayName: "Teacher Console",
-          text,
-        }),
-      });
+      return teacherApiClient.sendTeacherChat(clientId, text);
     },
     onSuccess: (result, vars) => {
       if (result.chat) {
@@ -1717,7 +1397,7 @@ function App() {
         : sttLanguageCode === "en"
           ? "English"
           : sttLanguageCode === "kk" || sttLanguageCode === "kz"
-            ? "Қазақша"
+            ? "?аза?ша"
             : sttLanguageCode;
   const selectedRemoteControlSession = selectedStudentId ? remoteControlSessions[selectedStudentId] : undefined;
   const isRemoteControlApproved = selectedRemoteControlSession?.state === "Approved";
@@ -2319,7 +1999,7 @@ function App() {
                                 }}
                                 disabled={removeStudent.isPending}
                               >
-                                ×
+                                ?
                               </button>
                             </div>
                             <p className="truncate text-[11px] text-muted-foreground">{student.userName}</p>
@@ -3330,6 +3010,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

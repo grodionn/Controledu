@@ -1,0 +1,9 @@
+{
+  "connected": "Қосылған",
+  "detectionProductionLocked": "Детекция параметрлері production профилінде бекітілген. Өзгерту тек код/конфиг арқылы.",
+  "detectionStorageHint": "Жинақтау әдепкіде серверде емес, құрылғыларда жергілікті сақталады.",
+  "disabled": "Өшірулі",
+  "disconnected": "Ажыратылған",
+  "enabled": "Қосулы",
+  "pairingPin": "PIN"
+}

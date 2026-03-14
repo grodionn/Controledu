@@ -1,0 +1,9 @@
+{
+  "connected": "Подключено",
+  "detectionProductionLocked": "Параметры детекции зафиксированы в production-профиле. Изменение только через код/конфиг.",
+  "detectionStorageHint": "Сбор идет локально на устройствах в защищенной папке, не на сервере.",
+  "disabled": "Выключено",
+  "disconnected": "Отключено",
+  "enabled": "Включено",
+  "pairingPin": "PIN"
+}

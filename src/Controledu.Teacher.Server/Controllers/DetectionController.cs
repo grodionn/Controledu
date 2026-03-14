@@ -3,7 +3,9 @@ using Controledu.Transport.Dto;
 using Controledu.Common.Runtime;
 using Controledu.Storage.Stores;
 using Controledu.Teacher.Server.Hubs;
+using Controledu.Teacher.Server.Security;
 using Controledu.Teacher.Server.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using System.Text;
@@ -15,6 +17,7 @@ namespace Controledu.Teacher.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/detection")]
+[Authorize(Policy = TeacherAuthDefaults.TeacherPolicy)]
 public sealed class DetectionController(
     IDetectionPolicyService detectionPolicyService,
     IDetectionEventStore detectionEventStore,
@@ -41,14 +44,18 @@ public sealed class DetectionController(
     [ProducesResponseType<DetectionPolicyDto>(StatusCodes.Status200OK)]
     public async Task<ActionResult<DetectionPolicyDto>> UpdateSettings([FromBody] DetectionPolicyDto policy, CancellationToken cancellationToken)
     {
-        var saved = await detectionPolicyService.SaveAsync(policy, "operator", cancellationToken);
+        _ = policy;
+        await auditService.RecordAsync(
+            "detection_policy_update_rejected",
+            "operator",
+            "Rejected: production policy is read-only.",
+            cancellationToken);
 
-        studentRegistry.SetDetectionEnabledForAll(saved.Enabled);
-        await studentHub.Clients.All.SendAsync(HubMethods.DetectionPolicyUpdated, saved, cancellationToken);
-        await teacherHub.Clients.All.SendAsync(HubMethods.DetectionPolicyUpdated, saved, cancellationToken);
-        await teacherHub.Clients.All.SendAsync(HubMethods.StudentListChanged, studentRegistry.GetAll(), cancellationToken);
-
-        return Ok(saved);
+        return Conflict(new
+        {
+            ok = false,
+            message = "Detection policy is locked in production mode and cannot be changed via API.",
+        });
     }
 
     /// <summary>
@@ -58,39 +65,25 @@ public sealed class DetectionController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> SetDataCollection([FromBody] DataCollectionToggleRequest request, CancellationToken cancellationToken)
     {
-        var current = await detectionPolicyService.GetAsync(cancellationToken);
-        var updated = current with
+        var targets = request.TargetClientIds is { Length: > 0 }
+            ? request.TargetClientIds
+                .Where(static id => !string.IsNullOrWhiteSpace(id))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray()
+            : Array.Empty<string>();
+
+        await auditService.RecordAsync(
+            "detection_data_collection_rejected",
+            "operator",
+            $"requested={request.Enabled}; targets={string.Join(',', targets)}; reason=production-lock",
+            cancellationToken);
+
+        return Conflict(new
         {
-            DataCollectionModeEnabled = false,
-            DataCollectionSampleRate = 0,
-            DataCollectionStoreFullFrames = false,
-            DataCollectionStoreThumbnails = false,
-        };
-        await detectionPolicyService.SaveAsync(updated, "operator", cancellationToken);
-
-        if (request.TargetClientIds is { Length: > 0 })
-        {
-            var targets = request.TargetClientIds.Distinct(StringComparer.Ordinal).ToArray();
-            foreach (var target in targets)
-            {
-                if (!studentRegistry.TryGetConnectionId(target, out var connectionId) || string.IsNullOrWhiteSpace(connectionId))
-                {
-                    continue;
-                }
-
-                await studentHub.Clients.Client(connectionId).SendAsync(HubMethods.DetectionPolicyUpdated, updated, cancellationToken);
-            }
-
-            await auditService.RecordAsync("detection_data_collection_targets", "operator", $"requested={request.Enabled}; effective=false; targets={string.Join(',', targets)}", cancellationToken);
-        }
-        else
-        {
-            await studentHub.Clients.All.SendAsync(HubMethods.DetectionPolicyUpdated, updated, cancellationToken);
-            await teacherHub.Clients.All.SendAsync(HubMethods.DetectionPolicyUpdated, updated, cancellationToken);
-            await auditService.RecordAsync("detection_data_collection_global", "operator", $"requested={request.Enabled}; effective=false", cancellationToken);
-        }
-
-        return Ok(new { ok = true, enabled = false, message = "Data collection is disabled in production mode." });
+            ok = false,
+            enabled = false,
+            message = "Data collection is locked to disabled in production mode.",
+        });
     }
 
     /// <summary>
@@ -159,6 +152,7 @@ public sealed class DetectionController(
     /// Upload endpoint used by student agent to send diagnostics export archive.
     /// </summary>
     [HttpPost("exports/upload")]
+    [AllowAnonymous]
     [ProducesResponseType<DetectionExportArtifactDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<DetectionExportArtifactDto>> UploadExport(

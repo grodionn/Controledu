@@ -1,7 +1,9 @@
-﻿using Controledu.Transport.Dto;
-using Controledu.Storage.Models;
+﻿using Controledu.Storage.Models;
 using Controledu.Storage.Stores;
+using Controledu.Teacher.Server.Security;
 using Controledu.Teacher.Server.Services;
+using Controledu.Transport.Dto;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -12,6 +14,7 @@ namespace Controledu.Teacher.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/pairing")]
+[Authorize(Policy = TeacherAuthDefaults.TeacherPolicy)]
 public sealed class PairingController(
     IPairingCodeService pairingCodeService,
     IServerIdentityService identityService,
@@ -30,6 +33,7 @@ public sealed class PairingController(
     /// <summary>
     /// Completes student pairing using one-time PIN.
     /// </summary>
+    [AllowAnonymous]
     [HttpPost("complete")]
     [ProducesResponseType<PairingResponseDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -80,4 +84,3 @@ public sealed class PairingController(
         return $"http://127.0.0.1:{options.Value.HttpPort}";
     }
 }
-

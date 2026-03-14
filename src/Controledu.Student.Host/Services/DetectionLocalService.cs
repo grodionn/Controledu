@@ -3,7 +3,6 @@ using Controledu.Student.Host.Contracts;
 using Controledu.Storage.Stores;
 using Controledu.Transport.Dto;
 using System.IO.Compression;
-using System.Text.Json;
 
 namespace Controledu.Student.Host.Services;
 
@@ -35,31 +34,17 @@ public interface IDetectionLocalService
 
 internal sealed class DetectionLocalService(ISettingsStore settingsStore) : IDetectionLocalService
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-
     public async Task<DetectionStatusResponse> GetStatusAsync(CancellationToken cancellationToken = default)
     {
-        var effectivePolicyRaw = await settingsStore.GetAsync(DetectionSettingKeys.EffectivePolicyJson, cancellationToken);
-        var localPolicyRaw = await settingsStore.GetAsync(DetectionSettingKeys.LocalPolicyJson, cancellationToken);
         var lastCheck = await settingsStore.GetAsync(DetectionSettingKeys.LastCheckUtc, cancellationToken);
         var lastResult = await settingsStore.GetAsync(DetectionSettingKeys.LastResult, cancellationToken);
         var modelVersion = await settingsStore.GetAsync(DetectionSettingKeys.LastModelVersion, cancellationToken);
 
-        var effectivePolicy = DeserializePolicy(effectivePolicyRaw) ?? new DetectionPolicyDto();
-        var localPolicy = DeserializePolicy(localPolicyRaw);
-        var resolvedPolicy = localPolicy is null
-            ? effectivePolicy
-            : effectivePolicy with
-            {
-                Enabled = localPolicy.Enabled,
-            };
-
-        var productionPolicy = DetectionPolicyFactory.CreateProductionPolicy(resolvedPolicy.Enabled);
-        var dataCollectionEnabled = false;
+        var productionPolicy = DetectionPolicyFactory.CreateProductionPolicy(enabled: true);
 
         return new DetectionStatusResponse(
             DetectionEnabled: productionPolicy.Enabled,
-            DataCollectionModeEnabled: dataCollectionEnabled,
+            DataCollectionModeEnabled: false,
             LastCheckUtc: lastCheck,
             LastResult: lastResult,
             LastModelVersion: modelVersion,
@@ -69,12 +54,11 @@ internal sealed class DetectionLocalService(ISettingsStore settingsStore) : IDet
             LocalRetentionDays: 1);
     }
 
-    public async Task UpdateLocalConfigAsync(DetectionConfigUpdateRequest request, CancellationToken cancellationToken = default)
+    public Task UpdateLocalConfigAsync(DetectionConfigUpdateRequest request, CancellationToken cancellationToken = default)
     {
         _ = request;
-        var localPolicy = DetectionPolicyFactory.CreateProductionPolicy(enabled: true);
-
-        await settingsStore.SetAsync(DetectionSettingKeys.LocalPolicyJson, JsonSerializer.Serialize(localPolicy, JsonOptions), cancellationToken);
+        _ = cancellationToken;
+        throw new InvalidOperationException("Detection configuration is locked in production mode.");
     }
 
     public Task TriggerSelfTestAsync(CancellationToken cancellationToken = default) =>
@@ -117,23 +101,6 @@ internal sealed class DetectionLocalService(ISettingsStore settingsStore) : IDet
             var relative = Path.GetRelativePath(sourceDir, file);
             var normalized = relative.Replace('\\', '/');
             archive.CreateEntryFromFile(file, $"{entryPrefix}/{normalized}", CompressionLevel.Fastest);
-        }
-    }
-
-    private static DetectionPolicyDto? DeserializePolicy(string? raw)
-    {
-        if (string.IsNullOrWhiteSpace(raw))
-        {
-            return null;
-        }
-
-        try
-        {
-            return JsonSerializer.Deserialize<DetectionPolicyDto>(raw, JsonOptions);
-        }
-        catch
-        {
-            return null;
         }
     }
 }

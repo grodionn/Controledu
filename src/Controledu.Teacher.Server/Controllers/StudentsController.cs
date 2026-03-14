@@ -1,8 +1,10 @@
 using Controledu.Transport.Constants;
 using Controledu.Transport.Dto;
 using Controledu.Teacher.Server.Hubs;
+using Controledu.Teacher.Server.Security;
 using Controledu.Teacher.Server.Services;
 using Controledu.Storage.Stores;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
@@ -16,6 +18,7 @@ namespace Controledu.Teacher.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/students")]
+[Authorize(Policy = TeacherAuthDefaults.TeacherPolicy)]
 public sealed class StudentsController(
     IPairedClientStore pairedClientStore,
     IStudentRegistry studentRegistry,

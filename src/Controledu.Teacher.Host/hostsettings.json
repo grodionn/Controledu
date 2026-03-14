@@ -12,8 +12,12 @@
     "PairingTokenLifetimeHours": 720,
     "StorageFile": "teacher-server.db",
     "TransferRoot": "transfers",
-    "AllowHttp": true,
-    "SignalRMaxReceiveMessageBytes": 4194304
+    "SignalRMaxReceiveMessageBytes": 4194304,
+    "TeacherApiToken": "",
+    "AllowedCorsOrigins": [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173"
+    ]
   },
   "AutoUpdate": {
     "Enabled": true,

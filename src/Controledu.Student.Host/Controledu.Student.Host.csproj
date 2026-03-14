@@ -27,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Controledu.Common\Controledu.Common.csproj" />
+    <ProjectReference Include="..\Controledu.Host.Core\Controledu.Host.Core.csproj" />
     <ProjectReference Include="..\Controledu.Discovery\Controledu.Discovery.csproj" />
     <ProjectReference Include="..\Controledu.Transport\Controledu.Transport.csproj" />
     <ProjectReference Include="..\Controledu.Storage\Controledu.Storage.csproj" />

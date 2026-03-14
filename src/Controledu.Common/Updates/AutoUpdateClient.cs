@@ -34,7 +34,7 @@ public sealed class AutoUpdateClient(HttpClient httpClient) : IDisposable
         return manifest;
     }
 
-    public bool IsUpdateAvailable(string currentVersion, AutoUpdateManifest manifest)
+    public static bool IsUpdateAvailable(string currentVersion, AutoUpdateManifest manifest)
     {
         ArgumentNullException.ThrowIfNull(manifest);
         return VersionTextComparer.IsNewer(currentVersion, manifest.Version);

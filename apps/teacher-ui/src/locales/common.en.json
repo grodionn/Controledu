@@ -1,0 +1,9 @@
+{
+  "connected": "Connected",
+  "detectionProductionLocked": "Detection parameters are locked in production profile. Change only in code/config.",
+  "detectionStorageHint": "Collection is local on endpoints, not on the teacher server by default.",
+  "disabled": "Disabled",
+  "disconnected": "Disconnected",
+  "enabled": "Enabled",
+  "pairingPin": "PIN"
+}

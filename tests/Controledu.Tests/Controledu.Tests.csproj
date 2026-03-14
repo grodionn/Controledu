@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.11" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.8" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
@@ -23,5 +25,6 @@
     <ProjectReference Include="..\..\src\Controledu.Detection.Abstractions\Controledu.Detection.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Controledu.Detection.Core\Controledu.Detection.Core.csproj" />
     <ProjectReference Include="..\..\src\Controledu.Detection.Onnx\Controledu.Detection.Onnx.csproj" />
+    <ProjectReference Include="..\..\src\Controledu.Student.Host\Controledu.Student.Host.csproj" />
   </ItemGroup>
 </Project>

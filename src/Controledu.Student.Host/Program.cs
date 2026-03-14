@@ -1,11 +1,11 @@
 using Controledu.Student.Host.Options;
 using Controledu.Student.Host.Services;
+using Controledu.Host.Core;
 using Controledu.Common.Updates;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using System.Net.Http;
 
 namespace Controledu.Student.Host;
 
@@ -23,18 +23,23 @@ internal static class Program
             localApp.StartAsync().GetAwaiter().GetResult();
 
             var options = localApp.Services.GetRequiredService<IOptions<StudentHostOptions>>().Value;
-            var configuration = localApp.Services.GetRequiredService<IConfiguration>();
-            var autoUpdateOptions = configuration.GetSection(AutoUpdateOptions.SectionName).Get<AutoUpdateOptions>() ?? new AutoUpdateOptions();
-            if (string.IsNullOrWhiteSpace(autoUpdateOptions.ManifestUrl))
+            var autoUpdateOptions = localApp.Services.GetRequiredService<IOptions<AutoUpdateOptions>>().Value;
+            var effectiveAutoUpdateOptions = new AutoUpdateOptions
             {
-                autoUpdateOptions.ManifestUrl = "https://controledu.kilocraft.org/updates/student/manifest.json";
-            }
+                Enabled = autoUpdateOptions.Enabled,
+                ManifestUrl = string.IsNullOrWhiteSpace(autoUpdateOptions.ManifestUrl)
+                    ? "https://controledu.kilocraft.org/updates/student/manifest.json"
+                    : autoUpdateOptions.ManifestUrl,
+                StartupDelaySeconds = autoUpdateOptions.StartupDelaySeconds,
+                CheckIntervalMinutes = autoUpdateOptions.CheckIntervalMinutes,
+                DownloadTimeoutSeconds = autoUpdateOptions.DownloadTimeoutSeconds,
+            };
             var hostControlService = localApp.Services.GetRequiredService<IHostControlService>();
             var handRaiseRequestService = localApp.Services.GetRequiredService<IHandRaiseRequestService>();
             var remoteControlConsentService = localApp.Services.GetRequiredService<IRemoteControlConsentService>();
             var uiUrl = $"http://127.0.0.1:{options.LocalPort}/";
 
-            using var form = new Form1(uiUrl, options, autoUpdateOptions, hostControlService, handRaiseRequestService, remoteControlConsentService);
+            using var form = new Form1(uiUrl, options, effectiveAutoUpdateOptions, hostControlService, handRaiseRequestService, remoteControlConsentService);
             Application.Run(form);
         }
         catch (Exception ex)
@@ -73,16 +78,7 @@ internal static class Program
         try
         {
             var options = LoadStudentHostOptions(args);
-            using var http = new HttpClient
-            {
-                Timeout = TimeSpan.FromSeconds(2),
-            };
-
-            var response = http.PostAsync($"http://127.0.0.1:{options.LocalPort}/api/window/show", content: null)
-                .GetAwaiter()
-                .GetResult();
-
-            return response.IsSuccessStatusCode;
+            return SingleInstanceActivationClient.TryActivateWindow(options.LocalPort);
         }
         catch
         {

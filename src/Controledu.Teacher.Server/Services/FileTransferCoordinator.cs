@@ -45,7 +45,8 @@ public interface IFileTransferCoordinator
 internal sealed class FileTransferCoordinator(IOptions<TeacherServerOptions> options) : IFileTransferCoordinator, IDisposable
 {
     private readonly Dictionary<string, FileTransferSession> _transfers = new(StringComparer.Ordinal);
-    private readonly SemaphoreSlim _lock = new(1, 1);
+    private readonly object _sync = new();
+    private bool _disposed;
 
     private string ResolveTransferRoot()
     {
@@ -61,7 +62,7 @@ internal sealed class FileTransferCoordinator(IOptions<TeacherServerOptions> opt
         return root;
     }
 
-    public async Task<FileUploadInitResponse> InitializeUploadAsync(FileUploadInitRequest request, CancellationToken cancellationToken = default)
+    public Task<FileUploadInitResponse> InitializeUploadAsync(FileUploadInitRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -84,22 +85,18 @@ internal sealed class FileTransferCoordinator(IOptions<TeacherServerOptions> opt
             UploadedBy = request.UploadedBy,
         };
 
-        await _lock.WaitAsync(cancellationToken);
-        try
+        lock (_sync)
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
             _transfers[transferId] = session;
         }
-        finally
-        {
-            _lock.Release();
-        }
 
-        return new FileUploadInitResponse(transferId, totalChunks, createdAt);
+        return Task.FromResult(new FileUploadInitResponse(transferId, totalChunks, createdAt));
     }
 
     public async Task<FileChunkUploadResult> SaveChunkAsync(string transferId, int chunkIndex, byte[] chunkData, string? expectedChunkSha256, CancellationToken cancellationToken = default)
     {
-        var session = await GetSessionOrThrowAsync(transferId, cancellationToken);
+        var session = GetSessionOrThrow(transferId);
 
         if (chunkIndex < 0 || chunkIndex >= session.TotalChunks)
         {
@@ -127,70 +124,100 @@ internal sealed class FileTransferCoordinator(IOptions<TeacherServerOptions> opt
 
     public async Task<FileTransferCommandDto> CreateDispatchCommandAsync(string transferId, IReadOnlyList<string> targetClientIds, CancellationToken cancellationToken = default)
     {
-        var session = await GetSessionOrThrowAsync(transferId, cancellationToken);
-        if (session.UploadedChunks.Count < session.TotalChunks)
+        var session = GetSessionOrThrow(transferId);
+        await session.Lock.WaitAsync(cancellationToken);
+        try
         {
-            throw new InvalidOperationException("File upload is incomplete.");
-        }
+            if (session.UploadedChunks.Count < session.TotalChunks)
+            {
+                throw new InvalidOperationException("File upload is incomplete.");
+            }
 
-        foreach (var targetClientId in targetClientIds.Where(static x => !string.IsNullOrWhiteSpace(x)))
+            foreach (var targetClientId in targetClientIds.Where(static x => !string.IsNullOrWhiteSpace(x)))
+            {
+                session.TargetClientIds.Add(targetClientId);
+            }
+
+            return new FileTransferCommandDto(
+                session.TransferId,
+                session.FileName,
+                session.FileSize,
+                session.Sha256,
+                session.ChunkSize,
+                session.TotalChunks,
+                session.CreatedAtUtc);
+        }
+        finally
         {
-            session.TargetClientIds.Add(targetClientId);
+            session.Lock.Release();
         }
-
-        return new FileTransferCommandDto(
-            session.TransferId,
-            session.FileName,
-            session.FileSize,
-            session.Sha256,
-            session.ChunkSize,
-            session.TotalChunks,
-            session.CreatedAtUtc);
     }
 
     public async Task<MissingChunksResponseDto> GetMissingChunksAsync(string transferId, IReadOnlyList<int> existingChunkIndexes, CancellationToken cancellationToken = default)
     {
-        var session = await GetSessionOrThrowAsync(transferId, cancellationToken);
-        var available = new HashSet<int>(session.UploadedChunks);
+        var session = GetSessionOrThrow(transferId);
+        await session.Lock.WaitAsync(cancellationToken);
+        try
+        {
+            var available = new HashSet<int>(session.UploadedChunks);
+            var missing = ChunkingUtility
+                .GetMissingChunks(session.TotalChunks, existingChunkIndexes)
+                .Where(available.Contains)
+                .ToArray();
 
-        var missing = ChunkingUtility
-            .GetMissingChunks(session.TotalChunks, existingChunkIndexes)
-            .Where(available.Contains)
-            .ToArray();
-
-        return new MissingChunksResponseDto(missing);
+            return new MissingChunksResponseDto(missing);
+        }
+        finally
+        {
+            session.Lock.Release();
+        }
     }
 
     public async Task<FileChunkDto> GetChunkAsync(string transferId, int chunkIndex, CancellationToken cancellationToken = default)
     {
-        var session = await GetSessionOrThrowAsync(transferId, cancellationToken);
-
-        if (!session.UploadedChunks.Contains(chunkIndex))
+        var session = GetSessionOrThrow(transferId);
+        await session.Lock.WaitAsync(cancellationToken);
+        try
         {
-            throw new FileNotFoundException("Chunk not uploaded.", chunkIndex.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        }
+            if (!session.UploadedChunks.Contains(chunkIndex))
+            {
+                throw new FileNotFoundException("Chunk not uploaded.", chunkIndex.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
 
-        var chunkPath = GetChunkPath(session, chunkIndex);
-        var data = await File.ReadAllBytesAsync(chunkPath, cancellationToken);
-        return new FileChunkDto(transferId, chunkIndex, data, HashingUtility.Sha256Hex(data));
+            var chunkPath = GetChunkPath(session, chunkIndex);
+            var data = await File.ReadAllBytesAsync(chunkPath, cancellationToken);
+            return new FileChunkDto(transferId, chunkIndex, data, HashingUtility.Sha256Hex(data));
+        }
+        finally
+        {
+            session.Lock.Release();
+        }
     }
 
     public void UpdateProgress(FileDeliveryProgressDto progress)
     {
-        lock (_transfers)
+        var session = TryGetSession(progress.TransferId);
+        if (session is null)
         {
-            if (_transfers.TryGetValue(progress.TransferId, out var session))
-            {
-                session.ProgressByClient[progress.ClientId] = progress;
-            }
+            return;
+        }
+
+        session.Lock.Wait();
+        try
+        {
+            session.ProgressByClient[progress.ClientId] = progress;
+        }
+        finally
+        {
+            session.Lock.Release();
         }
     }
 
-    private async Task<FileTransferSession> GetSessionOrThrowAsync(string transferId, CancellationToken cancellationToken)
+    private FileTransferSession GetSessionOrThrow(string transferId)
     {
-        await _lock.WaitAsync(cancellationToken);
-        try
+        lock (_sync)
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
             if (!_transfers.TryGetValue(transferId, out var session))
             {
                 throw new InvalidOperationException($"Transfer {transferId} was not found.");
@@ -198,9 +225,18 @@ internal sealed class FileTransferCoordinator(IOptions<TeacherServerOptions> opt
 
             return session;
         }
-        finally
+    }
+
+    private FileTransferSession? TryGetSession(string transferId)
+    {
+        lock (_sync)
         {
-            _lock.Release();
+            if (_disposed)
+            {
+                return null;
+            }
+
+            return _transfers.GetValueOrDefault(transferId);
         }
     }
 
@@ -209,8 +245,20 @@ internal sealed class FileTransferCoordinator(IOptions<TeacherServerOptions> opt
 
     public void Dispose()
     {
-        _lock.Dispose();
-        foreach (var session in _transfers.Values)
+        FileTransferSession[] sessions;
+        lock (_sync)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            sessions = _transfers.Values.ToArray();
+            _transfers.Clear();
+        }
+
+        foreach (var session in sessions)
         {
             session.Lock.Dispose();
         }

@@ -1,5 +1,6 @@
 using Controledu.Common.Runtime;
 using Controledu.Common.Security;
+using Controledu.Common.Updates;
 using Controledu.Discovery.Services;
 using Controledu.Student.Host.Contracts;
 using Controledu.Student.Host.Options;
@@ -12,7 +13,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Serilog;
 using System.Globalization;
 using System.Net;
@@ -22,7 +22,7 @@ namespace Controledu.Student.Host;
 /// <summary>
 /// Builds local student UI/API web host.
 /// </summary>
-public static class StudentLocalHostFactory
+public static partial class StudentLocalHostFactory
 {
     private const string LocalApiTokenHeader = "X-Controledu-LocalToken";
 
@@ -40,8 +40,29 @@ public static class StudentLocalHostFactory
             .AddEnvironmentVariables()
             .AddCommandLine(args);
 
-        builder.Services.Configure<StudentHostOptions>(builder.Configuration.GetSection(StudentHostOptions.SectionName));
-        var options = builder.Configuration.GetSection(StudentHostOptions.SectionName).Get<StudentHostOptions>() ?? new StudentHostOptions();
+        var studentHostSection = builder.Configuration.GetSection(StudentHostOptions.SectionName);
+        builder.Services
+            .AddOptions<StudentHostOptions>()
+            .Bind(studentHostSection)
+            .Validate(static options => options.LocalPort is >= 1 and <= 65535, "StudentHost:LocalPort must be in range 1..65535.")
+            .Validate(static options => !string.IsNullOrWhiteSpace(options.StorageFile), "StudentHost:StorageFile is required.")
+            .Validate(static options => options.DiscoveryPort is >= 1 and <= 65535, "StudentHost:DiscoveryPort must be in range 1..65535.")
+            .Validate(static options => options.DiscoveryTimeoutMs is >= 100 and <= 60_000, "StudentHost:DiscoveryTimeoutMs must be in range 100..60000.")
+            .Validate(static options => !string.IsNullOrWhiteSpace(options.AgentExecutablePath), "StudentHost:AgentExecutablePath is required.")
+            .Validate(static options => !string.IsNullOrWhiteSpace(options.WindowTitle), "StudentHost:WindowTitle is required.")
+            .Validate(static options => options.HandRaiseCooldownSeconds is >= 1 and <= 300, "StudentHost:HandRaiseCooldownSeconds must be in range 1..300.")
+            .ValidateOnStart();
+
+        builder.Services
+            .AddOptions<AutoUpdateOptions>()
+            .Bind(builder.Configuration.GetSection(AutoUpdateOptions.SectionName))
+            .Validate(static options => options.StartupDelaySeconds is >= 0 and <= 3600, "AutoUpdate:StartupDelaySeconds must be in range 0..3600.")
+            .Validate(static options => options.CheckIntervalMinutes is >= 1 and <= 24 * 60, "AutoUpdate:CheckIntervalMinutes must be in range 1..1440.")
+            .Validate(static options => options.DownloadTimeoutSeconds is >= 5 and <= 3600, "AutoUpdate:DownloadTimeoutSeconds must be in range 5..3600.")
+            .Validate(static options => IsValidManifestUrl(options.ManifestUrl), "AutoUpdate:ManifestUrl must be an absolute HTTP/HTTPS URL when specified.")
+            .ValidateOnStart();
+
+        var options = studentHostSection.Get<StudentHostOptions>() ?? new StudentHostOptions();
 
         var storagePath = Path.IsPathRooted(options.StorageFile)
             ? options.StorageFile
@@ -143,13 +164,8 @@ public static class StudentLocalHostFactory
 
             var path = context.Request.Path.Value ?? string.Empty;
             if (string.Equals(path, "/api/session", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(path, "/api/health", StringComparison.OrdinalIgnoreCase))
-            {
-                await next();
-                return;
-            }
-
-            if (string.Equals(path, "/api/window/show", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(path, "/api/health", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(path, "/api/window/show", StringComparison.OrdinalIgnoreCase))
             {
                 await next();
                 return;
@@ -184,66 +200,6 @@ public static class StudentLocalHostFactory
             return Results.Ok(status);
         });
 
-        app.MapGet("/api/accessibility/profile", async (IAccessibilitySettingsService accessibilitySettingsService, CancellationToken cancellationToken) =>
-        {
-            var profile = await accessibilitySettingsService.GetAsync(cancellationToken);
-            return Results.Ok(profile);
-        });
-
-        app.MapPost("/api/accessibility/profile", async (
-            AccessibilityProfileUpdateRequest request,
-            IAccessibilitySettingsService accessibilitySettingsService,
-            CancellationToken cancellationToken) =>
-        {
-            try
-            {
-                var profile = await accessibilitySettingsService.UpdateFromLocalAsync(request, cancellationToken);
-                return Results.Ok(profile);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(ex.Message);
-            }
-        });
-
-        app.MapPost("/api/accessibility/profile/preset", async (
-            AccessibilityPresetApplyRequest request,
-            IAccessibilitySettingsService accessibilitySettingsService,
-            CancellationToken cancellationToken) =>
-        {
-            try
-            {
-                var profile = await accessibilitySettingsService.ApplyPresetAsync(request.PresetId, cancellationToken);
-                return Results.Ok(profile);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(ex.Message);
-            }
-        });
-
-        app.MapPost("/api/accessibility/profile/teacher-assign", async (
-            TeacherAssignedAccessibilityProfileRequest request,
-            IAccessibilitySettingsService accessibilitySettingsService,
-            CancellationToken cancellationToken) =>
-        {
-            try
-            {
-                var profile = await accessibilitySettingsService.ApplyTeacherAssignedAsync(request, cancellationToken);
-                return Results.Ok(profile);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Conflict(new OkResponse(false, ex.Message));
-            }
-        });
-
-        app.MapGet("/api/detection/status", async (IDetectionLocalService detectionLocalService, CancellationToken cancellationToken) =>
-        {
-            var status = await detectionLocalService.GetStatusAsync(cancellationToken);
-            return Results.Ok(status);
-        });
-
         app.MapGet("/api/device-name", async (IDeviceIdentityService deviceIdentityService, CancellationToken cancellationToken) =>
         {
             var name = await deviceIdentityService.GetDisplayNameAsync(cancellationToken);
@@ -261,51 +217,6 @@ public static class StudentLocalHostFactory
             }
 
             return Results.Ok(new OkResponse(true));
-        });
-
-        app.MapPost("/api/detection/config", async (
-            DetectionConfigUpdateRequest request,
-            IAdminPasswordService adminPasswordService,
-            IDetectionLocalService detectionLocalService,
-            CancellationToken cancellationToken) =>
-        {
-            if (!await adminPasswordService.VerifyAsync(request.AdminPassword, cancellationToken))
-            {
-                return Results.Unauthorized();
-            }
-
-            await detectionLocalService.UpdateLocalConfigAsync(request, cancellationToken);
-            return Results.Ok(new OkResponse(true, "Detection local config updated."));
-        });
-
-        app.MapPost("/api/detection/self-test", async (
-            DetectionSelfTestRequest request,
-            IAdminPasswordService adminPasswordService,
-            IDetectionLocalService detectionLocalService,
-            CancellationToken cancellationToken) =>
-        {
-            if (!await adminPasswordService.VerifyAsync(request.AdminPassword, cancellationToken))
-            {
-                return Results.Unauthorized();
-            }
-
-            await detectionLocalService.TriggerSelfTestAsync(cancellationToken);
-            return Results.Ok(new OkResponse(true, "Self-test request scheduled."));
-        });
-
-        app.MapPost("/api/detection/export-diagnostics", async (
-            ProtectedActionRequest request,
-            IAdminPasswordService adminPasswordService,
-            IDetectionLocalService detectionLocalService,
-            CancellationToken cancellationToken) =>
-        {
-            if (!await adminPasswordService.VerifyAsync(request.AdminPassword, cancellationToken))
-            {
-                return Results.Unauthorized();
-            }
-
-            var archivePath = await detectionLocalService.ExportDiagnosticsAsync(cancellationToken);
-            return Results.Ok(new DiagnosticsExportResponse(archivePath));
         });
 
         app.MapPost("/api/device-name", async (
@@ -358,129 +269,6 @@ public static class StudentLocalHostFactory
             }
         });
 
-        app.MapPost("/api/discovery", async (DiscoveryRequest? request, IStudentPairingService pairingService, CancellationToken cancellationToken) =>
-        {
-            try
-            {
-                var discovered = await pairingService.DiscoverAsync(request?.TimeoutMs, cancellationToken);
-                var payload = discovered.Select((server, index) => DiscoveredServerResponse.FromDto(server, index == 0)).ToArray();
-                return Results.Ok(payload);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(ex.Message);
-            }
-        });
-
-        app.MapPost("/api/pairing", async (
-            PairingRequest request,
-            IAdminPasswordService adminPasswordService,
-            IStudentPairingService pairingService,
-            IAgentProcessManager agentProcessManager,
-            CancellationToken cancellationToken) =>
-        {
-            if (!await adminPasswordService.HasPasswordAsync(cancellationToken))
-            {
-                return Results.BadRequest("Admin password is not configured.");
-            }
-
-            try
-            {
-                await pairingService.PairAsync(request.Pin, request.ServerAddress, cancellationToken);
-                _ = await agentProcessManager.StartAsync(cancellationToken);
-                return Results.Ok(new OkResponse(true, "Pairing completed."));
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(ex.Message);
-            }
-        });
-
-        app.MapPost("/api/unpair", async (
-            UnpairRequest request,
-            IAdminPasswordService adminPasswordService,
-            IStudentPairingService pairingService,
-            IAgentProcessManager agentProcessManager,
-            CancellationToken cancellationToken) =>
-        {
-            if (!await adminPasswordService.VerifyAsync(request.AdminPassword, cancellationToken))
-            {
-                return Results.Unauthorized();
-            }
-
-            await pairingService.ClearBindingAsync(cancellationToken);
-            await agentProcessManager.StopAsync(cancellationToken);
-            return Results.Ok(new OkResponse(true, "Unpaired."));
-        });
-
-        app.MapPost("/api/agent/autostart", async (
-            AgentAutoStartRequest request,
-            IAdminPasswordService adminPasswordService,
-            IAgentAutoStartManager autoStartManager,
-            IAgentProcessManager agentProcessManager,
-            CancellationToken cancellationToken) =>
-        {
-            if (!request.Enabled && !await adminPasswordService.VerifyAsync(request.AdminPassword ?? string.Empty, cancellationToken))
-            {
-                return Results.Unauthorized();
-            }
-
-            await autoStartManager.SetEnabledAsync(request.Enabled, cancellationToken);
-            if (request.Enabled)
-            {
-                _ = await agentProcessManager.StartAsync(cancellationToken);
-            }
-
-            return Results.Ok(new OkResponse(true));
-        });
-
-        app.MapPost("/api/agent/start", async (IAgentProcessManager agentProcessManager, CancellationToken cancellationToken) =>
-        {
-            var started = await agentProcessManager.StartAsync(cancellationToken);
-            return Results.Ok(new OkResponse(started, started ? "Agent started." : "Agent start failed."));
-        });
-
-        app.MapPost("/api/agent/stop", async (
-            ProtectedActionRequest request,
-            IAdminPasswordService adminPasswordService,
-            IAgentProcessManager agentProcessManager,
-            CancellationToken cancellationToken) =>
-        {
-            if (!await adminPasswordService.VerifyAsync(request.AdminPassword, cancellationToken))
-            {
-                return Results.Unauthorized();
-            }
-
-            await agentProcessManager.StopAsync(cancellationToken);
-            return Results.Ok(new OkResponse(true, "Agent stopped."));
-        });
-
-        app.MapPost("/api/system/shutdown", async (
-            ShutdownRequest request,
-            IAdminPasswordService adminPasswordService,
-            IAgentProcessManager agentProcessManager,
-            IHostControlService hostControlService,
-            CancellationToken cancellationToken) =>
-        {
-            if (!await adminPasswordService.VerifyAsync(request.AdminPassword, cancellationToken))
-            {
-                return Results.Unauthorized();
-            }
-
-            if (request.StopAgent)
-            {
-                await agentProcessManager.StopAsync(cancellationToken);
-            }
-
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(250, CancellationToken.None);
-                hostControlService.RequestShutdown();
-            });
-
-            return Results.Ok(new OkResponse(true, "Shutdown requested."));
-        });
-
         app.MapPost("/api/signals/raise-hand", async (IHandRaiseRequestService handRaiseRequestService, CancellationToken cancellationToken) =>
         {
             var result = await handRaiseRequestService.RequestAsync(cancellationToken);
@@ -492,78 +280,30 @@ public static class StudentLocalHostFactory
             return Results.Ok(new OkResponse(false, $"Rate limited. Retry after {Math.Ceiling(result.RetryAfter.TotalSeconds)}s."));
         });
 
-        app.MapGet("/api/chat/thread", async (IStudentChatService studentChatService, CancellationToken cancellationToken) =>
-        {
-            var thread = await studentChatService.GetThreadAsync(cancellationToken);
-            return Results.Ok(thread);
-        });
-
-        app.MapPost("/api/chat/messages", async (
-            StudentChatSendRequest request,
-            IStudentChatService studentChatService,
-            CancellationToken cancellationToken) =>
-        {
-            try
-            {
-                var message = await studentChatService.QueueStudentMessageAsync(request, cancellationToken);
-                return Results.Ok(message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(ex.Message);
-            }
-        });
-
-        app.MapPost("/api/chat/messages/teacher", async (
-            TeacherChatLocalDeliveryRequest request,
-            IStudentChatService studentChatService,
-            CancellationToken cancellationToken) =>
-        {
-            var saved = await studentChatService.ReceiveTeacherMessageAsync(request, cancellationToken);
-            return saved is null ? Results.BadRequest("Teacher chat message text is required.") : Results.Ok(saved);
-        });
-
-        app.MapPost("/api/chat/outgoing/peek", async (IStudentChatService studentChatService, CancellationToken cancellationToken) =>
-        {
-            var messages = await studentChatService.PeekOutgoingAsync(cancellationToken);
-            return Results.Ok(new StudentChatOutboxPeekResponse(messages));
-        });
-
-        app.MapPost("/api/chat/outgoing/ack", async (
-            StudentChatOutboxAckRequest request,
-            IStudentChatService studentChatService,
-            CancellationToken cancellationToken) =>
-        {
-            var removed = await studentChatService.AcknowledgeOutgoingAsync(request.MessageIds ?? [], cancellationToken);
-            return Results.Ok(new OkResponse(true, $"Ack removed {removed} message(s)."));
-        });
-
-        app.MapPost("/api/chat/preferences", async (
-            StudentChatPreferencesUpdateRequest request,
-            IStudentChatService studentChatService,
-            CancellationToken cancellationToken) =>
-        {
-            var prefs = await studentChatService.UpdatePreferencesAsync(request, cancellationToken);
-            return Results.Ok(prefs);
-        });
-
-        app.MapGet("/api/captions/live", async (IStudentLiveCaptionService studentLiveCaptionService, CancellationToken cancellationToken) =>
-        {
-            var caption = await studentLiveCaptionService.GetCurrentAsync(cancellationToken);
-            return Results.Ok(caption);
-        });
-
-        app.MapPost("/api/captions/live/teacher", async (
-            TeacherLiveCaptionLocalDeliveryRequest request,
-            IStudentLiveCaptionService studentLiveCaptionService,
-            CancellationToken cancellationToken) =>
-        {
-            var caption = await studentLiveCaptionService.ApplyTeacherCaptionAsync(request, cancellationToken);
-            return Results.Ok(caption);
-        });
+        MapAccessibilityEndpoints(app);
+        MapDetectionEndpoints(app);
+        MapPairingEndpoints(app);
+        MapAgentEndpoints(app);
+        MapChatEndpoints(app);
 
         app.UseDefaultFiles();
         app.UseStaticFiles();
         app.MapFallbackToFile("index.html");
+    }
+
+    private static bool IsValidManifestUrl(string? manifestUrl)
+    {
+        if (string.IsNullOrWhiteSpace(manifestUrl))
+        {
+            return true;
+        }
+
+        if (!Uri.TryCreate(manifestUrl.Trim(), UriKind.Absolute, out var uri))
+        {
+            return false;
+        }
+
+        return string.Equals(uri.Scheme, "http", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(uri.Scheme, "https", StringComparison.OrdinalIgnoreCase);
     }
 }

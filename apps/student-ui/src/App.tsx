@@ -1,7 +1,7 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { DetectionStatusResponse, DiagnosticsExportResponse, DiscoveredServer, StatusResponse } from "./types";
-import { studentDictionary, UiLanguage } from "./i18n";
+import { UiLanguage } from "./i18n";
 import { AccessibilitySettingsPanel } from "./components/accessibility-settings-panel";
 import { ThemeToggle } from "./components/theme-toggle";
 import { Badge } from "./components/ui/badge";
@@ -9,8 +9,12 @@ import { Button } from "./components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
 import { Input } from "./components/ui/input";
 import { cn } from "./lib/utils";
+import { createStudentApiClient } from "./api/student-api-client";
+import { useStudentTranslation } from "./hooks/use-student-translation";
+import { StatusTile } from "./features/common/status-tile";
+import { PasswordRuleItem } from "./features/onboarding/password-rule-item";
+import { WizardStepItem } from "./features/onboarding/wizard-step-item";
 
-const HEADER = "X-Controledu-LocalToken";
 const THEME_KEY = "controledu.student.theme";
 const LANG_KEY = "controledu.student.lang";
 const AUTO_LOCK_TIMEOUT_MS = 5 * 60 * 1000;
@@ -22,7 +26,6 @@ const LOCK_DIALOG_DESC_ID = "student-lock-dialog-desc";
 
 type Theme = "light" | "dark";
 type MessageTone = "neutral" | "success" | "error";
-type ApiFn = <T>(path: string, init?: RequestInit) => Promise<T>;
 
 function App() {
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark"));
@@ -65,17 +68,7 @@ function App() {
   const discoveryInFlightRef = useRef(false);
   const discoveryFingerprintRef = useRef("");
 
-  const t = useCallback((key: string) => studentDictionary[lang][key] ?? key, [lang]);
-  const tf = useCallback(
-    (key: string, values: Record<string, string | number>) => {
-      let text = t(key);
-      for (const [name, value] of Object.entries(values)) {
-        text = text.replaceAll(`{${name}}`, String(value));
-      }
-      return text;
-    },
-    [t],
-  );
+  const { t, tf } = useStudentTranslation(lang);
   const setStatusMessage = useCallback((text: string, tone: MessageTone = "neutral") => {
     setMessage(text);
     setMessageTone(tone);
@@ -109,34 +102,7 @@ function App() {
     };
   }, []);
 
-  const api = useMemo<ApiFn>(() => {
-    return async <T,>(path: string, init?: RequestInit): Promise<T> => {
-      const response = await fetch(path, {
-        ...init,
-        headers: {
-          ...(init?.headers ?? {}),
-          [HEADER]: token,
-          ...(init?.body ? { "Content-Type": "application/json" } : {}),
-        },
-      });
-
-      const bodyText = await response.text();
-      if (!response.ok) {
-        throw new Error(bodyText || `Request failed (${response.status}).`);
-      }
-
-      if (!bodyText) {
-        return undefined as T;
-      }
-
-      const contentType = response.headers.get("content-type") ?? "";
-      if (!contentType.includes("application/json")) {
-        throw new Error(`Unexpected non-JSON response for ${path}.`);
-      }
-
-      return JSON.parse(bodyText) as T;
-    };
-  }, [token]);
+  const apiClient = useMemo(() => createStudentApiClient(() => token), [token]);
 
   const refreshStatus = useCallback(async () => {
     if (!token) {
@@ -144,8 +110,8 @@ function App() {
     }
 
     const [next, detection] = await Promise.all([
-      api<StatusResponse>("/api/status"),
-      api<DetectionStatusResponse>("/api/detection/status"),
+      apiClient.getStatus(),
+      apiClient.getDetectionStatus(),
     ]);
 
     setStatus(next);
@@ -156,19 +122,14 @@ function App() {
     if (!next.hasAdminPassword) {
       setIsUnlocked(true);
     }
-  }, [api, token]);
+  }, [apiClient, token]);
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       try {
-        const response = await fetch("/api/session");
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
-
-        const payload = (await response.json()) as { token: string };
+        const payload = await apiClient.createSession();
         if (!cancelled) {
           setToken(payload.token);
           setStatusMessage("Session established.", "success");
@@ -183,7 +144,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [apiClient, setStatusMessage]);
 
   useEffect(() => {
     if (!token) {
@@ -239,7 +200,7 @@ function App() {
       discoveryInFlightRef.current = true;
       setIsDiscovering(true);
       try {
-        const list = await api<DiscoveredServer[]>("/api/discovery", { method: "POST", body: JSON.stringify({}) });
+        const list = await apiClient.discoverServers();
         const fingerprint = list.map((server) => `${server.baseUrl}:${server.isRecommended ? 1 : 0}`).join("|");
         const changed = fingerprint !== discoveryFingerprintRef.current;
         discoveryFingerprintRef.current = fingerprint;
@@ -280,18 +241,15 @@ function App() {
         setIsDiscovering(false);
       }
     },
-    [api, manualAddress, setStatusMessage, showTopToast, tf, token],
+    [apiClient, manualAddress, setStatusMessage, showTopToast, tf, token],
   );
 
   const setPassword = useMutation({
     mutationFn: async () => {
-      await api<{ ok: boolean; message?: string }>("/api/setup/admin-password", {
-        method: "POST",
-        body: JSON.stringify({
-          password: setupPassword,
-          confirmPassword: setupConfirm,
-          enableAgentAutoStart: setupAutoStart,
-        }),
+      await apiClient.setupAdminPassword({
+        password: setupPassword,
+        confirmPassword: setupConfirm,
+        enableAgentAutoStart: setupAutoStart,
       });
     },
     onSuccess: async () => {
@@ -316,10 +274,7 @@ function App() {
         throw new Error("Select discovered server or provide manual address.");
       }
 
-      await api<{ ok: boolean; message?: string }>("/api/pairing", {
-        method: "POST",
-        body: JSON.stringify({ pin, serverAddress }),
-      });
+      await apiClient.pair({ pin, serverAddress });
     },
     onSuccess: async () => {
       setPin("");
@@ -332,10 +287,7 @@ function App() {
 
   const unpair = useMutation({
     mutationFn: async () => {
-      await api<{ ok: boolean; message?: string }>("/api/unpair", {
-        method: "POST",
-        body: JSON.stringify({ adminPassword: unpairPassword }),
-      });
+      await apiClient.unpair(unpairPassword);
     },
     onSuccess: async () => {
       setUnpairPassword("");
@@ -351,13 +303,7 @@ function App() {
         throw new Error("Admin password is required to disable autostart.");
       }
 
-      await api<{ ok: boolean; message?: string }>("/api/agent/autostart", {
-        method: "POST",
-        body: JSON.stringify({
-          enabled: autoStart,
-          adminPassword: autoStart ? undefined : autoStartPassword,
-        }),
-      });
+      await apiClient.saveAgentAutoStartPolicy(autoStart, autoStart ? undefined : autoStartPassword);
     },
     onSuccess: async () => {
       if (!autoStart) {
@@ -370,7 +316,7 @@ function App() {
   });
 
   const startAgent = useMutation({
-    mutationFn: async () => api<{ ok: boolean; message?: string }>("/api/agent/start", { method: "POST", body: JSON.stringify({}) }),
+    mutationFn: async () => apiClient.startAgent(),
     onSuccess: async () => {
       setStatusMessage("Agent start requested.", "success");
       await refreshStatus();
@@ -384,10 +330,7 @@ function App() {
         throw new Error("Admin password is required to stop the agent.");
       }
 
-      await api<{ ok: boolean; message?: string }>("/api/agent/stop", {
-        method: "POST",
-        body: JSON.stringify({ adminPassword: stopPassword }),
-      });
+      await apiClient.stopAgent(stopPassword);
     },
     onSuccess: async () => {
       setStopPassword("");
@@ -403,10 +346,7 @@ function App() {
         throw new Error("Admin password is required.");
       }
 
-      await api<{ ok: boolean; message?: string }>("/api/admin/verify", {
-        method: "POST",
-        body: JSON.stringify({ adminPassword: unlockPassword }),
-      });
+      await apiClient.verifyAdminPassword(unlockPassword);
     },
     onSuccess: () => {
       setUnlockPassword("");
@@ -427,10 +367,7 @@ function App() {
         throw new Error("Admin password is required.");
       }
 
-      await api<{ ok: boolean; message?: string }>("/api/device-name", {
-        method: "POST",
-        body: JSON.stringify({ deviceName: deviceName.trim(), adminPassword: renamePassword }),
-      });
+      await apiClient.updateDeviceName(deviceName.trim(), renamePassword);
     },
     onSuccess: async () => {
       setRenamePassword("");
@@ -446,10 +383,7 @@ function App() {
         throw new Error("Admin password is required.");
       }
 
-      await api<{ ok: boolean; message?: string }>("/api/system/shutdown", {
-        method: "POST",
-        body: JSON.stringify({ adminPassword: shutdownPassword, stopAgent: true }),
-      });
+      await apiClient.shutdownSystem(shutdownPassword, true);
     },
     onSuccess: () => {
       setShutdownPassword("");
@@ -464,10 +398,7 @@ function App() {
         throw new Error("Admin password is required.");
       }
 
-      await api<{ ok: boolean; message?: string }>("/api/detection/self-test", {
-        method: "POST",
-        body: JSON.stringify({ adminPassword: detectionAdminPassword }),
-      });
+      await apiClient.runDetectionSelfTest(detectionAdminPassword);
     },
     onSuccess: () => setStatusMessage("Self-test alert has been queued.", "success"),
     onError: (error) => setStatusMessage(String(error), "error"),
@@ -479,10 +410,7 @@ function App() {
         throw new Error("Admin password is required.");
       }
 
-      return api<DiagnosticsExportResponse>("/api/detection/export-diagnostics", {
-        method: "POST",
-        body: JSON.stringify({ adminPassword: detectionAdminPassword }),
-      });
+      return apiClient.exportDetectionDiagnostics(detectionAdminPassword);
     },
     onSuccess: (payload) => {
       setDiagnosticsArchivePath(payload.archivePath);
@@ -978,7 +906,7 @@ function App() {
             </Card>
             {isAccessibilityExpanded ? (
               <AccessibilitySettingsPanel
-                api={api}
+                api={apiClient}
                 lang={lang}
                 disabled={isLocked}
                 onStatusMessage={setStatusMessage}
@@ -1034,83 +962,6 @@ function App() {
           </Card>
         </div>
       )}
-    </div>
-  );
-}
-
-type StatusTileProps = {
-  label: string;
-  value: string;
-};
-
-function StatusTile({ label, value }: StatusTileProps) {
-  return (
-    <div className="rounded-md border border-border/80 bg-background/65 px-2.5 py-2" role="group" aria-label={`${label}: ${value}`}>
-      <p className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground">{label}</p>
-      <p className="mt-1 truncate text-sm font-medium">{value}</p>
-    </div>
-  );
-}
-
-type WizardStepState = "done" | "active" | "pending";
-
-type WizardStepItemProps = {
-  number: number;
-  title: string;
-  description: string;
-  state: WizardStepState;
-};
-
-function WizardStepItem({ number, title, description, state }: WizardStepItemProps) {
-  return (
-    <div
-      role="listitem"
-      aria-current={state === "active" ? "step" : undefined}
-      aria-label={`${title}. ${description}. ${state === "done" ? "Done" : state === "active" ? "Current step" : "Pending"}`}
-      className={cn(
-        "rounded-lg border p-2.5 transition",
-        state === "active" && "border-primary/50 bg-primary/10",
-        state === "done" && "border-emerald-500/40 bg-emerald-500/10",
-        state === "pending" && "border-border/70 bg-card/65",
-      )}
-    >
-      <div className="flex items-start gap-2.5">
-        <div
-          className={cn(
-            "mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
-            state === "active" && "bg-primary text-primary-foreground",
-            state === "done" && "bg-emerald-500 text-white",
-            state === "pending" && "bg-muted text-muted-foreground",
-          )}
-        >
-          {state === "done" ? "\u2713" : number}
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold leading-5">{title}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-type PasswordRuleItemProps = {
-  passed: boolean;
-  label: string;
-};
-
-function PasswordRuleItem({ passed, label }: PasswordRuleItemProps) {
-  return (
-    <div className="flex items-center gap-2 text-sm" role="listitem" aria-label={`${label}: ${passed ? "passed" : "not passed"}`}>
-      <span
-        className={cn(
-          "inline-flex h-5 w-5 items-center justify-center rounded-full text-xs font-semibold",
-          passed ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300" : "bg-muted text-muted-foreground",
-        )}
-      >
-        {passed ? "\u2713" : "\u2022"}
-      </span>
-      <span className={cn(passed ? "text-emerald-700 dark:text-emerald-300" : "text-muted-foreground")}>{label}</span>
     </div>
   );
 }

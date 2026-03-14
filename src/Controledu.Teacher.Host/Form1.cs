@@ -1,12 +1,11 @@
 ﻿using Controledu.Common.Runtime;
 using Controledu.Teacher.Host.Options;
 using Controledu.Common.Updates;
+using Controledu.Host.Core;
 using Controledu.Teacher.Server.Services;
 using Microsoft.Web.WebView2.Core;
 using System.Diagnostics;
 using System.Drawing;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Controledu.Teacher.Host;
 
@@ -254,25 +253,11 @@ public partial class Form1 : Form
         TopMost = false;
     }
 
-    private static void ConfigureWebViewSettings(CoreWebView2 coreWebView2)
-    {
-        coreWebView2.Settings.AreDefaultContextMenusEnabled = false;
-        coreWebView2.Settings.AreDevToolsEnabled = false;
-        coreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
-        coreWebView2.Settings.IsStatusBarEnabled = false;
-        coreWebView2.Settings.IsZoomControlEnabled = false;
-    }
+    private static void ConfigureWebViewSettings(CoreWebView2 coreWebView2) =>
+        HostWebViewRuntime.ConfigureLockedDownSettings(coreWebView2);
 
-    private static Icon LoadApplicationIcon()
-    {
-        var extractedIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-        if (extractedIcon is not null)
-        {
-            return (Icon)extractedIcon.Clone();
-        }
-
-        return new Icon(SystemIcons.Application, SystemIcons.Application.Size);
-    }
+    private static Icon LoadApplicationIcon() =>
+        HostWebViewRuntime.LoadApplicationIcon(SystemIcons.Application);
 
     private void BuildCustomChrome()
     {
@@ -403,28 +388,8 @@ public partial class Form1 : Form
         return chromeBar;
     }
 
-    private static Button CreateWindowButton(string text, bool isClose)
-    {
-        var button = new Button
-        {
-            Text = text,
-            Width = 45,
-            Height = 34,
-            FlatStyle = FlatStyle.Flat,
-            Margin = new Padding(0),
-            ForeColor = Color.FromArgb(234, 234, 234),
-            BackColor = Color.FromArgb(20, 20, 20),
-            Font = new Font("Segoe MDL2 Assets", 9.2F, FontStyle.Regular),
-            TabStop = false,
-            Cursor = Cursors.Hand,
-            UseVisualStyleBackColor = false,
-        };
-
-        button.FlatAppearance.BorderSize = 0;
-        button.FlatAppearance.MouseOverBackColor = isClose ? Color.FromArgb(232, 17, 35) : Color.FromArgb(46, 46, 46);
-        button.FlatAppearance.MouseDownBackColor = isClose ? Color.FromArgb(191, 20, 35) : Color.FromArgb(62, 62, 62);
-        return button;
-    }
+    private static Button CreateWindowButton(string text, bool isClose) =>
+        HostWindowChrome.CreateWindowButton(text, isClose);
 
     private void ToggleMaximizeState()
     {
@@ -457,80 +422,14 @@ public partial class Form1 : Form
         Padding = new Padding(padding);
     }
 
-    private void EnableDrag(Control control)
-    {
-        control.MouseDown += (_, eventArgs) =>
-        {
-            if (eventArgs.Button != MouseButtons.Left)
-            {
-                return;
-            }
+    private void EnableDrag(Control control) =>
+        HostWindowChrome.EnableDrag(control, Handle);
 
-            _ = ReleaseCapture();
-            _ = SendMessage(Handle, WmNclButtonDown, (nint)HtCaption, 0);
-        };
-    }
+    private int HitTestResizeBorder(Point screenPoint) =>
+        HostWindowChrome.HitTestResizeBorder(this, screenPoint, ResizeBorder);
 
-    private int HitTestResizeBorder(Point screenPoint)
-    {
-        var point = PointToClient(screenPoint);
-        var clientSize = ClientSize;
-
-        var onLeft = point.X <= ResizeBorder;
-        var onRight = point.X >= clientSize.Width - ResizeBorder;
-        var onTop = point.Y <= ResizeBorder;
-        var onBottom = point.Y >= clientSize.Height - ResizeBorder;
-
-        if (onTop && onLeft)
-        {
-            return HtTopLeft;
-        }
-
-        if (onTop && onRight)
-        {
-            return HtTopRight;
-        }
-
-        if (onBottom && onLeft)
-        {
-            return HtBottomLeft;
-        }
-
-        if (onBottom && onRight)
-        {
-            return HtBottomRight;
-        }
-
-        if (onTop)
-        {
-            return HtTop;
-        }
-
-        if (onBottom)
-        {
-            return HtBottom;
-        }
-
-        if (onLeft)
-        {
-            return HtLeft;
-        }
-
-        if (onRight)
-        {
-            return HtRight;
-        }
-
-        return HtClient;
-    }
-
-    private static Point GetPointFromLParam(nint lParam)
-    {
-        var value = lParam.ToInt64();
-        var x = (short)(value & 0xFFFF);
-        var y = (short)((value >> 16) & 0xFFFF);
-        return new Point(x, y);
-    }
+    private static Point GetPointFromLParam(nint lParam) =>
+        HostWindowChrome.GetPointFromLParam(lParam);
 
     private void StartAutoUpdateLoop()
     {
@@ -575,7 +474,7 @@ public partial class Form1 : Form
 
             var currentVersion = ControleduVersion.GetDisplayVersion();
             WriteAutoUpdateTrace($"Current version: {currentVersion}; manifest version: {manifest.Version}");
-            if (!_autoUpdateClient.IsUpdateAvailable(currentVersion, manifest))
+            if (!AutoUpdateClient.IsUpdateAvailable(currentVersion, manifest))
             {
                 WriteAutoUpdateTrace("No update available.");
                 return;
@@ -629,61 +528,14 @@ public partial class Form1 : Form
         }
     }
 
-    private bool TryLaunchUpdater(string installerPath, string productKey)
-    {
-        try
-        {
-            var packagedUpdater = Path.Combine(AppContext.BaseDirectory, "Updater", "Controledu.Updater.exe");
-            if (!File.Exists(packagedUpdater))
-            {
-                WriteAutoUpdateTrace($"Updater missing: {packagedUpdater}");
-                ShowAutoUpdateNotification("Updater component is missing.");
-                return false;
-            }
-
-            var tempUpdater = CopyUpdaterToTemp(packagedUpdater);
-            var updaterLogPath = Path.Combine(AppPaths.GetLogsPath(), $"updater-{productKey}.log");
-            var args = string.Join(" ", [
-                "--installer", QuoteArg(installerPath),
-                "--wait-pid", Environment.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                "--restart", QuoteArg(Application.ExecutablePath),
-                "--product", QuoteArg(productKey),
-                "--log", QuoteArg(updaterLogPath)
-            ]);
-
-            var startInfo = new ProcessStartInfo(tempUpdater, args)
-            {
-                UseShellExecute = true,
-                Verb = "runas",
-                WorkingDirectory = Path.GetDirectoryName(tempUpdater) ?? AppContext.BaseDirectory,
-            };
-
-            _ = Process.Start(startInfo);
-            WriteAutoUpdateTrace($"Started updater process from temp copy: {tempUpdater}");
-            return true;
-        }
-        catch (System.ComponentModel.Win32Exception ex)
-        {
-            WriteAutoUpdateTrace($"UAC/launch error: {ex}");
-            ShowAutoUpdateNotification("Update requires administrator approval (UAC).");
-            return false;
-        }
-        catch (Exception ex)
-        {
-            WriteAutoUpdateTrace($"Updater launch failed: {ex}");
-            ShowAutoUpdateNotification($"Updater failed: {TrimNotification(ex.Message)}");
-            return false;
-        }
-    }
-
-    private static string CopyUpdaterToTemp(string packagedUpdaterPath)
-    {
-        var tempDir = Path.Combine(Path.GetTempPath(), "Controledu", "UpdaterRuntime", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(tempDir);
-        var tempUpdaterPath = Path.Combine(tempDir, Path.GetFileName(packagedUpdaterPath));
-        File.Copy(packagedUpdaterPath, tempUpdaterPath, overwrite: true);
-        return tempUpdaterPath;
-    }
+    private bool TryLaunchUpdater(string installerPath, string productKey) =>
+        HostAutoUpdateUtility.TryLaunchUpdater(
+            installerPath,
+            productKey,
+            Application.ExecutablePath,
+            Environment.ProcessId,
+            WriteAutoUpdateTrace,
+            ShowAutoUpdateNotification);
 
     private void ShowAutoUpdateNotification(string text)
     {
@@ -694,16 +546,8 @@ public partial class Form1 : Form
         _notifyIcon.ShowBalloonTip(2500);
     }
 
-    private static string TrimNotification(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return "Unknown error";
-        }
-
-        var trimmed = text.Trim().Replace(Environment.NewLine, " ");
-        return trimmed.Length > 160 ? trimmed[..160] : trimmed;
-    }
+    private static string TrimNotification(string text) =>
+        HostAutoUpdateUtility.TrimNotification(text);
 
     private void ShowAutoUpdateBannerStatus(string text, string bannerKind, bool showActions)
     {
@@ -894,34 +738,6 @@ public partial class Form1 : Form
         SetAutoUpdatePromptVisible(false);
     }
 
-    private static void WriteAutoUpdateTrace(string message)
-    {
-        try
-        {
-            var line = $"{DateTimeOffset.UtcNow:O} [teacher-host] {message}";
-            var path = Path.Combine(AppPaths.GetLogsPath(), "autoupdate-teacher.log");
-            File.AppendAllText(path, line + Environment.NewLine, Encoding.UTF8);
-            Debug.WriteLine(line);
-        }
-        catch
-        {
-            // Ignore logging failures.
-        }
-    }
-
-    private static string QuoteArg(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            return "\"\"";
-        }
-
-        return "\"" + value.Replace("\"", "\\\"") + "\"";
-    }
-
-    [DllImport("user32.dll")]
-    private static extern bool ReleaseCapture();
-
-    [DllImport("user32.dll")]
-    private static extern nint SendMessage(nint hWnd, int msg, nint wParam, nint lParam);
+    private static void WriteAutoUpdateTrace(string message) =>
+        HostAutoUpdateUtility.WriteAutoUpdateTrace("teacher-host", message);
 }

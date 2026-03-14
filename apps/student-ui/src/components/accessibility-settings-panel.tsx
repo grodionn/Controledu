@@ -13,12 +13,12 @@ import {
 } from "../types";
 import { UiLanguage } from "../i18n";
 import { cn } from "../lib/utils";
+import type { StudentApiClient } from "../api/student-api-client";
 
-type ApiClient = <T>(path: string, init?: RequestInit) => Promise<T>;
 type MessageTone = "neutral" | "success" | "error";
 
 type Props = {
-  api: ApiClient;
+  api: StudentApiClient;
   lang: UiLanguage;
   disabled?: boolean;
   onStatusMessage?: (text: string, tone?: MessageTone) => void;
@@ -262,7 +262,7 @@ export function AccessibilitySettingsPanel({ api, lang, disabled = false, onStat
     setIsLoading(true);
     setError("");
 
-    api<AccessibilityProfileResponse>("/api/accessibility/profile")
+    api.getAccessibilityProfile()
       .then((payload) => {
         if (cancelled) {
           return;
@@ -312,7 +312,7 @@ export function AccessibilitySettingsPanel({ api, lang, disabled = false, onStat
       }
 
       try {
-        const payload = await api<AccessibilityProfileResponse>("/api/accessibility/profile");
+        const payload = await api.getAccessibilityProfile();
         if (cancelled) {
           return;
         }
@@ -415,10 +415,7 @@ export function AccessibilitySettingsPanel({ api, lang, disabled = false, onStat
     setIsSaving(true);
     setError("");
     try {
-      const payload = await api<AccessibilityProfileResponse>("/api/accessibility/profile/preset", {
-        method: "POST",
-        body: JSON.stringify({ presetId }),
-      });
+      const payload = await api.applyAccessibilityPreset(presetId);
       setProfile(payload);
       setDraft(toDraft(payload));
       onStatusMessage?.(copy.presetApplied, "success");
@@ -439,10 +436,7 @@ export function AccessibilitySettingsPanel({ api, lang, disabled = false, onStat
     setIsSaving(true);
     setError("");
     try {
-      const payload = await api<AccessibilityProfileResponse>("/api/accessibility/profile", {
-        method: "POST",
-        body: JSON.stringify(draft),
-      });
+      const payload = await api.updateAccessibilityProfile(draft);
       setProfile(payload);
       setDraft(toDraft(payload));
       onStatusMessage?.(copy.saved, "success");

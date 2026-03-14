@@ -2,7 +2,9 @@ using Controledu.Transport.Constants;
 using Controledu.Transport.Dto;
 using Controledu.Storage.Stores;
 using Controledu.Teacher.Server.Hubs;
+using Controledu.Teacher.Server.Security;
 using Controledu.Teacher.Server.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
@@ -13,6 +15,7 @@ namespace Controledu.Teacher.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/files")]
+[Authorize(Policy = TeacherAuthDefaults.TeacherPolicy)]
 public sealed class FileTransferController(
     IFileTransferCoordinator transferCoordinator,
     IStudentRegistry studentRegistry,
@@ -91,6 +94,7 @@ public sealed class FileTransferController(
     /// Returns missing chunks list for student resume.
     /// </summary>
     [HttpPost("{transferId}/missing")]
+    [AllowAnonymous]
     [ProducesResponseType<MissingChunksResponseDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<MissingChunksResponseDto>> MissingChunks(string transferId, [FromBody] MissingChunksRequestDto request, CancellationToken cancellationToken)
@@ -108,6 +112,7 @@ public sealed class FileTransferController(
     /// Downloads a specific chunk.
     /// </summary>
     [HttpGet("{transferId}/chunk/{chunkIndex:int}")]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> DownloadChunk(string transferId, int chunkIndex, [FromQuery] string clientId, CancellationToken cancellationToken)
     {

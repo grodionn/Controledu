@@ -1,5 +1,7 @@
 using Controledu.Storage.Models;
 using Controledu.Storage.Stores;
+using Controledu.Teacher.Server.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Controledu.Teacher.Server.Controllers;
@@ -9,6 +11,7 @@ namespace Controledu.Teacher.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/audit")]
+[Authorize(Policy = TeacherAuthDefaults.TeacherPolicy)]
 public sealed class AuditController(IAuditLogStore auditLogStore) : ControllerBase
 {
     /// <summary>

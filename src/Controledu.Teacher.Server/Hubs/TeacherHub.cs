@@ -4,6 +4,8 @@ using Controledu.Transport.Dto;
 using Controledu.Storage.Models;
 using Controledu.Storage.Stores;
 using Controledu.Teacher.Server.Services;
+using Controledu.Teacher.Server.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Controledu.Teacher.Server.Hubs;
@@ -11,6 +13,7 @@ namespace Controledu.Teacher.Server.Hubs;
 /// <summary>
 /// SignalR hub for teacher UI clients.
 /// </summary>
+[Authorize(Policy = TeacherAuthDefaults.TeacherPolicy)]
 public sealed class TeacherHub(
     IStudentRegistry studentRegistry,
     IPairingCodeService pairingCodeService,
@@ -150,4 +153,6 @@ public sealed class TeacherHub(
         await base.OnDisconnectedAsync(exception);
     }
 }
+
+
 

@@ -40,18 +40,4 @@ public sealed class OnnxModelConfig
     /// </summary>
     public int InputHeight { get; set; } = 224;
 
-    /// <summary>
-    /// Positive threshold for binary classifier.
-    /// </summary>
-    public double BinaryThreshold { get; set; } = 0.72;
-
-    /// <summary>
-    /// Positive threshold for multiclass classifier.
-    /// </summary>
-    public double MulticlassThreshold { get; set; } = 0.70;
-
-    /// <summary>
-    /// Runtime provider hint.
-    /// </summary>
-    public string Provider { get; set; } = "CPU";
 }

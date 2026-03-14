@@ -29,9 +29,6 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup -y
 
-      - name: Publish Artifacts
-        run: scripts\publish.cmd
-
       - name: Resolve Version
         id: version
         shell: pwsh
@@ -41,11 +38,8 @@ jobs:
           if ([string]::IsNullOrWhiteSpace($version)) { $version = '0.1.0' }
           "version=$version" >> $env:GITHUB_OUTPUT
 
-      - name: Build Installers
-        run: |
-          mkdir artifacts\installers
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\inno\controledu-teacher.iss /DMyAppVersion=${{ steps.version.outputs.version }} /DOutputDir="${{ github.workspace }}\\artifacts\\installers" /DSourceDir="${{ github.workspace }}\\artifacts\\publish\\teacher-host"
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\inno\controledu-student.iss /DMyAppVersion=${{ steps.version.outputs.version }} /DOutputDir="${{ github.workspace }}\\artifacts\\installers" /DSourceHostDir="${{ github.workspace }}\\artifacts\\publish\\student-host" /DSourceAgentDir="${{ github.workspace }}\\artifacts\\publish\\student-agent"
+      - name: Build Release Artifacts
+        run: cmd /c scripts\build.cmd ${{ steps.version.outputs.version }}
 
       - name: Create Portable ZIPs
         shell: pwsh

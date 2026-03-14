@@ -1,4 +1,6 @@
-﻿using Controledu.Teacher.Server.Services;
+﻿using Controledu.Teacher.Server.Security;
+using Controledu.Teacher.Server.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Controledu.Teacher.Server.Controllers;
@@ -8,6 +10,7 @@ namespace Controledu.Teacher.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/server")]
+[Authorize(Policy = TeacherAuthDefaults.TeacherPolicy)]
 public sealed class ServerInfoController(IServerIdentityService identityService) : ControllerBase
 {
     /// <summary>
@@ -20,6 +23,7 @@ public sealed class ServerInfoController(IServerIdentityService identityService)
     /// <summary>
     /// Returns health status.
     /// </summary>
+    [AllowAnonymous]
     [HttpGet("health")]
     public IActionResult Health() => Ok(new { status = "ok", utc = DateTimeOffset.UtcNow });
 }

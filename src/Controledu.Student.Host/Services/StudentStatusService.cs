@@ -1,6 +1,7 @@
 using Controledu.Student.Host.Contracts;
 using Controledu.Common.Runtime;
 using Controledu.Storage.Stores;
+using Controledu.Transport.Dto;
 
 namespace Controledu.Student.Host.Services;
 
@@ -34,16 +35,9 @@ internal sealed class StudentStatusService(
         var agentRunning = agentProcessManager.IsRunning;
         var lastAlert = await settingsStore.GetAsync(DetectionSettingKeys.LastAlert, cancellationToken);
         var lastCheckUtc = await settingsStore.GetAsync(DetectionSettingKeys.LastCheckUtc, cancellationToken);
-        var detectionEnabledRaw = await settingsStore.GetAsync(DetectionSettingKeys.EffectivePolicyJson, cancellationToken);
-        var dataCollectionRaw = await settingsStore.GetAsync(DetectionSettingKeys.DataCollectionEnabled, cancellationToken);
-
-        var detectionEnabled = true;
-        if (!string.IsNullOrWhiteSpace(detectionEnabledRaw))
-        {
-            detectionEnabled = !detectionEnabledRaw.Contains("\"enabled\":false", StringComparison.OrdinalIgnoreCase);
-        }
-
-        var dataCollectionEnabled = string.Equals(dataCollectionRaw, "1", StringComparison.Ordinal);
+        var productionPolicy = DetectionPolicyFactory.CreateProductionPolicy(enabled: true);
+        var detectionEnabled = productionPolicy.Enabled;
+        var dataCollectionEnabled = false;
 
         return new StudentStatusResponse(
             hasAdminPassword,

@@ -1,0 +1,14 @@
+export const CHUNK_SIZE = 256 * 1024;
+export const THEME_KEY = "controledu.teacher.theme";
+export const LANG_KEY = "controledu.teacher.lang";
+export const AI_WARNINGS_KEY = "controledu.teacher.ai-warnings-enabled";
+export const DESKTOP_NOTIFICATIONS_KEY = "controledu.teacher.desktop-notifications-enabled";
+export const SOUND_NOTIFICATIONS_KEY = "controledu.teacher.sound-notifications-enabled";
+export const NOTIFICATION_VOLUME_KEY = "controledu.teacher.notification-volume";
+export const SELFHOST_TTS_URL_KEY = "controledu.teacher.selfhost-tts-url";
+export const SELFHOST_TTS_TOKEN_KEY = "controledu.teacher.selfhost-tts-token";
+export const STT_MIC_DEVICE_ID_KEY = "controledu.teacher.stt-microphone-device-id";
+export const STT_LANGUAGE_KEY = "controledu.teacher.stt-language";
+export const THUMBNAIL_FRAME_INTERVAL_MS = 200;
+export const STT_RECORDER_SLICE_MS = 3600;
+export const STT_CAPTION_SEND_MIN_INTERVAL_MS = 900;

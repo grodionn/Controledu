@@ -7,11 +7,15 @@
     <LangVersion>latest</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <ControleduDisplayVersion>0.1.82</ControleduDisplayVersion>
-    <Version>0.1.82</Version>
+    <ControleduDisplayVersion>0.1.87</ControleduDisplayVersion>
+    <Version>0.1.87</Version>
     <InformationalVersion>$(ControleduDisplayVersion)</InformationalVersion>
-    <AssemblyVersion>0.1.82.0</AssemblyVersion>
-    <FileVersion>0.1.82.0</FileVersion>
+    <AssemblyVersion>0.1.87.0</AssemblyVersion>
+    <FileVersion>0.1.87.0</FileVersion>
+  </PropertyGroup>
+  <Import Project="eng\warnings-budget.props" Condition="Exists('eng\warnings-budget.props')" />
+  <PropertyGroup Condition="'$(ControleduWarningBudget)' != ''">
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);$(ControleduWarningBudget)</WarningsNotAsErrors>
   </PropertyGroup>
 </Project>
 

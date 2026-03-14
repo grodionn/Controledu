@@ -1,4 +1,6 @@
 using Controledu.Teacher.Server.Services;
+using Controledu.Teacher.Server.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Controledu.Teacher.Server.Controllers;
@@ -8,6 +10,7 @@ namespace Controledu.Teacher.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/desktop")]
+[Authorize(Policy = TeacherAuthDefaults.TeacherPolicy)]
 public sealed class DesktopNotificationController(
     IDesktopNotificationService desktopNotificationService,
     IAuditService auditService) : ControllerBase

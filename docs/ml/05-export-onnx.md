@@ -41,8 +41,6 @@ python ml\export_onnx.py --config ml\config.yaml --task multiclass --verify
 - `StudentAgent:Onnx:BinaryModelPath`
 - `StudentAgent:Onnx:MulticlassModelPath`
 - `StudentAgent:Onnx:ClassLabelsPath`
-- `StudentAgent:Onnx:BinaryThreshold`
-- `StudentAgent:Onnx:MulticlassThreshold`
 
 ## 5) Проверьте поведение в рантайме
 

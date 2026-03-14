@@ -1,6 +1,8 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using Controledu.Teacher.Server.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Controledu.Teacher.Server.Controllers;
@@ -10,6 +12,7 @@ namespace Controledu.Teacher.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/speech")]
+[Authorize(Policy = TeacherAuthDefaults.TeacherPolicy)]
 public sealed class SpeechController(IHttpClientFactory httpClientFactory) : ControllerBase
 {
     /// <summary>
