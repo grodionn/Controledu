@@ -19,6 +19,7 @@ public sealed class StudentsControllerIntegrationTests : IAsyncLifetime
     }
 
     [Fact]
+    [Trait("Category", "E2E")]
     public async Task SendTeacherChatMessage_WithoutTeacherToken_ReturnsUnauthorized()
     {
         using var client = _host.TestServer.CreateClient();
@@ -30,6 +31,7 @@ public sealed class StudentsControllerIntegrationTests : IAsyncLifetime
     }
 
     [Fact]
+    [Trait("Category", "E2E")]
     public async Task SendTeacherChatMessage_WithOnlineStudent_ReturnsOk()
     {
         const string clientId = "student-001";

@@ -26,6 +26,9 @@ public sealed class UdpDiscoveryClient(IOptions<DiscoveryOptions> options, ILogg
     private static readonly Action<ILogger, string, string, Exception?> LogDiscoveryCandidate =
         LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(1104, nameof(LogDiscoveryCandidate)), "Discovery candidate {ServerName} at {HostPort}");
 
+    private static readonly Action<ILogger, int, Exception?> LogDiscoveryCompleted =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(1105, nameof(LogDiscoveryCompleted)), "Discovery scan completed with {ServerCount} server(s)");
+
     /// <summary>
     /// Sends discovery probe and returns collected servers.
     /// </summary>
@@ -110,13 +113,16 @@ public sealed class UdpDiscoveryClient(IOptions<DiscoveryOptions> options, ILogg
             }
         }
 
-        return bestByServerId
+        var result = bestByServerId
             .Values
             .OrderByDescending(static item => item.Score)
             .ThenBy(static item => item.Server.ServerName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static item => item.Server.Host, StringComparer.OrdinalIgnoreCase)
             .Select(static item => item.Server)
             .ToArray();
+
+        LogDiscoveryCompleted(logger, result.Length, null);
+        return result;
     }
 
     private static List<IPEndPoint> BuildProbeTargets(int port)

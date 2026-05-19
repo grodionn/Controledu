@@ -6,6 +6,7 @@ export type StatusResponse = {
   pairedServerBaseUrl?: string | null;
   serverOnline: boolean;
   monitoringActive: boolean;
+  hostAutoStart: boolean;
   agentAutoStart: boolean;
   agentRunning: boolean;
   lastAlert?: string | null;

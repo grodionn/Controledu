@@ -4,10 +4,9 @@ import commonRu from "./locales/common.ru.json";
 import teacherEn from "./locales/teacher.en.json";
 import teacherKz from "./locales/teacher.kz.json";
 import teacherRu from "./locales/teacher.ru.json";
-
-export type UiLanguage = "ru" | "en" | "kz";
-
-type LanguageDictionary = Record<string, string>;
+import { interpolate, mergeDictionaries, type LanguageDictionary, type UiLanguage } from "@controledu/shared-core/i18n";
+export { interpolate };
+export type { UiLanguage };
 
 export const sharedI18nKeys = [
   "connected",
@@ -19,21 +18,8 @@ export const sharedI18nKeys = [
   "pairingPin",
 ] as const;
 
-function mergeDictionaries(common: LanguageDictionary, specific: LanguageDictionary): LanguageDictionary {
-  return { ...common, ...specific };
-}
-
 export const teacherDictionary: Record<UiLanguage, LanguageDictionary> = {
   ru: mergeDictionaries(commonRu, teacherRu),
   en: mergeDictionaries(commonEn, teacherEn),
   kz: mergeDictionaries(commonKz, teacherKz),
 };
-
-export function interpolate(template: string, values: Record<string, string>): string {
-  let result = template;
-  for (const [key, value] of Object.entries(values)) {
-    result = result.replaceAll(`{${key}}`, value);
-  }
-
-  return result;
-}

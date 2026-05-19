@@ -7,9 +7,11 @@ using Controledu.Teacher.Server.Security;
 using Controledu.Teacher.Server.Services;
 using Controledu.Transport.Constants;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Globalization;
 using System.Net;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 namespace Controledu.Teacher.Server;
@@ -62,6 +64,46 @@ public static class TeacherServerHostFactory
                 json.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             })
             .AddApplicationPart(typeof(TeacherServerAssemblyMarker).Assembly);
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Controledu Teacher API",
+                Version = "v1",
+                Description = "Teacher backend API contract used by host and frontend clients.",
+            });
+
+            options.AddSecurityDefinition(TeacherAuthDefaults.TokenHeaderName, new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.ApiKey,
+                In = ParameterLocation.Header,
+                Name = TeacherAuthDefaults.TokenHeaderName,
+                Description = "Teacher API token issued by /api/session.",
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Id = TeacherAuthDefaults.TokenHeaderName,
+                            Type = ReferenceType.SecurityScheme,
+                        },
+                    },
+                    []
+                },
+            });
+
+            var xmlFileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFileName);
+            if (File.Exists(xmlPath))
+            {
+                options.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+            }
+        });
 
         builder.Services.AddSignalR(hubOptions =>
         {
@@ -126,12 +168,20 @@ public static class TeacherServerHostFactory
 
         builder.Host.UseSerilog((context, _, loggerConfiguration) =>
         {
-            var logsDirectory = AppPaths.GetLogsPath();
             loggerConfiguration
                 .ReadFrom.Configuration(context.Configuration)
                 .Enrich.FromLogContext()
-                .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-                .WriteTo.File(Path.Combine(logsDirectory, "teacher-server-.log"), rollingInterval: RollingInterval.Day, formatProvider: CultureInfo.InvariantCulture);
+                .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture);
+
+            if (AppPaths.IsFileLoggingEnabled())
+            {
+                var logsDirectory = AppPaths.GetLogsPath();
+                loggerConfiguration.WriteTo.File(
+                    Path.Combine(logsDirectory, "teacher-server-.log"),
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 14,
+                    formatProvider: CultureInfo.InvariantCulture);
+            }
         });
     }
 
@@ -140,6 +190,13 @@ public static class TeacherServerHostFactory
     /// </summary>
     public static void ConfigureApp(WebApplication app)
     {
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "Controledu Teacher API v1");
+            options.DocumentTitle = "Controledu Teacher API";
+        });
+
         app.UseRouting();
         app.UseCors(CorsPolicyName);
         app.UseAuthentication();

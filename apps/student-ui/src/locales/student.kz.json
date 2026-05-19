@@ -19,7 +19,7 @@
   "onboardingSelectedTarget": "Ағымдағы қосылу нүктесі",
   "onboardingLiveDiscovery": "Сервер автоіздеуі нақты уақытта үздіксіз жүреді.",
   "onboardingAutoSelectNotice": "Found {count} server node(s). Recommended target selected automatically.",
-  "onboardingEnterPinHint": "Басқару консоліндегі бір реттік PIN кодын енгізіңіз (уақыты шектеулі).",
+  "onboardingEnterPinHint": "Басқару консоліндегі PIN кодын енгізіңіз. Ол 4 сағат жарамды және қайта қолдануға болады.",
   "step1Title": "1-қадам - Құрылғыны қорғау",
   "step1Desc": "Жергілікті admin құпиясөзін орнатыңыз. Ол ажырату, агентті тоқтату және автожүктеуді өзгерту үшін қажет.",
   "adminPassword": "Админ құпиясөзі",
@@ -27,7 +27,7 @@
   "enableAutoStartNow": "Орнатудан кейін Agent автожүктеуін қосу",
   "saveAdminPassword": "Admin құпиясөзін сақтау",
   "step2Title": "2-қадам - Серверге қосу",
-  "step2Desc": "LAN арқылы серверді табыңыз немесе мекенжайды қолмен енгізіп, бір реттік PIN енгізіңіз.",
+  "step2Desc": "LAN арқылы серверді табыңыз немесе мекенжайды қолмен енгізіп, мұғалім консоліндегі PIN кодын енгізіңіз.",
   "discoverTeachers": "Серверлерді табу",
   "refreshStatus": "Күйді жаңарту",
   "discoveredServer": "Табылған сервер",
@@ -99,5 +99,9 @@
   "shutdownNow": "Бағдарламаны тоқтату",
   "accessibilityPanelTitle": "Қолжетімділік және жеке профиль",
   "expandSection": "Ашу",
-  "collapseSection": "Жинау"
+  "collapseSection": "Жинау",
+  "appAutostart": "Қолданба автожүктеуі",
+  "appAutostartDesc": "Controledu Student қолданбасын Windows автожүктеуіне қосады, сонда desktop-қолданба жүйеге кіргеннен кейін автоматты ашылады.",
+  "enableAppAutostart": "Қолданба автожүктеуін қосу",
+  "disableAppAutostart": "Қолданба автожүктеуін өшіру"
 }

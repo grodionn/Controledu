@@ -315,6 +315,22 @@ function App() {
     onError: (error) => setStatusMessage(String(error), "error"),
   });
 
+  const saveHostAutoStart = useMutation({
+    mutationFn: async () => {
+      if (!status) {
+        throw new Error("Status is not loaded yet.");
+      }
+
+      await apiClient.saveHostAutoStartPolicy(!status.hostAutoStart);
+    },
+    onSuccess: async () => {
+      const nextEnabled = !(status?.hostAutoStart ?? false);
+      setStatusMessage(nextEnabled ? "Application autostart enabled." : "Application autostart disabled.", "success");
+      await refreshStatus();
+    },
+    onError: (error) => setStatusMessage(String(error), "error"),
+  });
+
   const startAgent = useMutation({
     mutationFn: async () => apiClient.startAgent(),
     onSuccess: async () => {
@@ -769,6 +785,7 @@ function App() {
                     <div className="grid gap-2 sm:grid-cols-2">
                       <StatusTile label={t("serverOnline")} value={status.serverOnline ? t("connected") : t("disconnected")} />
                       <StatusTile label={t("agentProcess")} value={status.agentRunning ? t("running") : t("stopped")} />
+                      <StatusTile label={t("appAutostart")} value={status.hostAutoStart ? t("enabled") : t("disabled")} />
                       <StatusTile label={t("autostart")} value={status.agentAutoStart ? t("enabled") : t("disabled")} />
                       <StatusTile label={t("teacherServer")} value={status.pairedServerName ?? "Unknown"} />
                     </div>
@@ -792,6 +809,18 @@ function App() {
                       value={stopPassword}
                       onChange={(event) => setStopPassword(event.target.value)}
                     />
+                    <div className="mt-3 rounded-lg border border-border bg-background/60 p-3">
+                      <p className="text-sm font-medium">{t("appAutostart")}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{t("appAutostartDesc")}</p>
+                      <Button
+                        className="mt-3"
+                        variant="secondary"
+                        onClick={() => saveHostAutoStart.mutate()}
+                        disabled={saveHostAutoStart.isPending}
+                      >
+                        {status.hostAutoStart ? t("disableAppAutostart") : t("enableAppAutostart")}
+                      </Button>
+                    </div>
                     <div className="mt-3 rounded-lg border border-border bg-muted/35 p-3">
                       <label className="mb-2 flex items-center gap-2 text-sm">
                         <input

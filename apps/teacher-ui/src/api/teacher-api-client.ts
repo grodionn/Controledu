@@ -8,6 +8,12 @@ import type {
   TeacherStudentChatMessage,
   UploadInitResponse,
 } from "../lib/types";
+import {
+  normalizeAlertItem,
+  normalizeAuditItem,
+  normalizePairPinResponse,
+  normalizeUploadInitResponse,
+} from "../lib/types";
 import type { TeacherLiveCaptionRequestDto, TeacherSessionResponse, TeacherSttTranscribeResponse } from "../features/app/types";
 import { requestJson, requestRaw, type RequestOptions } from "./http-client";
 
@@ -80,11 +86,13 @@ export class TeacherApiClient {
   }
 
   public async getAuditLatest(take = 120): Promise<AuditItem[]> {
-    return this.requestJson<AuditItem[]>(`/api/audit/latest?take=${Math.max(1, take)}`, { method: "GET" }, { retry: { maxAttempts: 3 } });
+    const items = await this.requestJson<AuditItem[]>(`/api/audit/latest?take=${Math.max(1, take)}`, { method: "GET" }, { retry: { maxAttempts: 3 } });
+    return items.map((item) => normalizeAuditItem(item));
   }
 
   public async getDetectionEvents(take = 200): Promise<AlertItem[]> {
-    return this.requestJson<AlertItem[]>(`/api/detection/events?take=${Math.max(1, take)}`, { method: "GET" }, { retry: { maxAttempts: 3 } });
+    const items = await this.requestJson<AlertItem[]>(`/api/detection/events?take=${Math.max(1, take)}`, { method: "GET" }, { retry: { maxAttempts: 3 } });
+    return items.map((item) => normalizeAlertItem(item));
   }
 
   public async getDetectionPolicy(): Promise<DetectionPolicy> {
@@ -98,7 +106,8 @@ export class TeacherApiClient {
   }
 
   public async generatePairingPin(): Promise<PairPinResponse> {
-    return this.requestJson<PairPinResponse>("/api/pairing/pin", { method: "POST" });
+    const response = await this.requestJson<PairPinResponse>("/api/pairing/pin", { method: "POST" });
+    return normalizePairPinResponse(response);
   }
 
   public async initFileUpload(request: {
@@ -108,11 +117,12 @@ export class TeacherApiClient {
     chunkSize: number;
     uploadedBy: string;
   }): Promise<UploadInitResponse> {
-    return this.requestJson<UploadInitResponse>("/api/files/upload/init", {
+    const response = await this.requestJson<UploadInitResponse>("/api/files/upload/init", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
     });
+    return normalizeUploadInitResponse(response);
   }
 
   public async uploadFileChunk(transferId: string, chunkIndex: number, chunk: Uint8Array, chunkSha256: string): Promise<void> {

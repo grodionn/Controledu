@@ -30,7 +30,7 @@ public sealed class TeacherHub(
     public Task<IReadOnlyList<StudentInfoDto>> GetStudents() => Task.FromResult(studentRegistry.GetAll());
 
     /// <summary>
-    /// Generates one-time pairing PIN.
+    /// Generates pairing PIN.
     /// </summary>
     public Task<PairingPinDto> GeneratePairingPin() => Task.FromResult(pairingCodeService.Generate());
 

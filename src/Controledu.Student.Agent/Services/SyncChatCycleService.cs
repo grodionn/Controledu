@@ -29,7 +29,6 @@ public interface ISyncChatCycleService
 internal sealed class SyncChatCycleService(
     StudentHubClient hubClient,
     IStudentLocalHostClient studentLocalHostClient,
-    DatasetCollectionService datasetCollectionService,
     DiagnosticsExportUploader diagnosticsExportUploader,
     ITeacherTtsSynthesisService teacherTtsSynthesisService,
     ITeacherTtsPlaybackQueue teacherTtsPlaybackQueue,
@@ -144,7 +143,14 @@ internal sealed class SyncChatCycleService(
         {
             try
             {
-                var archivePath = await datasetCollectionService.ExportDatasetAsync(cancellationToken);
+                var archivePath = DiagnosticsArchiveBuilder.CreateStudentDiagnosticsArchive(
+                    new Dictionary<string, string?>
+                    {
+                        ["source"] = "student-agent-remote-request",
+                        ["requestId"] = requestId,
+                        ["clientId"] = binding.ClientId,
+                    },
+                    cancellationToken);
                 await diagnosticsExportUploader.UploadAsync(binding, archivePath, cancellationToken);
 
                 await settingsStore.SetAsync(

@@ -26,4 +26,23 @@ describe("StudentApiClient", () => {
     const headers = new Headers(init.headers);
     expect(headers.get("X-Controledu-LocalToken")).toBe("local-token-xyz");
   });
+
+  it("saves host autostart policy through the local API", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+
+    globalThis.fetch = fetchMock;
+    const api = new StudentApiClient(() => "local-token-xyz");
+
+    await api.saveHostAutoStartPolicy(true);
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("/api/host/autostart");
+    expect(init.method).toBe("POST");
+    expect(init.body).toBe(JSON.stringify({ enabled: true }));
+  });
 });

@@ -38,8 +38,8 @@ public sealed class TeacherServerOptions
     /// <summary>
     /// Pairing code lifetime in seconds.
     /// </summary>
-    [Range(10, 3600)]
-    public int PairingPinLifetimeSeconds { get; set; } = 60;
+    [Range(10, 24 * 3600)]
+    public int PairingPinLifetimeSeconds { get; set; } = 4 * 60 * 60;
 
     /// <summary>
     /// Pairing token lifetime in hours.

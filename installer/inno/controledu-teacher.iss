@@ -4,7 +4,7 @@
 #define AppMutexName "ControleduTeacherHostMutex"
 
 #ifndef MyAppVersion
-  #define MyAppVersion "0.1.8b"
+  #define MyAppVersion "0.1.92"
 #endif
 
 #ifndef SourceDir
@@ -62,11 +62,20 @@ english.TaskDesktopIcon=Create a desktop shortcut
 russian.TaskDesktopIcon=Создать ярлык на рабочем столе
 english.GroupAdditionalIcons=Additional icons:
 russian.GroupAdditionalIcons=Дополнительные значки:
+english.TaskDiagnosticLogs=Create diagnostic logs
+russian.TaskDiagnosticLogs=Создавать диагностические логи
+english.GroupDiagnostics=Diagnostics:
+russian.GroupDiagnostics=Диагностика:
 english.LaunchTeacher=Launch Controledu Teacher
 russian.LaunchTeacher=Запустить Controledu Teacher
 
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb,*.xml,appsettings.Development.json"
+
+[Dirs]
+Name: "{commonappdata}\Controledu"; Permissions: users-modify
+Name: "{commonappdata}\Controledu\logs"; Permissions: users-modify; Tasks: diagnosticlogs
+Name: "{commonappdata}\Controledu\exports"; Permissions: users-modify; Tasks: diagnosticlogs
 
 [Icons]
 Name: "{autoprograms}\Controledu Teacher"; Filename: "{app}\{#MyAppExeName}"
@@ -74,12 +83,13 @@ Name: "{autodesktop}\Controledu Teacher"; Filename: "{app}\{#MyAppExeName}"; Tas
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:TaskDesktopIcon}"; GroupDescription: "{cm:GroupAdditionalIcons}"
+Name: "diagnosticlogs"; Description: "{cm:TaskDiagnosticLogs}"; GroupDescription: "{cm:GroupDiagnostics}"; Flags: checkedonce
 
 [Run]
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command ""$profiles = @(Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object {{ $_.NetworkCategory -eq 'Public' -and $_.IPv4Connectivity -ne 'Disconnected' }}); foreach ($p in $profiles) {{ Set-NetConnectionProfile -InterfaceIndex $p.InterfaceIndex -NetworkCategory Private -ErrorAction SilentlyContinue }}"""; Flags: runhidden
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""Controledu Teacher Server TCP 40556"" dir=in action=allow protocol=TCP localport=40556 profile=private"; Flags: runhidden
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""Controledu Teacher Discovery UDP 40555"" dir=in action=allow protocol=UDP localport=40555 profile=private"; Flags: runhidden
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchTeacher}"; Flags: nowait postinstall skipifsilent
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""Controledu Teacher Server TCP 40556"" dir=in action=allow protocol=TCP localport=40556 profile=any remoteip=localsubnet"; Flags: runhidden
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""Controledu Teacher Discovery UDP 40555"" dir=in action=allow protocol=UDP localport=40555 profile=any remoteip=localsubnet"; Flags: runhidden
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchTeacher}"; Flags: nowait postinstall skipifsilent runasoriginaluser
 
 [UninstallRun]
 Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM {#MyAppExeName} /T"; Flags: runhidden; RunOnceId: "ControleduTeacherHostTaskKill"
@@ -90,3 +100,30 @@ Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=
 ; Remove all local Controledu data on uninstall.
 Type: filesandordirs; Name: "{commonappdata}\Controledu"
 Type: filesandordirs; Name: "{localappdata}\Controledu"
+
+[Code]
+procedure WriteDiagnosticsFlag();
+var
+  FlagValue: String;
+begin
+  ForceDirectories(ExpandConstant('{commonappdata}\Controledu'));
+
+  if WizardIsTaskSelected('diagnosticlogs') then
+  begin
+    FlagValue := 'true';
+  end
+  else
+  begin
+    FlagValue := 'false';
+  end;
+
+  SaveStringToFile(ExpandConstant('{commonappdata}\Controledu\diagnostics.enabled'), FlagValue + #13#10, False);
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    WriteDiagnosticsFlag();
+  end;
+end;

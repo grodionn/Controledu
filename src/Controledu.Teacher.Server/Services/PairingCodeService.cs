@@ -7,7 +7,7 @@ using System.Globalization;
 namespace Controledu.Teacher.Server.Services;
 
 /// <summary>
-/// In-memory one-time PIN manager for student pairing.
+/// In-memory PIN manager for student pairing.
 /// </summary>
 public sealed class PairingCodeService(IOptions<TeacherServerOptions> options, ISystemClock clock) : IPairingCodeService
 {
@@ -24,7 +24,7 @@ public sealed class PairingCodeService(IOptions<TeacherServerOptions> options, I
     }
 
     /// <inheritdoc />
-    public bool TryConsume(string pinCode)
+    public bool TryUse(string pinCode)
     {
         CleanupExpiredPins();
 
@@ -39,7 +39,7 @@ public sealed class PairingCodeService(IOptions<TeacherServerOptions> options, I
             return false;
         }
 
-        return _activePins.TryRemove(pinCode, out _);
+        return true;
     }
 
     /// <inheritdoc />

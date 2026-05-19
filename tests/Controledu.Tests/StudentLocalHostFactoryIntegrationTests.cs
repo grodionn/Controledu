@@ -19,6 +19,7 @@ public sealed class StudentLocalHostFactoryIntegrationTests : IAsyncLifetime
     }
 
     [Fact]
+    [Trait("Category", "E2E")]
     public async Task SessionEndpoint_ReturnsLocalToken()
     {
         using var client = _host.CreateClient(withAuthHeader: false);
@@ -29,6 +30,7 @@ public sealed class StudentLocalHostFactoryIntegrationTests : IAsyncLifetime
     }
 
     [Fact]
+    [Trait("Category", "E2E")]
     public async Task StatusEndpoint_RequiresLocalToken()
     {
         using var anonymousClient = _host.CreateClient(withAuthHeader: false);

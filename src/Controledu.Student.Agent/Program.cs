@@ -100,8 +100,16 @@ builder.Services.AddSerilog((serviceProvider, loggerConfiguration) =>
     loggerConfiguration
         .ReadFrom.Configuration(builder.Configuration)
         .Enrich.FromLogContext()
-        .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-        .WriteTo.File(Path.Combine(AppPaths.GetLogsPath(), "student-agent-.log"), rollingInterval: RollingInterval.Day, formatProvider: CultureInfo.InvariantCulture);
+        .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture);
+
+    if (AppPaths.IsFileLoggingEnabled())
+    {
+        loggerConfiguration.WriteTo.File(
+            Path.Combine(AppPaths.GetLogsPath(), "student-agent-.log"),
+            rollingInterval: RollingInterval.Day,
+            retainedFileCountLimit: 14,
+            formatProvider: CultureInfo.InvariantCulture);
+    }
 });
 
 var host = builder.Build();

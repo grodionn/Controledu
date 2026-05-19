@@ -19,7 +19,7 @@
   "onboardingSelectedTarget": "Current connection target",
   "onboardingLiveDiscovery": "Live server discovery is running in real time.",
   "onboardingAutoSelectNotice": "Found {count} server node(s). Recommended target selected automatically.",
-  "onboardingEnterPinHint": "Enter the one-time PIN from control console (short lifetime).",
+  "onboardingEnterPinHint": "Enter the PIN from control console. It stays valid for 4 hours and can be reused.",
   "step1Title": "Step 1 - Secure This Device",
   "step1Desc": "Set local admin password. Required for unpair, agent stop, and autostart downgrade.",
   "adminPassword": "Admin password",
@@ -27,7 +27,7 @@
   "enableAutoStartNow": "Enable Agent autostart right after setup",
   "saveAdminPassword": "Save Admin Password",
   "step2Title": "Step 2 - Connect to Server",
-  "step2Desc": "Discover a server in LAN or provide manual address, then enter one-time PIN.",
+  "step2Desc": "Discover a server in LAN or provide manual address, then enter the PIN from the teacher console.",
   "discoverTeachers": "Discover Servers",
   "refreshStatus": "Refresh Status",
   "discoveredServer": "Discovered server",
@@ -99,5 +99,9 @@
   "shutdownNow": "Shutdown Program",
   "accessibilityPanelTitle": "Accessibility and Personal Profile",
   "expandSection": "Expand",
-  "collapseSection": "Collapse"
+  "collapseSection": "Collapse",
+  "appAutostart": "App Autostart",
+  "appAutostartDesc": "Adds Controledu Student to Windows startup so the desktop app opens automatically after sign-in.",
+  "enableAppAutostart": "Enable App Autostart",
+  "disableAppAutostart": "Disable App Autostart"
 }

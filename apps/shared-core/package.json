@@ -1,0 +1,15 @@
+{
+  "name": "@controledu/shared-core",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./http-client": "./src/http-client.ts",
+    "./i18n": "./src/i18n.ts",
+    "./utils": "./src/utils.ts"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1"
+  }
+}

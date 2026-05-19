@@ -21,6 +21,7 @@ public sealed class FileTransferCoordinatorIntegrationTests : IAsyncLifetime
     }
 
     [Fact]
+    [Trait("Category", "E2E")]
     public async Task SaveChunkAsync_InParallel_AllChunksAvailableForDispatch()
     {
         using var scope = _host.Services.CreateScope();

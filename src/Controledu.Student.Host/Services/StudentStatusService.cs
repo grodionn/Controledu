@@ -20,6 +20,7 @@ internal sealed class StudentStatusService(
     IAdminPasswordService adminPasswordService,
     IStudentPairingService pairingService,
     IDeviceIdentityService deviceIdentityService,
+    IHostAutoStartManager hostAutoStartManager,
     IAgentAutoStartManager agentAutoStartManager,
     IAgentProcessManager agentProcessManager,
     ISettingsStore settingsStore) : IStudentStatusService
@@ -31,6 +32,7 @@ internal sealed class StudentStatusService(
         var deviceName = await deviceIdentityService.GetDisplayNameAsync(cancellationToken);
         var isPaired = binding is not null;
         var serverOnline = binding is not null && await pairingService.CheckServerOnlineAsync(binding, cancellationToken);
+        var hostAutoStart = await hostAutoStartManager.GetEnabledAsync(cancellationToken);
         var agentAutoStart = await agentAutoStartManager.GetEnabledAsync(cancellationToken);
         var agentRunning = agentProcessManager.IsRunning;
         var lastAlert = await settingsStore.GetAsync(DetectionSettingKeys.LastAlert, cancellationToken);
@@ -47,6 +49,7 @@ internal sealed class StudentStatusService(
             binding?.ServerBaseUrl,
             serverOnline,
             isPaired && serverOnline,
+            hostAutoStart,
             agentAutoStart,
             agentRunning,
             lastAlert,

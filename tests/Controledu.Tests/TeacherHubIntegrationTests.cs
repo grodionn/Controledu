@@ -20,6 +20,7 @@ public sealed class TeacherHubIntegrationTests : IAsyncLifetime
     }
 
     [Fact]
+    [Trait("Category", "E2E")]
     public async Task GeneratePairingPin_WithValidToken_ReturnsPin()
     {
         var connection = new HubConnectionBuilder()

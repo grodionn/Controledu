@@ -35,7 +35,7 @@
   "studentLastDetection": "Last AI",
   "generatePin": "Generate Pairing PIN",
   "pinExpires": "expires",
-  "pairingHint": "One-time code for onboarding a new device.",
+  "pairingHint": "PIN for connecting devices. Works for 4 hours and can be reused during that time.",
   "expiresWord": "expires",
   "sendToAll": "Send to all",
   "sendToSelected": "Send to selected",

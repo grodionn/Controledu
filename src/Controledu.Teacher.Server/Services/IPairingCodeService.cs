@@ -3,7 +3,7 @@
 namespace Controledu.Teacher.Server.Services;
 
 /// <summary>
-/// Handles one-time pairing PIN lifecycle.
+/// Handles pairing PIN lifecycle.
 /// </summary>
 public interface IPairingCodeService
 {
@@ -13,9 +13,9 @@ public interface IPairingCodeService
     PairingPinDto Generate();
 
     /// <summary>
-    /// Validates and consumes a PIN code.
+    /// Validates that a PIN code can still be used for pairing.
     /// </summary>
-    bool TryConsume(string pinCode);
+    bool TryUse(string pinCode);
 
     /// <summary>
     /// Validates PIN without consuming.

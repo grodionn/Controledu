@@ -4,6 +4,7 @@ import {
   AccessibilityContrastMode,
   AccessibilityPresetId,
   AccessibilityProfileUpdateDto,
+  normalizeAccessibilityProfile,
   StudentInfo,
 } from "../lib/types";
 import { cn } from "../lib/utils";
@@ -288,13 +289,13 @@ export function AccessibilityAssignmentCard({
         return;
       }
 
-      const parsed = JSON.parse(raw) as AccessibilityProfileUpdateDto;
+      const parsed = JSON.parse(raw) as Partial<AccessibilityProfileUpdateDto>;
       if (!parsed || typeof parsed !== "object") {
         setDraft(createPreset("default"));
         return;
       }
 
-      setDraft(parsed);
+      setDraft(normalizeAccessibilityProfile(parsed));
     } catch {
       setDraft(createPreset("default"));
     }

@@ -7,6 +7,17 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     include: ["src/**/*.test.{ts,tsx}"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      include: ["src/api/**/*.ts", "src/hooks/**/*.ts", "src/hooks/**/*.tsx"],
+      thresholds: {
+        lines: 30,
+        functions: 15,
+        statements: 30,
+        branches: 20,
+      },
+    },
   },
   server: {
     host: "127.0.0.1",

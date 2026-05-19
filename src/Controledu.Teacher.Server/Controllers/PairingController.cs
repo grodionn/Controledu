@@ -24,14 +24,14 @@ public sealed class PairingController(
     ISystemClock clock) : ControllerBase
 {
     /// <summary>
-    /// Generates one-time pairing PIN.
+    /// Generates pairing PIN.
     /// </summary>
     [HttpPost("pin")]
     [ProducesResponseType<PairingPinDto>(StatusCodes.Status200OK)]
     public ActionResult<PairingPinDto> GeneratePin() => Ok(pairingCodeService.Generate());
 
     /// <summary>
-    /// Completes student pairing using one-time PIN.
+    /// Completes student pairing using active PIN.
     /// </summary>
     [AllowAnonymous]
     [HttpPost("complete")]
@@ -39,7 +39,7 @@ public sealed class PairingController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PairingResponseDto>> CompletePairing([FromBody] PairingRequestDto request, CancellationToken cancellationToken)
     {
-        if (!pairingCodeService.TryConsume(request.PinCode))
+        if (!pairingCodeService.TryUse(request.PinCode))
         {
             return BadRequest("PIN invalid or expired.");
         }

@@ -4,10 +4,8 @@ import commonRu from "./locales/common.ru.json";
 import studentEn from "./locales/student.en.json";
 import studentKz from "./locales/student.kz.json";
 import studentRu from "./locales/student.ru.json";
-
-export type UiLanguage = "ru" | "en" | "kz";
-
-type LanguageDictionary = Record<string, string>;
+import { mergeDictionaries, type LanguageDictionary, type UiLanguage } from "@controledu/shared-core/i18n";
+export type { UiLanguage };
 
 export const sharedI18nKeys = [
   "connected",
@@ -18,10 +16,6 @@ export const sharedI18nKeys = [
   "enabled",
   "pairingPin",
 ] as const;
-
-function mergeDictionaries(common: LanguageDictionary, specific: LanguageDictionary): LanguageDictionary {
-  return { ...common, ...specific };
-}
 
 export const studentDictionary: Record<UiLanguage, LanguageDictionary> = {
   ru: mergeDictionaries(commonRu, studentRu),

@@ -7,6 +7,7 @@ import {
   AlertItem,
   AuditItem,
   DetectionPolicy,
+  normalizeAlertItem,
   PairPinResponse,
   RemoteControlInputCommand,
   RemoteControlSessionStartResult,
@@ -959,7 +960,8 @@ function App() {
         });
       });
 
-      connection.on("AlertReceived", (alert: AlertItem) => {
+      connection.on("AlertReceived", (incomingAlert: AlertItem) => {
+        const alert = normalizeAlertItem(incomingAlert);
         setAiAlerts((current) => [alert, ...current].slice(0, 1000));
         appendEvent(`[${new Date(alert.timestampUtc).toLocaleTimeString()}] ALERT ${alert.studentId}: ${alert.detectionClass} ${alert.confidence.toFixed(2)} - ${alert.reason}`);
         if (!aiWarningsEnabledRef.current) {
@@ -1230,7 +1232,7 @@ function App() {
     mutationFn: async (): Promise<PairPinResponse> => teacherApiClient.generatePairingPin(),
     onSuccess: (value) => {
       setPin(value);
-      appendEvent(`New pairing PIN generated until ${new Date(value.expiresAtUtc).toLocaleTimeString()}`);
+        appendEvent(`Pairing PIN is active until ${new Date(value.expiresAtUtc).toLocaleTimeString()} and can be reused.`);
     },
     onError: (error) => appendEvent(`PIN error: ${describeError(error)}`),
   });

@@ -19,7 +19,7 @@
   "onboardingSelectedTarget": "Текущая цель подключения",
   "onboardingLiveDiscovery": "Автопоиск серверов работает в реальном времени.",
   "onboardingAutoSelectNotice": "Found {count} server node(s). Recommended target selected automatically.",
-  "onboardingEnterPinHint": "Введите одноразовый PIN из консоли управления (действует ограниченное время).",
+  "onboardingEnterPinHint": "Введите PIN из консоли управления. Он действует 4 часа и может использоваться повторно.",
   "step1Title": "Шаг 1 - Защитить устройство",
   "step1Desc": "Задайте локальный admin-пароль. Он нужен для отвязки, остановки агента и изменения автозапуска.",
   "adminPassword": "Пароль администратора",
@@ -27,7 +27,7 @@
   "enableAutoStartNow": "Включить автозапуск Agent сразу после настройки",
   "saveAdminPassword": "Сохранить admin-пароль",
   "step2Title": "Шаг 2 - Подключение к серверу",
-  "step2Desc": "Найдите сервер в LAN или введите адрес вручную, затем подтвердите одноразовый PIN.",
+  "step2Desc": "Найдите сервер в LAN или введите адрес вручную, затем введите PIN из консоли преподавателя.",
   "discoverTeachers": "Найти серверы",
   "refreshStatus": "Обновить статус",
   "discoveredServer": "Найденный сервер",
@@ -99,5 +99,9 @@
   "shutdownNow": "Завершить программу",
   "accessibilityPanelTitle": "Доступность и персональный профиль",
   "expandSection": "Развернуть",
-  "collapseSection": "Свернуть"
+  "collapseSection": "Свернуть",
+  "appAutostart": "Автозагрузка приложения",
+  "appAutostartDesc": "Добавляет Controledu Student в автозагрузку Windows, чтобы desktop-приложение открывалось автоматически после входа.",
+  "enableAppAutostart": "Включить автозагрузку приложения",
+  "disableAppAutostart": "Выключить автозагрузку приложения"
 }

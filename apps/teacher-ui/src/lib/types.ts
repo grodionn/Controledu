@@ -1,3 +1,8 @@
+import type { components } from "@controledu/shared-api-contracts/teacher-server";
+
+type TeacherApiSchemas = components["schemas"];
+const DEFAULT_DATE_ISO = "1970-01-01T00:00:00.000Z";
+
 export type StudentInfo = {
   clientId: string;
   hostName: string;
@@ -25,16 +30,16 @@ export type ScreenFrame = {
 export type AlertItem = {
   studentId: string;
   studentDisplayName: string;
+  timestampUtc: string;
   detectionClass: string;
   confidence: number;
   reason: string;
-  timestampUtc: string;
-  thumbnailJpegSmall?: string | number[] | null;
+  thumbnailJpegSmall?: string | null;
   modelVersion?: string | null;
   eventId: string;
   stageSource: string;
   isStable: boolean;
-  triggeredKeywords?: string[] | null;
+  triggeredKeywords: string[];
 };
 
 export type PairPinResponse = {
@@ -56,29 +61,7 @@ export type AuditItem = {
   details: string;
 };
 
-export type DetectionPolicy = {
-  enabled: boolean;
-  evaluationIntervalSeconds: number;
-  frameChangeThreshold: number;
-  minRecheckIntervalSeconds: number;
-  metadataThreshold: number;
-  mlThreshold: number;
-  temporalWindowSize: number;
-  temporalRequiredVotes: number;
-  cooldownSeconds: number;
-  keywords: string[];
-  whitelistKeywords: string[];
-  dataCollectionModeEnabled: boolean;
-  dataCollectionMinIntervalSeconds: number;
-  dataCollectionSampleRate: number;
-  dataCollectionRetentionDays: number;
-  dataCollectionStoreFullFrames: boolean;
-  dataCollectionStoreThumbnails: boolean;
-  includeAlertThumbnails: boolean;
-  alertThumbnailWidth: number;
-  alertThumbnailHeight: number;
-  policyVersion: string;
-};
+export type DetectionPolicy = TeacherApiSchemas["DetectionPolicyDto"];
 
 export type StudentSignalEvent = {
   studentId: string;
@@ -89,22 +72,9 @@ export type StudentSignalEvent = {
   message?: string | null;
 };
 
-export type DetectionExportArtifact = {
-  exportId: string;
-  clientId: string;
-  studentDisplayName: string;
-  createdAtUtc: string;
-  fileName: string;
-  sizeBytes: number;
-  downloadUrl: string;
-};
+export type DetectionExportArtifact = TeacherApiSchemas["DetectionExportArtifactDto"];
 
-export type DetectionExportRequestResult = {
-  requestedCount: number;
-  skippedCount: number;
-  requestedClientIds: string[];
-  skippedClientIds: string[];
-};
+export type DetectionExportRequestResult = TeacherApiSchemas["DetectionExportRequestResultDto"];
 
 export type RemoteControlSessionStartResult = {
   accepted: boolean;
@@ -180,3 +150,131 @@ export type TeacherStudentChatMessage = {
 export type StudentChatHistoryResponse = {
   messages: TeacherStudentChatMessage[];
 };
+
+function stringOr(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function dateStringOr(value: unknown, fallback = DEFAULT_DATE_ISO): string {
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function numberOr(value: unknown, fallback = 0): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function booleanOr(value: unknown, fallback = false): boolean {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+function normalizePreset(value: unknown): AccessibilityPresetId {
+  switch (value) {
+    case "vision":
+    case "hearing":
+    case "motor":
+    case "dyslexia":
+    case "custom":
+    case "default":
+      return value;
+    default:
+      return "default";
+  }
+}
+
+function normalizeContrastMode(value: unknown): AccessibilityContrastMode {
+  switch (value) {
+    case "aa":
+    case "aaa":
+    case "standard":
+      return value;
+    default:
+      return "standard";
+  }
+}
+
+function normalizeColorBlindMode(value: unknown): AccessibilityColorBlindMode {
+  switch (value) {
+    case "protanopia":
+    case "deuteranopia":
+    case "tritanopia":
+    case "none":
+      return value;
+    default:
+      return "none";
+  }
+}
+
+export function normalizeAlertItem(value: TeacherApiSchemas["AlertEventDto"] | AlertItem | null | undefined): AlertItem {
+  const studentId = stringOr(value?.studentId);
+  const timestampUtc = dateStringOr(value?.timestampUtc);
+  const detectionClass = stringOr(value?.detectionClass, "UnknownAi");
+  return {
+    studentId,
+    studentDisplayName: stringOr(value?.studentDisplayName),
+    timestampUtc,
+    detectionClass,
+    confidence: numberOr(value?.confidence),
+    reason: stringOr(value?.reason),
+    thumbnailJpegSmall: value?.thumbnailJpegSmall ?? null,
+    modelVersion: value?.modelVersion ?? null,
+    eventId: stringOr(value?.eventId, `${studentId || "unknown"}-${timestampUtc}-${detectionClass}`),
+    stageSource: stringOr(value?.stageSource),
+    isStable: booleanOr(value?.isStable),
+    triggeredKeywords: Array.isArray(value?.triggeredKeywords)
+      ? value!.triggeredKeywords.filter((item): item is string => typeof item === "string")
+      : [],
+  };
+}
+
+export function normalizePairPinResponse(value: TeacherApiSchemas["PairingPinDto"] | PairPinResponse | null | undefined): PairPinResponse {
+  return {
+    pinCode: stringOr(value?.pinCode),
+    expiresAtUtc: dateStringOr(value?.expiresAtUtc),
+  };
+}
+
+export function normalizeUploadInitResponse(value: TeacherApiSchemas["FileUploadInitResponse"] | UploadInitResponse | null | undefined): UploadInitResponse {
+  return {
+    transferId: stringOr(value?.transferId),
+    totalChunks: Math.max(0, Math.trunc(numberOr(value?.totalChunks))),
+    createdAtUtc: dateStringOr(value?.createdAtUtc),
+  };
+}
+
+export function normalizeAuditItem(value: TeacherApiSchemas["AuditLogModel"] | AuditItem | null | undefined): AuditItem {
+  return {
+    id: Math.trunc(numberOr(value?.id)),
+    timestampUtc: dateStringOr(value?.timestampUtc),
+    action: stringOr(value?.action),
+    actor: stringOr(value?.actor),
+    details: stringOr(value?.details),
+  };
+}
+
+export function normalizeAccessibilityProfile(
+  value: TeacherApiSchemas["AccessibilityProfileUpdateDto"] | Partial<AccessibilityProfileUpdateDto> | null | undefined,
+): AccessibilityProfileUpdateDto {
+  return {
+    activePreset: normalizePreset(value?.activePreset),
+    allowTeacherOverride: booleanOr(value?.allowTeacherOverride, true),
+    ui: {
+      scalePercent: Math.min(300, Math.max(100, Math.trunc(numberOr(value?.ui?.scalePercent, 100)))),
+      contrastMode: normalizeContrastMode(value?.ui?.contrastMode),
+      invertColors: booleanOr(value?.ui?.invertColors),
+      colorBlindMode: normalizeColorBlindMode(value?.ui?.colorBlindMode),
+      dyslexiaFontEnabled: booleanOr(value?.ui?.dyslexiaFontEnabled),
+      largeCursorEnabled: booleanOr(value?.ui?.largeCursorEnabled),
+      highlightFocusEnabled: booleanOr(value?.ui?.highlightFocusEnabled),
+    },
+    features: {
+      visualAlertsEnabled: booleanOr(value?.features?.visualAlertsEnabled, true),
+      largeActionButtonsEnabled: booleanOr(value?.features?.largeActionButtonsEnabled),
+      simplifiedNavigationEnabled: booleanOr(value?.features?.simplifiedNavigationEnabled),
+      singleKeyModeEnabled: booleanOr(value?.features?.singleKeyModeEnabled),
+      ttsTeacherMessagesEnabled: booleanOr(value?.features?.ttsTeacherMessagesEnabled),
+      audioLessonModeEnabled: booleanOr(value?.features?.audioLessonModeEnabled),
+      liveCaptionsEnabled: booleanOr(value?.features?.liveCaptionsEnabled),
+      voiceCommandsEnabled: booleanOr(value?.features?.voiceCommandsEnabled),
+    },
+  };
+}

@@ -91,6 +91,11 @@ internal sealed class StudentPairingService(
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            logger.LogWarning(
+                "Pairing failed against {ServerAddress} with HTTP {StatusCode}: {Error}",
+                baseUrl,
+                (int)response.StatusCode,
+                string.IsNullOrWhiteSpace(error) ? "<empty>" : error);
             throw new InvalidOperationException(string.IsNullOrWhiteSpace(error) ? $"Pairing failed ({(int)response.StatusCode})." : error);
         }
 
@@ -128,8 +133,9 @@ internal sealed class StudentPairingService(
             var response = await http.GetAsync($"{binding.ServerBaseUrl.TrimEnd('/')}/api/server/health", cancellationToken);
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            logger.LogDebug(ex, "Server health check failed for {ServerBaseUrl}", binding.ServerBaseUrl);
             return false;
         }
     }

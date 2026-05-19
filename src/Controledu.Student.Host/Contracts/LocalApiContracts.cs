@@ -18,6 +18,7 @@ public sealed record StudentStatusResponse(
     string? PairedServerBaseUrl,
     bool ServerOnline,
     bool MonitoringActive,
+    bool HostAutoStart,
     bool AgentAutoStart,
     bool AgentRunning,
     string? LastAlert,
@@ -49,6 +50,11 @@ public sealed record UnpairRequest(string AdminPassword);
 /// Request payload for toggling agent autostart.
 /// </summary>
 public sealed record AgentAutoStartRequest(bool Enabled, string? AdminPassword = null);
+
+/// <summary>
+/// Request payload for toggling student host autostart.
+/// </summary>
+public sealed record HostAutoStartRequest(bool Enabled);
 
 /// <summary>
 /// Request payload for sensitive actions requiring admin password.

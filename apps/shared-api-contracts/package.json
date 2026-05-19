@@ -1,0 +1,15 @@
+{
+  "name": "@controledu/shared-api-contracts",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./teacher-server": "./src/generated/teacher-server.ts"
+  },
+  "scripts": {
+    "generate:teacher": "openapi-typescript ../../eng/openapi/teacher-server.v1.json --output src/generated/teacher-server.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.10.1"
+  }
+}

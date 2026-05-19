@@ -2,7 +2,6 @@
 using Controledu.Student.Host.Contracts;
 using Controledu.Storage.Stores;
 using Controledu.Transport.Dto;
-using System.IO.Compression;
 
 namespace Controledu.Student.Host.Services;
 
@@ -66,41 +65,13 @@ internal sealed class DetectionLocalService(ISettingsStore settingsStore) : IDet
 
     public Task<string> ExportDiagnosticsAsync(CancellationToken cancellationToken = default)
     {
-        var exportName = $"student-diagnostics-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}.zip";
-        var exportPath = Path.Combine(AppPaths.GetExportsPath(), exportName);
-
-        if (File.Exists(exportPath))
-        {
-            File.Delete(exportPath);
-        }
-
-        using (var archive = ZipFile.Open(exportPath, ZipArchiveMode.Create))
-        {
-            AddDirectoryIfExists(archive, AppPaths.GetLogsPath(), "logs");
-            AddDirectoryIfExists(archive, Path.Combine(AppPaths.GetDatasetsPath(), "dataset"), "dataset");
-
-            var dbPath = Path.Combine(AppPaths.GetBasePath(), "student-shared.db");
-            if (File.Exists(dbPath))
+        var archivePath = DiagnosticsArchiveBuilder.CreateStudentDiagnosticsArchive(
+            new Dictionary<string, string?>
             {
-                archive.CreateEntryFromFile(dbPath, "student-shared.db", CompressionLevel.Fastest);
-            }
-        }
+                ["source"] = "student-host-local-export",
+            },
+            cancellationToken);
 
-        return Task.FromResult(exportPath);
-    }
-
-    private static void AddDirectoryIfExists(ZipArchive archive, string sourceDir, string entryPrefix)
-    {
-        if (!Directory.Exists(sourceDir))
-        {
-            return;
-        }
-
-        foreach (var file in Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories))
-        {
-            var relative = Path.GetRelativePath(sourceDir, file);
-            var normalized = relative.Replace('\\', '/');
-            archive.CreateEntryFromFile(file, $"{entryPrefix}/{normalized}", CompressionLevel.Fastest);
-        }
+        return Task.FromResult(archivePath);
     }
 }

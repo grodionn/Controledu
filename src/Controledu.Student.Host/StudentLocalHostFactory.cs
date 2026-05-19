@@ -84,6 +84,7 @@ public static partial class StudentLocalHostFactory
         builder.Services.AddSingleton<IAdminPasswordService, AdminPasswordService>();
         builder.Services.AddSingleton<IDeviceIdentityService, DeviceIdentityService>();
         builder.Services.AddSingleton<IStudentPairingService, StudentPairingService>();
+        builder.Services.AddSingleton<IHostAutoStartManager, HostAutoStartManager>();
         builder.Services.AddSingleton<IAgentAutoStartManager, AgentAutoStartManager>();
         builder.Services.AddSingleton<IAgentProcessManager, AgentProcessManager>();
         builder.Services.AddSingleton<IAccessibilitySettingsService, AccessibilitySettingsService>();
@@ -100,8 +101,16 @@ public static partial class StudentLocalHostFactory
             loggerConfiguration
                 .ReadFrom.Configuration(context.Configuration)
                 .Enrich.FromLogContext()
-                .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-                .WriteTo.File(Path.Combine(AppPaths.GetLogsPath(), "student-host-.log"), rollingInterval: RollingInterval.Day, formatProvider: CultureInfo.InvariantCulture);
+                .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture);
+
+            if (AppPaths.IsFileLoggingEnabled())
+            {
+                loggerConfiguration.WriteTo.File(
+                    Path.Combine(AppPaths.GetLogsPath(), "student-host-.log"),
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 14,
+                    formatProvider: CultureInfo.InvariantCulture);
+            }
         });
 
         builder.WebHost.ConfigureKestrel(kestrel =>

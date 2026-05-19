@@ -8,7 +8,7 @@
     "ServerName": "Controledu-Server",
     "HttpPort": 40556,
     "DiscoveryPort": 40555,
-    "PairingPinLifetimeSeconds": 60,
+    "PairingPinLifetimeSeconds": 14400,
     "PairingTokenLifetimeHours": 720,
     "StorageFile": "teacher-server.db",
     "TransferRoot": "transfers",

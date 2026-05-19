@@ -9,6 +9,22 @@ public static partial class StudentLocalHostFactory
 {
     private static void MapAgentEndpoints(WebApplication app)
     {
+        app.MapPost("/api/host/autostart", async (
+            HostAutoStartRequest request,
+            IHostAutoStartManager hostAutoStartManager,
+            CancellationToken cancellationToken) =>
+        {
+            try
+            {
+                await hostAutoStartManager.SetEnabledAsync(request.Enabled, cancellationToken);
+                return Results.Ok(new OkResponse(true));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
+        });
+
         app.MapPost("/api/agent/autostart", async (
             AgentAutoStartRequest request,
             IAdminPasswordService adminPasswordService,

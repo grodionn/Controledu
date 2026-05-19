@@ -87,6 +87,11 @@ export class StudentApiClient {
     return this.requestJson<OkResponse>("/api/agent/autostart", { method: "POST", ...json });
   }
 
+  public async saveHostAutoStartPolicy(enabled: boolean): Promise<OkResponse> {
+    const json = withJsonBody({ enabled });
+    return this.requestJson<OkResponse>("/api/host/autostart", { method: "POST", ...json });
+  }
+
   public async startAgent(): Promise<OkResponse> {
     const json = withJsonBody({});
     return this.requestJson<OkResponse>("/api/agent/start", { method: "POST", ...json });
